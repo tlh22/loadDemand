@@ -20,18 +20,48 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+#from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 #from PyQt4.QtGui import QAction, QIcon
 
-from PyQt4.QtGui import *
+#from PyQt4.QtGui import *
+
+
+from qgis.PyQt.QtWidgets import (
+    QMessageBox,
+    QAction,
+    QDialogButtonBox,
+    QLabel,
+    QDockWidget
+)
+
+from qgis.PyQt.QtGui import (
+    QIcon,
+    QPixmap
+)
+
+from qgis.PyQt.QtCore import (
+    QObject, QTimer, pyqtSignal,
+    QTranslator,
+    QSettings,
+    QCoreApplication,
+    qVersion
+)
+
+from TOMs.core.TOMsMessageLog import TOMsMessageLog
+from qgis.core import (
+    Qgis,
+    QgsMessageLog,
+    QgsProject,
+    QgsApplication, QgsExpression, QgsFeatureRequest, QgsMapLayer
+)
 
 # Initialize Qt resources from file resources.py
-import resources
+from .resources import *
 # Import the code for the dialog
-from load_Occ_dialog import loadOccDialog
+from loadOcc.load_Occ_dialog import loadOccDialog
 import os.path
-from qgis.gui import *
-from qgis.core import *
+#from qgis.gui import *
+#from qgis.core import *
 
 # See following for using QgsMapLayerComboBox - https://stackoverflow.com/questions/44079328/python-load-module-in-parent-to-prevent-overwrite-problems
 
@@ -194,9 +224,13 @@ class loadOcc:
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
-        layers = QgsMapLayerRegistry.instance().mapLayers().values()
+        layers = QgsProject.instance().mapLayers().values()
 
-        self.updateList = ["Done", "SurveyDate", "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nbuses", "nbikes", "nspaces", "nnotes", "sref1", "sbays1", "sreason1", "sstart1", "send1", "stimes1", "scars1", "slgvs1", "smcls1", "sogvs1", "staxis1", "sbuses1", "snotes1", "sref2", "sbays2", "sreason2", "sreason2", "sstart2", "send2", "stimes2", "scars2", "slgvs2", "smcls2", "sogvs2", "staxis2", "sbuses2", "snotes2", "dcars", "dlgvs", "dmcls", "dogvs", "dtaxis", "dbuses", "usyl_c", "usyl_r", "usyl_n"]
+        self.updateList = ["Done", "SurveyDate",
+                           "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nminib", "nbuses", "nbikes", "nspaces", "nnotes",
+                           "sref", "sbays", "sreason", "scars", "slgvs", "smcls", "sogvs", "staxis", "sbuses", "sogvs2", "sminib", "snotes",
+                           "dcars", "dlgvs", "dmcls", "dogvs", "dtaxis", "dbuses", "dogvs2", "dminib",
+                           "Photos_01", "Photos_02", "Photos_03"]
         surveyIDField = 'SurveyID'
         # See if OK was pressed
         if result:
@@ -216,8 +250,8 @@ class loadOcc:
             #VRMfeatures = []
             masterFields = self.masterLayer.fields()
 
-            self.idxSurveyTime = self.masterLayer.fieldNameIndex("SurveyTime")
-            self.idxSurveyID = self.masterLayer.fieldNameIndex(surveyIDField)
+            self.idxSurveyTime = self.masterLayer.fields().indexFromName("SurveyTime")
+            self.idxSurveyID = self.masterLayer.fields().indexFromName(surveyIDField)
 
             try:
                 firstMaster = next(row for row in self.masterLayer.getFeatures())
@@ -238,21 +272,26 @@ class loadOcc:
                 if self.isCurrOcclayer(layer, currSurveyID, surveyIDField):
 
                     # Select the rows (GeometryIDs) where Done = “true”
-                    query = '"Done" = 1'
-                    selection = layer.getFeatures(QgsFeatureRequest().setFilterExpression(query))
+                    query = "\"Done\" = 'true'"
+                    QgsMessageLog.logMessage("In loadOcc. query: " + query,
+                                             tag="TOMs panel")
+                    expr = QgsExpression(query)
+                    #selection = layer.getFeatures(QgsFeatureRequest(expr))
 
-                    layer.setSelectedFeatures([k.id() for k in selection])
-
-                    QgsMessageLog.logMessage(
-                        "In loadOcc. count within " + layer.name() + ": " + str(layer.selectedFeatureCount()),
-                        tag="TOMs panel")
+                    #layer.setSelectedFeatures([k.id() for k in selection])
                     #QMessageBox.information(self.iface.mainWindow(), "In loadOcc",  "count within %s: %d" %(layer.name(), layer.selectedFeatureCount()))
 
                     # Now copy the required rows/attributes into the MasterLayer
 
-                    for feature in layer.selectedFeatures():
+                    layerFeatureCount = 0
+                    for feature in layer.getFeatures(QgsFeatureRequest(expr)):
 
                         self.copyAttributes(feature)
+                        layerFeatureCount = layerFeatureCount + 1
+
+                    QgsMessageLog.logMessage(
+                        "In loadOcc. count within " + layer.name() + ": " + str(layerFeatureCount),
+                        tag="TOMs panel")
 
             QgsMessageLog.logMessage("In loadOcc. Now committing ... ",
                                      tag="TOMs panel")
@@ -301,8 +340,8 @@ class loadOcc:
                                  tag="TOMs panel")
         # Now find the row for this GeometryID in masterLayer
         query = '"GeometryID" = \'' + str(currGeometryID) + '\' AND ("Done" = 0 OR "Done" IS NULL)'
-
-        selection = self.masterLayer.getFeatures(QgsFeatureRequest().setFilterExpression(query))
+        expr = QgsExpression(query)
+        selection = self.masterLayer.getFeatures(QgsFeatureRequest(expr))
 
         #masterIterator = (row for row in selection)
         try:
