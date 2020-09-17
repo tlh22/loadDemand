@@ -55,6 +55,8 @@ from qgis.core import (
     QgsApplication, QgsExpression, QgsFeatureRequest, QgsMapLayer
 )
 
+from qgis.gui import (QgsMapCanvas)
+
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -101,6 +103,9 @@ class loadOcc:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'loadOcc')
         self.toolbar.setObjectName(u'loadOcc')
+
+        #self.canvas = QgsMapCanvas()
+        #self.root = QgsProject.instance().layerTreeRoot()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -273,8 +278,6 @@ class loadOcc:
 
                     # Select the rows (GeometryIDs) where Done = “true”
                     query = "\"Done\" = 'true'"
-                    QgsMessageLog.logMessage("In loadOcc. query: " + query,
-                                             tag="TOMs panel")
                     expr = QgsExpression(query)
                     #selection = layer.getFeatures(QgsFeatureRequest(expr))
 
@@ -286,11 +289,13 @@ class loadOcc:
                     layerFeatureCount = 0
                     for feature in layer.getFeatures(QgsFeatureRequest(expr)):
 
-                        self.copyAttributes(feature)
-                        layerFeatureCount = layerFeatureCount + 1
+                        status = self.copyAttributes(feature)
+                        if status:
+                            layerFeatureCount = layerFeatureCount + 1
 
+                    parent = QgsProject.instance().layerTreeRoot().findLayer(layer.id()).parent().name()
                     QgsMessageLog.logMessage(
-                        "In loadOcc. count within " + layer.name() + ": " + str(layerFeatureCount),
+                        "In loadOcc. count of records added within " + parent + ":" + layer.name() + ": " + str(layerFeatureCount),
                         tag="TOMs panel")
 
             QgsMessageLog.logMessage("In loadOcc. Now committing ... ",
@@ -336,10 +341,10 @@ class loadOcc:
         currAttribs = feature.attributes()
         currGeometryID = feature.attribute("GeometryID")
 
-        QgsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
-                                 tag="TOMs panel")
+        """QgsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
+                                 tag="TOMs panel")"""
         # Now find the row for this GeometryID in masterLayer
-        query = '"GeometryID" = \'' + str(currGeometryID) + '\' AND ("Done" = 0 OR "Done" IS NULL)'
+        query = ('"GeometryID" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(currGeometryID)
         expr = QgsExpression(query)
         selection = self.masterLayer.getFeatures(QgsFeatureRequest(expr))
 
@@ -349,10 +354,8 @@ class loadOcc:
             rowFound = True
         except StopIteration:
 
-            QgsMessageLog.logMessage("In copyAttributes. Error retrieving GeometryID: " + str(currGeometryID),
-                                     tag="TOMs panel")
-            """QMessageBox.information(self.iface.mainWindow(), "In copyAttributes",
-                                    "Error retrieving: " + currGeometryID)"""
+            """QgsMessageLog.logMessage("In copyAttributes. Error retrieving GeometryID: " + str(currGeometryID),
+                                     tag="TOMs panel")"""
             rowFound = False
             status = False
 
