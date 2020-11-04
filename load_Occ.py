@@ -230,14 +230,14 @@ class loadOcc:
         # Run the dialog event loop
         result = self.dlg.exec_()
         layers = QgsProject.instance().mapLayers().values()
-        """
+
         self.updateList = ["Done", "SurveyDate",
                            "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nminib", "nbuses", "nbikes", "nspaces", "nnotes",
                            "sref", "sbays", "sreason", "scars", "slgvs", "smcls", "sogvs", "staxis", "sbuses", "sogvs2", "sminib", "snotes",
                            "dcars", "dlgvs", "dmcls", "dogvs", "dtaxis", "dbuses", "dogvs2", "dminib",
                            "Photos_01", "Photos_02", "Photos_03"]
         """
-        self.updateList = ["Done", "VRM_1",
+        self.updateList = ["Done", "SurveyDate", "VRM_1",
                            "VRM_2", "VRM_3", "VRM_4", "VRM_5", "VRM_6", "VRM_7", "VRM_8",
                            "VRM_9", "VRM_10", "VRM_11", "VRM_12", "VRM_13", "VRM_14", "VRM_15",
                            "VRM_16", "VRM_17", "VRM_18", "VRM_19", "VRM_20", "VRM_21", "VRM_22",
@@ -276,8 +276,8 @@ class loadOcc:
                            "PerType_39", "PerType_40", "PerType_41", "PerType_42", "PerType_43",
                            "PerType_44", "PerType_45", "PerType_46", "PerType_47", "PerType_48",
                            "PerType_49", "PerType_50",
-
-                            """
+        """
+        """
                            #"PermType_1", "PermType_2", "PermType_3",
                            #"PermType_4", "PermType_5", "PermType_6", "PermType_7", "PermType_8",
                            #"PermType_9", "PermType10", "PermType11", "PermType12", "PermType13",
@@ -290,12 +290,13 @@ class loadOcc:
                            #"PermType44", "PermType45", "PermType46", "PermType47", "PermType48",
                            #"PermType49", "PermType50",
                             """
-
+        """
                            "SusRef1", "SusReas1", "SusLen1", "SusAdd1",
                            "SusRef2", "SusReas2", "SusLen2", "SusAdd2",
                            "Notes_Gen", "Photos_01", "Photos_02", "Photos_03"
 
                            ]
+        """
         surveyIDField = 'SurveyID'
         # See if OK was pressed
         if result:
