@@ -231,32 +231,35 @@ class loadOcc:
         result = self.dlg.exec_()
         layers = QgsProject.instance().mapLayers().values()
 
+        """
         self.updateList = ["Done", "SurveyDate",
                            "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nminib", "nbuses", "nbikes", "nspaces", "nnotes",
                            "sref", "sbays", "sreason", "scars", "slgvs", "smcls", "sogvs", "staxis", "sbuses", "sogvs2", "sminib", "snotes",
                            "dcars", "dlgvs", "dmcls", "dogvs", "dtaxis", "dbuses", "dogvs2", "dminib",
                            "Photos_01", "Photos_02", "Photos_03"]
         """
-        self.updateList = ["Done", "SurveyDate", "VRM_1",
-                           "VRM_2", "VRM_3", "VRM_4", "VRM_5", "VRM_6", "VRM_7", "VRM_8",
-                           "VRM_9", "VRM_10", "VRM_11", "VRM_12", "VRM_13", "VRM_14", "VRM_15",
+
+        self.updateList = ["Done", "SurveyDate", "VRM_01",
+                           "VRM_02", "VRM_03", "VRM_04", "VRM_05", "VRM_06", "VRM_07", "VRM_08",
+                           "VRM_09", "VRM_10", "VRM_11", "VRM_12", "VRM_13", "VRM_14", "VRM_15",
                            "VRM_16", "VRM_17", "VRM_18", "VRM_19", "VRM_20", "VRM_21", "VRM_22",
                            "VRM_23", "VRM_24", "VRM_25", "VRM_26", "VRM_27", "VRM_28", "VRM_29",
                            "VRM_30", "VRM_31", "VRM_32", "VRM_33", "VRM_34", "VRM_35", "VRM_36",
                            "VRM_37", "VRM_38", "VRM_39", "VRM_40", "VRM_41", "VRM_42", "VRM_43",
                            "VRM_44", "VRM_45", "VRM_46", "VRM_47", "VRM_48", "VRM_49", "VRM_50",
-                           "VehType_1", "VehType_2", "VehType_3", "VehType_4", "VehType_5",
-                           "VehType_6", "VehType_7", "VehType_8", "VehType_9", "VehType_10",
-                           "VehType_11", "VehType_12", "VehType_13", "VehType_14", "VehType_15",
-                           "VehType_16", "VehType_17", "VehType_18", "VehType_19", "VehType_20",
-                           "VehType_21", "VehType_22", "VehType_23", "VehType_24", "VehType_25",
-                           "VehType_26", "VehType_27", "VehType_28", "VehType_29", "VehType_30",
-                           "VehType_31", "VehType_32", "VehType_33", "VehType_34", "VehType_35",
-                           "VehType_36", "VehType_37", "VehType_38", "VehType_39", "VehType_40",
-                           "VehType_41", "VehType_42", "VehType_43", "VehType_44", "VehType_45",
-                           "VehType_46", "VehType_47", "VehType_48", "VehType_49", "VehType_50",
-                           "Notes_1", "Notes_2", "Notes_3", "Notes_4", "Notes_5", "Notes_6",
-                           "Notes_7", "Notes_8", "Notes_9", "Notes_10", "Notes_11", "Notes_12",
+                           "VehicleTypeID_01", "VehicleTypeID_02", "VehicleTypeID_03", "VehicleTypeID_04", "VehicleTypeID_05",
+                           "VehicleTypeID_06", "VehicleTypeID_07", "VehicleTypeID_08", "VehicleTypeID_09", "VehicleTypeID_10",
+                           "VehicleTypeID_11", "VehicleTypeID_12", "VehicleTypeID_13", "VehicleTypeID_14", "VehicleTypeID_15",
+                           "VehicleTypeID_16", "VehicleTypeID_17", "VehicleTypeID_18", "VehicleTypeID_19", "VehicleTypeID_20",
+                           "VehicleTypeID_21", "VehicleTypeID_22", "VehicleTypeID_23", "VehicleTypeID_24", "VehicleTypeID_25",
+                           "VehicleTypeID_26", "VehicleTypeID_27", "VehicleTypeID_28", "VehicleTypeID_29", "VehicleTypeID_30",
+                           "VehicleTypeID_31", "VehicleTypeID_32", "VehicleTypeID_33", "VehicleTypeID_34", "VehicleTypeID_35",
+                           "VehicleTypeID_36", "VehicleTypeID_37", "VehicleTypeID_38", "VehicleTypeID_39", "VehicleTypeID_40",
+                           "VehicleTypeID_41", "VehicleTypeID_42", "VehicleTypeID_43", "VehicleTypeID_44", "VehicleTypeID_45",
+                           "VehicleTypeID_46", "VehicleTypeID_47", "VehicleTypeID_48", "VehicleTypeID_49", "VehicleTypeID_50",
+
+                           "Notes_01", "Notes_02", "Notes_03", "Notes_04", "Notes_05", "Notes_06",
+                           "Notes_07", "Notes_08", "Notes_09", "Notes_10", "Notes_11", "Notes_12",
                            "Notes_13", "Notes_14", "Notes_15", "Notes_16", "Notes_17", "Notes_18",
                            "Notes_19", "Notes_20", "Notes_21", "Notes_22", "Notes_23", "Notes_24",
                            "Notes_25", "Notes_26", "Notes_27", "Notes_28", "Notes_29", "Notes_30",
@@ -265,38 +268,36 @@ class loadOcc:
                            "Notes_43", "Notes_44", "Notes_45", "Notes_46", "Notes_47", "Notes_48",
                            "Notes_49", "Notes_50",
 
-                           "PerType_1", "PerType_2", "PerType_3",
-                           "PerType_4", "PerType_5", "PerType_6", "PerType_7", "PerType_8",
-                           "PerType_9", "PerType_10", "PerType_11", "PerType_12", "PerType_13",
-                           "PerType_14", "PerType_15", "PerType_16", "PerType_17", "PerType_18",
-                           "PerType_19", "PerType_20", "PerType_21", "PerType_22", "PerType_23",
-                           "PerType_24", "PerType_25", "PerType_26", "PerType_27", "PerType_28",
-                           "PerType_29", "PerType_30", "PerType_31", "PerType_32", "PerType_33",
-                           "PerType_34", "PerType_35", "PerType_36", "PerType_37", "PerType_38",
-                           "PerType_39", "PerType_40", "PerType_41", "PerType_42", "PerType_43",
-                           "PerType_44", "PerType_45", "PerType_46", "PerType_47", "PerType_48",
-                           "PerType_49", "PerType_50",
-        """
-        """
-                           #"PermType_1", "PermType_2", "PermType_3",
-                           #"PermType_4", "PermType_5", "PermType_6", "PermType_7", "PermType_8",
-                           #"PermType_9", "PermType10", "PermType11", "PermType12", "PermType13",
-                           #"PermType14", "PermType15", "PermType16", "PermType17", "PermType18",
-                           #"PermType19", "PermType20", "PermType21", "PermType22", "PermType23",
-                           #"PermType24", "PermType25", "PermType26", "PermType27", "PermType28",
-                           #"PermType29", "PermType30", "PermType31", "PermType32", "PermType33",
-                           #"PermType34", "PermType35", "PermType36", "PermType37", "PermType38",
-                           #"PermType39", "PermType40", "PermType41", "PermType42", "PermType43",
-                           #"PermType44", "PermType45", "PermType46", "PermType47", "PermType48",
-                           #"PermType49", "PermType50",
-                            """
-        """
-                           "SusRef1", "SusReas1", "SusLen1", "SusAdd1",
-                           "SusRef2", "SusReas2", "SusLen2", "SusAdd2",
-                           "Notes_Gen", "Photos_01", "Photos_02", "Photos_03"
+                           "PermitType_01", "PermitType_02", "PermitType_03",
+                           "PermitType_04", "PermitType_05", "PermitType_06", "PermitType_07", "PermitType_08",
+                           "PermitType_09", "PermitType_10", "PermitType_11", "PermitType_12", "PermitType_13",
+                           "PermitType_14", "PermitType_15", "PermitType_16", "PermitType_17", "PermitType_18",
+                           "PermitType_19", "PermitType_20", "PermitType_21", "PermitType_22", "PermitType_23",
+                           "PermitType_24", "PermitType_25", "PermitType_26", "PermitType_27", "PermitType_28",
+                           "PermitType_29", "PermitType_30", "PermitType_31", "PermitType_32", "PermitType_33",
+                           "PermitType_34", "PermitType_35", "PermitType_36", "PermitType_37", "PermitType_38",
+                           "PermitType_39", "PermitType_40", "PermitType_41", "PermitType_42", "PermitType_43",
+                           "PermitType_44", "PermitType_45", "PermitType_46", "PermitType_47", "PermitType_48",
+                           "PermitType_49", "PermitType_50",
+                           
+                           "RestrictionTypeID_01", "RestrictionTypeID_02", "RestrictionTypeID_03",
+                           "RestrictionTypeID_04", "RestrictionTypeID_05", "RestrictionTypeID_06", "RestrictionTypeID_07", "RestrictionTypeID_08",
+                           "RestrictionTypeID_09", "RestrictionTypeID_10", "RestrictionTypeID_11", "RestrictionTypeID_12", "RestrictionTypeID_13",
+                           "RestrictionTypeID_14", "RestrictionTypeID_15", "RestrictionTypeID_16", "RestrictionTypeID_17", "RestrictionTypeID_18",
+                           "RestrictionTypeID_19", "RestrictionTypeID_20", "RestrictionTypeID_21", "RestrictionTypeID_22", "RestrictionTypeID_23",
+                           "RestrictionTypeID_24", "RestrictionTypeID_25", "RestrictionTypeID_26", "RestrictionTypeID_27", "RestrictionTypeID_28",
+                           "RestrictionTypeID_29", "RestrictionTypeID_30", "RestrictionTypeID_31", "RestrictionTypeID_32", "RestrictionTypeID_33",
+                           "RestrictionTypeID_34", "RestrictionTypeID_35", "RestrictionTypeID_36", "RestrictionTypeID_37", "RestrictionTypeID_38",
+                           "RestrictionTypeID_39", "RestrictionTypeID_40", "RestrictionTypeID_41", "RestrictionTypeID_42", "RestrictionTypeID_43",
+                           "RestrictionTypeID_44", "RestrictionTypeID_45", "RestrictionTypeID_46", "RestrictionTypeID_47", "RestrictionTypeID_48",
+                           "RestrictionTypeID_49", "RestrictionTypeID_50",
+
+                           "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended",
+                           "SuspensionNotes",
+                           "Photos_01", "Photos_02", "Photos_03"
 
                            ]
-        """
+
         surveyIDField = 'SurveyID'
         # See if OK was pressed
         if result:
@@ -339,6 +340,7 @@ class loadOcc:
 
                     # Select the rows (GeometryIDs) where Done = “true”
                     query = "\"Done\" = 'true'"
+                    query = "\"Done\""
                     expr = QgsExpression(query)
                     #selection = layer.getFeatures(QgsFeatureRequest(expr))
 
@@ -383,8 +385,7 @@ class loadOcc:
                                 tag="TOMs panel")
                             return False
 
-                        QgsMessageLog.logMessage(
-                            "In isCurrOcclayer. layer: " + str(layer.name() + " has surveyID " + str(firstRow.attribute("SurveyID")) + " and time " + firstRow.attribute("SurveyTime")),
+                        QgsMessageLog.logMessage("In isCurrOcclayer. layer: {}  has surveyID {}".format(layer.name(), str(firstRow.attribute("SurveyID"))),
                             tag="TOMs panel")
 
                         if currSurveyID == firstRow.attribute(surveyIDField):
@@ -400,12 +401,12 @@ class loadOcc:
 
         status = True
         currAttribs = feature.attributes()
-        currGeometryID = feature.attribute("GeometryID")
+        currGeometryID = feature.attribute("gid")
 
-        """QgsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
-                                 tag="TOMs panel")"""
+        QgsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
+                                 tag="TOMs panel")
         # Now find the row for this GeometryID in masterLayer
-        query = ('"GeometryID" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(currGeometryID)
+        query = ('"gid" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(currGeometryID)
         expr = QgsExpression(query)
         selection = self.masterLayer.getFeatures(QgsFeatureRequest(expr))
 
