@@ -77,7 +77,7 @@ from qgis.gui import (QgsMapCanvas)
 from .resources import *
 # Import the code for the dialog
 from loadOcc.load_Occ_dialog import loadOccDialog
-from TomsExport.checkableMapLayerList import checkableMapLayerListCtrl, checkableMapLayerList
+from TOMsExport.checkableMapLayerList import checkableMapLayerListCtrl, checkableMapLayerList
 
 import os.path
 #from qgis.gui import *
@@ -377,7 +377,7 @@ class loadOcc:
                         layerFeatureCount = 0
                         for feature in layer.getFeatures(QgsFeatureRequest(expr)):
 
-                            status = self.copyAttributes(feature)
+                            status = self.copyAttributes(feature, layer)
                             if status:
                                 layerFeatureCount = layerFeatureCount + 1
 
@@ -420,18 +420,27 @@ class loadOcc:
 
         return False
 
-    def copyAttributes(self, feature):
+    def copyAttributes(self, feature, layer):
 
         # copies relevant details into the master Layer
 
         status = True
         currAttribs = feature.attributes()
-        currGeometryID = feature.attribute("gid")
+
+        # get primary key ... and use in query
+        """
+        pk_attrs_idxs = layer.primaryKeyAttributes()
+        assert len(pk_attrs_idxs) == 1, 'We do not support composite primary keys: {}'.format(pk_attrs_idxs)
+        pk_attr_idx = pk_attrs_idxs[0]
+        pk_attr = layer.fields().names()[pk_attr_idx]
+        """
+        pk_attr = "GeometryID"
+        currGeometryID = feature.attribute(pk_attr)
 
         TOMsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
                                  level=Qgis.Info)
         # Now find the row for this GeometryID in masterLayer
-        query = ('"gid" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(currGeometryID)
+        query = ('"{}" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(pk_attr, currGeometryID)
         expr = QgsExpression(query)
         selection = self.masterLayer.getFeatures(QgsFeatureRequest(expr))
 
