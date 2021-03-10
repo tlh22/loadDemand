@@ -251,7 +251,7 @@ class loadOcc:
         result = self.dlg.exec_()
         layers = QgsProject.instance().mapLayers().values()
 
-        """
+
         self.updateList = ["Done", "DemandSurveyDateTime",
                            "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nminib", "nbuses", "nbikes", "nspaces", "nnotes",
                            "sref", "sbays", "sreason", "scars", "slgvs", "smcls", "sogvs", "staxis", "sbuses", "sogvs2", "sminib", "snotes",
@@ -317,7 +317,7 @@ class loadOcc:
                            "Photos_01", "Photos_02", "Photos_03"
 
                            ]
-
+        """
         surveyIDField = 'SurveyID'
         # See if OK was pressed
         if result:
