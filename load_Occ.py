@@ -20,18 +20,68 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+#from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 #from PyQt4.QtGui import QAction, QIcon
 
-from PyQt4.QtGui import *
+#from PyQt4.QtGui import *
+
+from qgis.PyQt.QtGui import (QIcon, QStandardItemModel, QStandardItem
+                             )
+from qgis.PyQt.QtWidgets import (
+    QAction,
+    QWidget,
+    QMessageBox,
+    QDialog,
+    QVBoxLayout, QCheckBox, QListView, QAbstractItemView, QFormLayout, QDialogButtonBox, QLabel, QGroupBox
+)
+
+from qgis.PyQt.QtCore import (
+    QObject,
+    QTimer,
+    pyqtSignal,
+    QSettings, QTranslator, qVersion, QCoreApplication, Qt, QModelIndex
+)
+
+from qgis.PyQt.QtWidgets import (
+    QMessageBox,
+    QAction,
+    QDialogButtonBox,
+    QLabel,
+    QDockWidget
+)
+
+from qgis.PyQt.QtGui import (
+    QIcon,
+    QPixmap
+)
+
+from qgis.PyQt.QtCore import (
+    QObject, QTimer, pyqtSignal,
+    QTranslator,
+    QSettings,
+    QCoreApplication,
+    qVersion
+)
+
+from TOMs.core.TOMsMessageLog import TOMsMessageLog
+from qgis.core import (
+    Qgis,
+    QgsMessageLog,
+    QgsProject,
+    QgsApplication, QgsExpression, QgsFeatureRequest, QgsMapLayer
+)
+
+from qgis.gui import (QgsMapCanvas)
 
 # Initialize Qt resources from file resources.py
-import resources
+from .resources import *
 # Import the code for the dialog
-from load_Occ_dialog import loadOccDialog
+from loadOcc.load_Occ_dialog import loadOccDialog
+from TOMsExport.checkableMapLayerList import checkableMapLayerListCtrl, checkableMapLayerList
+
 import os.path
-from qgis.gui import *
-from qgis.core import *
+#from qgis.gui import *
+#from qgis.core import *
 
 # See following for using QgsMapLayerComboBox - https://stackoverflow.com/questions/44079328/python-load-module-in-parent-to-prevent-overwrite-problems
 
@@ -71,6 +121,9 @@ class loadOcc:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'loadOcc')
         self.toolbar.setObjectName(u'loadOcc')
+
+        #self.canvas = QgsMapCanvas()
+        #self.root = QgsProject.instance().layerTreeRoot()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -191,12 +244,80 @@ class loadOcc:
     def run(self):
         """Run method that performs all the real work"""
         # show the dialog
+
+        self.setupUi()
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
-        layers = QgsMapLayerRegistry.instance().mapLayers().values()
+        layers = QgsProject.instance().mapLayers().values()
 
-        self.updateList = ["Done", "SurveyDate", "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nbuses", "nbikes", "nspaces", "nnotes", "sref1", "sbays1", "sreason1", "sstart1", "send1", "stimes1", "scars1", "slgvs1", "smcls1", "sogvs1", "staxis1", "sbuses1", "snotes1", "sref2", "sbays2", "sreason2", "sreason2", "sstart2", "send2", "stimes2", "scars2", "slgvs2", "smcls2", "sogvs2", "staxis2", "sbuses2", "snotes2", "dcars", "dlgvs", "dmcls", "dogvs", "dtaxis", "dbuses", "usyl_c", "usyl_r", "usyl_n"]
+        """
+        self.updateList = ["Done", "DemandSurveyDateTime",
+                           "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nminib", "nbuses", "nbikes", "nspaces", "nnotes",
+                           "sref", "sbays", "sreason", "scars", "slgvs", "smcls", "sogvs", "staxis", "sbuses", "sogvs2", "sminib", "snotes",
+                           "dcars", "dlgvs", "dmcls", "dogvs", "dtaxis", "dbuses", "dogvs2", "dminib",
+                           "Photos_01", "Photos_02", "Photos_03"]
+        """
+
+        self.updateList = ["Done", "DemandSurveyDateTime", "VRM_01",
+                           "VRM_02", "VRM_03", "VRM_04", "VRM_05", "VRM_06", "VRM_07", "VRM_08",
+                           "VRM_09", "VRM_10", "VRM_11", "VRM_12", "VRM_13", "VRM_14", "VRM_15",
+                           "VRM_16", "VRM_17", "VRM_18", "VRM_19", "VRM_20", "VRM_21", "VRM_22",
+                           "VRM_23", "VRM_24", "VRM_25", "VRM_26", "VRM_27", "VRM_28", "VRM_29",
+                           "VRM_30", "VRM_31", "VRM_32", "VRM_33", "VRM_34", "VRM_35", "VRM_36",
+                           "VRM_37", "VRM_38", "VRM_39", "VRM_40", "VRM_41", "VRM_42", "VRM_43",
+                           "VRM_44", "VRM_45", "VRM_46", "VRM_47", "VRM_48", "VRM_49", "VRM_50",
+                           "VehicleTypeID_01", "VehicleTypeID_02", "VehicleTypeID_03", "VehicleTypeID_04", "VehicleTypeID_05",
+                           "VehicleTypeID_06", "VehicleTypeID_07", "VehicleTypeID_08", "VehicleTypeID_09", "VehicleTypeID_10",
+                           "VehicleTypeID_11", "VehicleTypeID_12", "VehicleTypeID_13", "VehicleTypeID_14", "VehicleTypeID_15",
+                           "VehicleTypeID_16", "VehicleTypeID_17", "VehicleTypeID_18", "VehicleTypeID_19", "VehicleTypeID_20",
+                           "VehicleTypeID_21", "VehicleTypeID_22", "VehicleTypeID_23", "VehicleTypeID_24", "VehicleTypeID_25",
+                           "VehicleTypeID_26", "VehicleTypeID_27", "VehicleTypeID_28", "VehicleTypeID_29", "VehicleTypeID_30",
+                           "VehicleTypeID_31", "VehicleTypeID_32", "VehicleTypeID_33", "VehicleTypeID_34", "VehicleTypeID_35",
+                           "VehicleTypeID_36", "VehicleTypeID_37", "VehicleTypeID_38", "VehicleTypeID_39", "VehicleTypeID_40",
+                           "VehicleTypeID_41", "VehicleTypeID_42", "VehicleTypeID_43", "VehicleTypeID_44", "VehicleTypeID_45",
+                           "VehicleTypeID_46", "VehicleTypeID_47", "VehicleTypeID_48", "VehicleTypeID_49", "VehicleTypeID_50",
+
+                           "Notes_01", "Notes_02", "Notes_03", "Notes_04", "Notes_05", "Notes_06",
+                           "Notes_07", "Notes_08", "Notes_09", "Notes_10", "Notes_11", "Notes_12",
+                           "Notes_13", "Notes_14", "Notes_15", "Notes_16", "Notes_17", "Notes_18",
+                           "Notes_19", "Notes_20", "Notes_21", "Notes_22", "Notes_23", "Notes_24",
+                           "Notes_25", "Notes_26", "Notes_27", "Notes_28", "Notes_29", "Notes_30",
+                           "Notes_31", "Notes_32", "Notes_33", "Notes_34", "Notes_35", "Notes_36",
+                           "Notes_37", "Notes_38", "Notes_39", "Notes_40", "Notes_41", "Notes_42",
+                           "Notes_43", "Notes_44", "Notes_45", "Notes_46", "Notes_47", "Notes_48",
+                           "Notes_49", "Notes_50",
+
+                           "PermitType_01", "PermitType_02", "PermitType_03",
+                           "PermitType_04", "PermitType_05", "PermitType_06", "PermitType_07", "PermitType_08",
+                           "PermitType_09", "PermitType_10", "PermitType_11", "PermitType_12", "PermitType_13",
+                           "PermitType_14", "PermitType_15", "PermitType_16", "PermitType_17", "PermitType_18",
+                           "PermitType_19", "PermitType_20", "PermitType_21", "PermitType_22", "PermitType_23",
+                           "PermitType_24", "PermitType_25", "PermitType_26", "PermitType_27", "PermitType_28",
+                           "PermitType_29", "PermitType_30", "PermitType_31", "PermitType_32", "PermitType_33",
+                           "PermitType_34", "PermitType_35", "PermitType_36", "PermitType_37", "PermitType_38",
+                           "PermitType_39", "PermitType_40", "PermitType_41", "PermitType_42", "PermitType_43",
+                           "PermitType_44", "PermitType_45", "PermitType_46", "PermitType_47", "PermitType_48",
+                           "PermitType_49", "PermitType_50",
+                           
+                           "RestrictionTypeID_01", "RestrictionTypeID_02", "RestrictionTypeID_03",
+                           "RestrictionTypeID_04", "RestrictionTypeID_05", "RestrictionTypeID_06", "RestrictionTypeID_07", "RestrictionTypeID_08",
+                           "RestrictionTypeID_09", "RestrictionTypeID_10", "RestrictionTypeID_11", "RestrictionTypeID_12", "RestrictionTypeID_13",
+                           "RestrictionTypeID_14", "RestrictionTypeID_15", "RestrictionTypeID_16", "RestrictionTypeID_17", "RestrictionTypeID_18",
+                           "RestrictionTypeID_19", "RestrictionTypeID_20", "RestrictionTypeID_21", "RestrictionTypeID_22", "RestrictionTypeID_23",
+                           "RestrictionTypeID_24", "RestrictionTypeID_25", "RestrictionTypeID_26", "RestrictionTypeID_27", "RestrictionTypeID_28",
+                           "RestrictionTypeID_29", "RestrictionTypeID_30", "RestrictionTypeID_31", "RestrictionTypeID_32", "RestrictionTypeID_33",
+                           "RestrictionTypeID_34", "RestrictionTypeID_35", "RestrictionTypeID_36", "RestrictionTypeID_37", "RestrictionTypeID_38",
+                           "RestrictionTypeID_39", "RestrictionTypeID_40", "RestrictionTypeID_41", "RestrictionTypeID_42", "RestrictionTypeID_43",
+                           "RestrictionTypeID_44", "RestrictionTypeID_45", "RestrictionTypeID_46", "RestrictionTypeID_47", "RestrictionTypeID_48",
+                           "RestrictionTypeID_49", "RestrictionTypeID_50",
+
+                           "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended",
+                           "SuspensionNotes",
+                           "Photos_01", "Photos_02", "Photos_03"
+
+                           ]
+
         surveyIDField = 'SurveyID'
         # See if OK was pressed
         if result:
@@ -204,59 +325,70 @@ class loadOcc:
             # substitute with your code.
             # pass
 
-            self.masterLayer = self.dlg.cb_layerMaster.currentLayer()
+            layerItemsList = self.layerList.getSelectedLayers()
+            for currLayerItem in layerItemsList:
+                TOMsMessageLog.logMessage("Processing {} ...".format(currLayerItem.text()), level=Qgis.Info)
 
-            QMessageBox.information(self.iface.mainWindow(),"hello world","%s has %d features." %(self.masterLayer.name(),self.masterLayer.featureCount()))
+                self.masterLayer = QgsProject.instance().mapLayersByName(currLayerItem.text())[0]
+                #self.masterLayer = self.dlg.cb_layerMaster.currentLayer()
 
-            self.masterLayer.startEditing()
+                #QMessageBox.information(self.iface.mainWindow(),"hello world","%s has %d features." %(self.masterLayer.name(),self.masterLayer.featureCount()))
 
-            QgsMessageLog.logMessage("In loadOcc. masterLayer: " + str(self.masterLayer.name()),
-                                     tag="TOMs panel")
+                self.masterLayer.startEditing()
 
-            #VRMfeatures = []
-            masterFields = self.masterLayer.fields()
+                TOMsMessageLog.logMessage("In loadOcc. masterLayer: " + str(self.masterLayer.name()),
+                                         level=Qgis.Warning)
 
-            self.idxSurveyTime = self.masterLayer.fieldNameIndex("SurveyTime")
-            self.idxSurveyID = self.masterLayer.fieldNameIndex(surveyIDField)
+                #VRMfeatures = []
+                masterFields = self.masterLayer.fields()
 
-            try:
-                firstMaster = next(row for row in self.masterLayer.getFeatures())
-            except StopIteration:
-                QMessageBox.information(self.iface.mainWindow(), "Checking time periods",  "No rows in " + self.masterLayer.name())
-                return
+                #self.idxSurveyTime = self.masterLayer.fields().indexFromName("SurveyTime")
+                self.idxSurveyID = self.masterLayer.fields().indexFromName(surveyIDField)
 
-            currSurveyID = firstMaster[self.idxSurveyID]
-            currSurveyTime = firstMaster[self.idxSurveyTime]
+                try:
+                    firstMaster = next(row for row in self.masterLayer.getFeatures())
+                except StopIteration:
+                    QMessageBox.information(self.iface.mainWindow(), "Checking time periods",  "No rows in " + self.masterLayer.name())
+                    return
 
-            QgsMessageLog.logMessage("In loadOcc. currSurveyTime: " + str(currSurveyTime),
-                                     tag="TOMs panel")
+                currSurveyID = firstMaster[self.idxSurveyID]
+                #currSurveyTime = firstMaster[self.idxSurveyTime]
 
-            # For each layer in the project file
+                TOMsMessageLog.logMessage("In loadOcc. currSurveyID: " + str(currSurveyID),
+                                         level=Qgis.Warning)
 
-            for layer in layers:
+                # For each layer in the project file
 
-                if self.isCurrOcclayer(layer, currSurveyID, surveyIDField):
+                for layer in layers:
 
-                    # Select the rows (GeometryIDs) where Done = “true”
-                    query = '"Done" = 1'
-                    selection = layer.getFeatures(QgsFeatureRequest().setFilterExpression(query))
+                    if self.isCurrOcclayer(layer, currSurveyID, surveyIDField):
 
-                    layer.setSelectedFeatures([k.id() for k in selection])
+                        # Select the rows (GeometryIDs) where Done = “true”
+                        query = "\"Done\" = 'true'"
+                        query = "\"Done\""
+                        expr = QgsExpression(query)
+                        #selection = layer.getFeatures(QgsFeatureRequest(expr))
 
-                    QgsMessageLog.logMessage(
-                        "In loadOcc. count within " + layer.name() + ": " + str(layer.selectedFeatureCount()),
-                        tag="TOMs panel")
-                    #QMessageBox.information(self.iface.mainWindow(), "In loadOcc",  "count within %s: %d" %(layer.name(), layer.selectedFeatureCount()))
+                        #layer.setSelectedFeatures([k.id() for k in selection])
+                        #QMessageBox.information(self.iface.mainWindow(), "In loadOcc",  "count within %s: %d" %(layer.name(), layer.selectedFeatureCount()))
 
-                    # Now copy the required rows/attributes into the MasterLayer
+                        # Now copy the required rows/attributes into the MasterLayer
 
-                    for feature in layer.selectedFeatures():
+                        layerFeatureCount = 0
+                        for feature in layer.getFeatures(QgsFeatureRequest(expr)):
 
-                        self.copyAttributes(feature)
+                            status = self.copyAttributes(feature, layer)
+                            if status:
+                                layerFeatureCount = layerFeatureCount + 1
 
-            QgsMessageLog.logMessage("In loadOcc. Now committing ... ",
-                                     tag="TOMs panel")
-            self.masterLayer.commitChanges()
+                        parent = QgsProject.instance().layerTreeRoot().findLayer(layer.id()).parent().name()
+                        TOMsMessageLog.logMessage(
+                            "In loadOcc. count of records added within " + parent + ":" + layer.name() + ": " + str(layerFeatureCount),
+                            level=Qgis.Warning)
+
+                TOMsMessageLog.logMessage("In loadOcc. Now committing ... ",
+                                         level=Qgis.Info)
+                self.masterLayer.commitChanges()
 
     def isCurrOcclayer(self, layer, currSurveyID, surveyIDField):
 
@@ -265,44 +397,52 @@ class loadOcc:
         if layer != self.masterLayer:
 
             if layer.type() == QgsMapLayer.VectorLayer:
-                QgsMessageLog.logMessage("In isCurrOcclayer. considering layer: " + str(layer.name()),
-                                         tag="TOMs panel")
+                TOMsMessageLog.logMessage("In isCurrOcclayer. considering layer: " + str(layer.name()),
+                                         level=Qgis.Warning)
 
                 for field in layer.fields():
                     if field.name() == "SurveyID":
                         try:
                             firstRow = next(row for row in layer.getFeatures())
                         except StopIteration:
-                            QgsMessageLog.logMessage(
+                            TOMsMessageLog.logMessage(
                                 "In isCurrOcclayer. Error checking survey time: " + str(layer.name()),
-                                tag="TOMs panel")
+                                level=Qgis.Warning)
                             return False
 
-                        QgsMessageLog.logMessage(
-                            "In isCurrOcclayer. layer: " + str(layer.name() + " has surveyID " + str(firstRow.attribute("SurveyID")) + " and time " + firstRow.attribute("SurveyTime")),
-                            tag="TOMs panel")
+                        TOMsMessageLog.logMessage("In isCurrOcclayer. layer: {}  has surveyID {}".format(layer.name(), str(firstRow.attribute("SurveyID"))),
+                            level=Qgis.Warning)
 
                         if currSurveyID == firstRow.attribute(surveyIDField):
-                            QgsMessageLog.logMessage("In isCurrOcclayer. layer: " + str(layer.name() + " is for processing ..."),
-                                                     tag="TOMs panel")
+                            TOMsMessageLog.logMessage("In isCurrOcclayer. layer: " + str(layer.name() + " is for processing ..."),
+                                                     level=Qgis.Warning)
                             return True
 
         return False
 
-    def copyAttributes(self, feature):
+    def copyAttributes(self, feature, layer):
 
         # copies relevant details into the master Layer
 
         status = True
         currAttribs = feature.attributes()
-        currGeometryID = feature.attribute("GeometryID")
 
-        QgsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
-                                 tag="TOMs panel")
+        # get primary key ... and use in query
+        """
+        pk_attrs_idxs = layer.primaryKeyAttributes()
+        assert len(pk_attrs_idxs) == 1, 'We do not support composite primary keys: {}'.format(pk_attrs_idxs)
+        pk_attr_idx = pk_attrs_idxs[0]
+        pk_attr = layer.fields().names()[pk_attr_idx]
+        """
+        pk_attr = "GeometryID"
+        currGeometryID = feature.attribute(pk_attr)
+
+        TOMsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
+                                 level=Qgis.Info)
         # Now find the row for this GeometryID in masterLayer
-        query = '"GeometryID" = \'' + str(currGeometryID) + '\' AND ("Done" = 0 OR "Done" IS NULL)'
-
-        selection = self.masterLayer.getFeatures(QgsFeatureRequest().setFilterExpression(query))
+        query = ('"{}" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(pk_attr, currGeometryID)
+        expr = QgsExpression(query)
+        selection = self.masterLayer.getFeatures(QgsFeatureRequest(expr))
 
         #masterIterator = (row for row in selection)
         try:
@@ -310,10 +450,8 @@ class loadOcc:
             rowFound = True
         except StopIteration:
 
-            QgsMessageLog.logMessage("In copyAttributes. Error retrieving GeometryID: " + str(currGeometryID),
-                                     tag="TOMs panel")
-            """QMessageBox.information(self.iface.mainWindow(), "In copyAttributes",
-                                    "Error retrieving: " + currGeometryID)"""
+            """TOMsMessageLog.logMessage("In copyAttributes. Error retrieving GeometryID: " + str(currGeometryID),
+                                     level=Qgis.Info)"""
             rowFound = False
             status = False
 
@@ -329,20 +467,63 @@ class loadOcc:
                 except IndexError:
                     #updStatus = self.masterLayer.changeAttributeValue(masterRow.id(), masterRow.fieldNameIndex(field), feature.attribute(idxCurrFieldValue))
 
-                    QgsMessageLog.logMessage("In copyAttributes: Index error occurred updating field " + field + " in " + str(currGeometryID), tag="TOMs panel")
+                    TOMsMessageLog.logMessage("In copyAttributes: Index error occurred updating field " + field + " in " + str(currGeometryID), level=Qgis.Warning)
                 except KeyError:
                     #updStatus = self.masterLayer.changeAttributeValue(masterRow.id(), masterRow.fieldNameIndex(field), feature.attribute(idxCurrFieldValue))
 
-                    QgsMessageLog.logMessage("In copyAttributes. Key error occurred updating field " + field + " in " + str(currGeometryID), tag="TOMs panel")
+                    TOMsMessageLog.logMessage("In copyAttributes. Key error occurred updating field " + field + " in " + str(currGeometryID), level=Qgis.Warning)
 
             status = self.masterLayer.updateFeature(masterRow)
 
             if status == False:
                 QMessageBox.information(self.iface.mainWindow(), "In copyAttributes",  "Error occurred updating record " + currGeometryID)
 
+        else:
+            TOMsMessageLog.logMessage("In copyAttributes: duplicate details for " + str(currGeometryID), level=Qgis.Warning)
+            return False
         #selection.close()
 
         return status
 
+    def setupUi(self):
+
+        self.dlg = QDialog()
+        self.dlg.setWindowTitle("Import occupancy data")
+        self.dlg.setWindowModality(Qt.ApplicationModal)
+
+        self.generalLayout = QVBoxLayout()
+
+        layerGroup = QGroupBox("Choose layers to import")
+        # test = QLabel()
+        # test.setText("Choose layers to export and confirm location of output")
+        # self.generalLayout.addWidget(test)
+
+        # add map layer list
+        self.layerList = checkableMapLayerList()
+        vbox1 = QVBoxLayout()
+        vbox1.addWidget(self.layerList)
+        layerGroup.setLayout(vbox1)
+        self.generalLayout.addWidget(layerGroup)
+
+        # add file chooser
+        #outputGroup = QGroupBox("Choose output file")
+        #self.fileNameWidget = QgsFileWidget()
+        #self.fileNameWidget.setStorageMode(QgsFileWidget.SaveFile)
+        #self.fileNameWidget.setFilter("Geopackage (*.gpkg);;JPEG (*.jpg *.jpeg);;TIFF (*.tif)")
+        #self.fileNameWidget.setSelectedFilter("Geopackage (*.gpkg)")
+        #vbox2 = QVBoxLayout()
+        #vbox2.addWidget(self.fileNameWidget)
+        #outputGroup.setLayout(vbox2)
+        #self.generalLayout.addWidget(outputGroup)
+
+        # add buttons
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok
+                                          | QDialogButtonBox.Cancel)
+        self.buttonBox.accepted.connect(self.dlg.accept)
+        self.buttonBox.rejected.connect(self.dlg.reject)
+        self.generalLayout.addWidget(self.buttonBox)
+
+        self.dlg.setLayout(self.generalLayout)
+        checkableMapLayerListCtrl(self.layerList)
 
 

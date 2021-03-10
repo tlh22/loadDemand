@@ -23,13 +23,15 @@
 
 import os
 
-from PyQt4 import QtGui, uic
+import os
+
+from PyQt5 import QtGui, uic, QtWidgets
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'load_Occ_dialog_base.ui'))
 
 
-class loadOccDialog(QtGui.QDialog, FORM_CLASS):
+class loadOccDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(loadOccDialog, self).__init__(parent)
