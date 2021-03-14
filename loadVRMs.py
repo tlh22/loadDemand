@@ -23,52 +23,38 @@
 #from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 #from PyQt4.QtGui import QAction, QIcon
 
-#from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import (
+    QObject,
+    QTimer,
+    pyqtSignal,
+    QSettings, QTranslator, qVersion, QCoreApplication, Qt, QModelIndex,
+)
 
-from qgis.PyQt.QtGui import (QIcon, QStandardItemModel, QStandardItem
+from qgis.PyQt.QtGui import (
+    QIcon, QStandardItemModel, QStandardItem,
+    QPixmap
                              )
 from qgis.PyQt.QtWidgets import (
     QAction,
     QWidget,
     QMessageBox,
     QDialog,
-    QVBoxLayout, QCheckBox, QListView, QAbstractItemView, QFormLayout, QDialogButtonBox, QLabel, QGroupBox
+    QVBoxLayout, QCheckBox, QListView, QAbstractItemView, QFormLayout, QDialogButtonBox, QLabel, QGroupBox,
+    QDockWidget, QFileDialog
 )
 
-from qgis.PyQt.QtCore import (
-    QObject,
-    QTimer,
-    pyqtSignal,
-    QSettings, QTranslator, qVersion, QCoreApplication, Qt, QModelIndex
-)
-
-from qgis.PyQt.QtWidgets import (
-    QMessageBox,
-    QAction,
-    QDialogButtonBox,
-    QLabel,
-    QDockWidget
-)
-
-from qgis.PyQt.QtGui import (
-    QIcon,
-    QPixmap
-)
-
-from qgis.PyQt.QtCore import (
-    QObject, QTimer, pyqtSignal,
-    QTranslator,
-    QSettings,
-    QCoreApplication,
-    qVersion
+from qgis.PyQt.QtSql import (
+    QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlRelation, QSqlRelationalTableModel, QSqlRelationalDelegate
 )
 
 from TOMs.core.TOMsMessageLog import TOMsMessageLog
+
 from qgis.core import (
     Qgis,
     QgsMessageLog,
     QgsProject,
-    QgsApplication, QgsExpression, QgsFeatureRequest, QgsMapLayer
+    QgsApplication, QgsExpression, QgsFeatureRequest, QgsMapLayer,
+    QgsExpressionContextUtils
 )
 
 from qgis.gui import (QgsMapCanvas)
@@ -79,13 +65,14 @@ from .resources import *
 from loadOcc.load_Occ_dialog import loadOccDialog
 from TOMsExport.checkableMapLayerList import checkableMapLayerListCtrl, checkableMapLayerList
 
+import os
 import os.path
 #from qgis.gui import *
 #from qgis.core import *
 
 # See following for using QgsMapLayerComboBox - https://stackoverflow.com/questions/44079328/python-load-module-in-parent-to-prevent-overwrite-problems
 
-class loadOcc:
+class loadVRMs:
     """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
@@ -117,10 +104,10 @@ class loadOcc:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&loadOccupancyDetails')
+        self.menu = self.tr(u'&loadVRMs')
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'loadOcc')
-        self.toolbar.setObjectName(u'loadOcc')
+        self.toolbar = self.iface.addToolBar(u'loadVRMs')
+        self.toolbar.setObjectName(u'loadVRMs')
 
         #self.canvas = QgsMapCanvas()
         #self.root = QgsProject.instance().layerTreeRoot()
@@ -138,7 +125,7 @@ class loadOcc:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('loadOcc', message)
+        return QCoreApplication.translate('loadVRMs', message)
 
 
     def add_action(
@@ -152,44 +139,6 @@ class loadOcc:
         status_tip=None,
         whats_this=None,
         parent=None):
-        """Add a toolbar icon to the toolbar.
-
-        :param icon_path: Path to the icon for this action. Can be a resource
-            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
-        :type icon_path: str
-
-        :param text: Text that should be shown in menu items for this action.
-        :type text: str
-
-        :param callback: Function to be called when the action is triggered.
-        :type callback: function
-
-        :param enabled_flag: A flag indicating if the action should be enabled
-            by default. Defaults to True.
-        :type enabled_flag: bool
-
-        :param add_to_menu: Flag indicating whether the action should also
-            be added to the menu. Defaults to True.
-        :type add_to_menu: bool
-
-        :param add_to_toolbar: Flag indicating whether the action should also
-            be added to the toolbar. Defaults to True.
-        :type add_to_toolbar: bool
-
-        :param status_tip: Optional text to show in a popup when mouse pointer
-            hovers over the action.
-        :type status_tip: str
-
-        :param parent: Parent widget for the new action. Defaults None.
-        :type parent: QWidget
-
-        :param whats_this: Optional text to show in the status bar when the
-            mouse pointer hovers over the action.
-
-        :returns: The action that was created. Note that the action is also
-            added to self.actions list.
-        :rtype: QAction
-        """
 
         # Create the dialog (after translation) and keep reference
         self.dlg = loadOccDialog()
@@ -223,18 +172,17 @@ class loadOcc:
         icon_path = ':/plugins/loadOcc/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Load occupancy data'),
+            text=self.tr(u'Load VMRs'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
         # Need to set up signals for layerChanged
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&loadOccupancyDetails'),
+                self.tr(u'&loadVRMs'),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
@@ -249,87 +197,105 @@ class loadOcc:
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
-        layers = QgsProject.instance().mapLayers().values()
 
-
-        self.updateList = ["Done", "DemandSurveyDateTime",
-                           "ncars", "nlgvs", "nmcls", "nogvs", "ntaxis", "nminib", "nbuses", "nbikes", "nspaces", "nnotes",
-                           "sref", "sbays", "sreason", "scars", "slgvs", "smcls", "sogvs", "staxis", "sbuses", "sogvs2", "sminib", "snotes",
-                           "dcars", "dlgvs", "dmcls", "dogvs", "dtaxis", "dbuses", "dogvs2", "dminib",
-                           "Photos_01", "Photos_02", "Photos_03"]
-        """
-
-        self.updateList = ["Done", "DemandSurveyDateTime", "VRM_01",
-                           "VRM_02", "VRM_03", "VRM_04", "VRM_05", "VRM_06", "VRM_07", "VRM_08",
-                           "VRM_09", "VRM_10", "VRM_11", "VRM_12", "VRM_13", "VRM_14", "VRM_15",
-                           "VRM_16", "VRM_17", "VRM_18", "VRM_19", "VRM_20", "VRM_21", "VRM_22",
-                           "VRM_23", "VRM_24", "VRM_25", "VRM_26", "VRM_27", "VRM_28", "VRM_29",
-                           "VRM_30", "VRM_31", "VRM_32", "VRM_33", "VRM_34", "VRM_35", "VRM_36",
-                           "VRM_37", "VRM_38", "VRM_39", "VRM_40", "VRM_41", "VRM_42", "VRM_43",
-                           "VRM_44", "VRM_45", "VRM_46", "VRM_47", "VRM_48", "VRM_49", "VRM_50",
-                           "VehicleTypeID_01", "VehicleTypeID_02", "VehicleTypeID_03", "VehicleTypeID_04", "VehicleTypeID_05",
-                           "VehicleTypeID_06", "VehicleTypeID_07", "VehicleTypeID_08", "VehicleTypeID_09", "VehicleTypeID_10",
-                           "VehicleTypeID_11", "VehicleTypeID_12", "VehicleTypeID_13", "VehicleTypeID_14", "VehicleTypeID_15",
-                           "VehicleTypeID_16", "VehicleTypeID_17", "VehicleTypeID_18", "VehicleTypeID_19", "VehicleTypeID_20",
-                           "VehicleTypeID_21", "VehicleTypeID_22", "VehicleTypeID_23", "VehicleTypeID_24", "VehicleTypeID_25",
-                           "VehicleTypeID_26", "VehicleTypeID_27", "VehicleTypeID_28", "VehicleTypeID_29", "VehicleTypeID_30",
-                           "VehicleTypeID_31", "VehicleTypeID_32", "VehicleTypeID_33", "VehicleTypeID_34", "VehicleTypeID_35",
-                           "VehicleTypeID_36", "VehicleTypeID_37", "VehicleTypeID_38", "VehicleTypeID_39", "VehicleTypeID_40",
-                           "VehicleTypeID_41", "VehicleTypeID_42", "VehicleTypeID_43", "VehicleTypeID_44", "VehicleTypeID_45",
-                           "VehicleTypeID_46", "VehicleTypeID_47", "VehicleTypeID_48", "VehicleTypeID_49", "VehicleTypeID_50",
-
-                           "Notes_01", "Notes_02", "Notes_03", "Notes_04", "Notes_05", "Notes_06",
-                           "Notes_07", "Notes_08", "Notes_09", "Notes_10", "Notes_11", "Notes_12",
-                           "Notes_13", "Notes_14", "Notes_15", "Notes_16", "Notes_17", "Notes_18",
-                           "Notes_19", "Notes_20", "Notes_21", "Notes_22", "Notes_23", "Notes_24",
-                           "Notes_25", "Notes_26", "Notes_27", "Notes_28", "Notes_29", "Notes_30",
-                           "Notes_31", "Notes_32", "Notes_33", "Notes_34", "Notes_35", "Notes_36",
-                           "Notes_37", "Notes_38", "Notes_39", "Notes_40", "Notes_41", "Notes_42",
-                           "Notes_43", "Notes_44", "Notes_45", "Notes_46", "Notes_47", "Notes_48",
-                           "Notes_49", "Notes_50",
-
-                           "PermitType_01", "PermitType_02", "PermitType_03",
-                           "PermitType_04", "PermitType_05", "PermitType_06", "PermitType_07", "PermitType_08",
-                           "PermitType_09", "PermitType_10", "PermitType_11", "PermitType_12", "PermitType_13",
-                           "PermitType_14", "PermitType_15", "PermitType_16", "PermitType_17", "PermitType_18",
-                           "PermitType_19", "PermitType_20", "PermitType_21", "PermitType_22", "PermitType_23",
-                           "PermitType_24", "PermitType_25", "PermitType_26", "PermitType_27", "PermitType_28",
-                           "PermitType_29", "PermitType_30", "PermitType_31", "PermitType_32", "PermitType_33",
-                           "PermitType_34", "PermitType_35", "PermitType_36", "PermitType_37", "PermitType_38",
-                           "PermitType_39", "PermitType_40", "PermitType_41", "PermitType_42", "PermitType_43",
-                           "PermitType_44", "PermitType_45", "PermitType_46", "PermitType_47", "PermitType_48",
-                           "PermitType_49", "PermitType_50",
-                           
-                           "RestrictionTypeID_01", "RestrictionTypeID_02", "RestrictionTypeID_03",
-                           "RestrictionTypeID_04", "RestrictionTypeID_05", "RestrictionTypeID_06", "RestrictionTypeID_07", "RestrictionTypeID_08",
-                           "RestrictionTypeID_09", "RestrictionTypeID_10", "RestrictionTypeID_11", "RestrictionTypeID_12", "RestrictionTypeID_13",
-                           "RestrictionTypeID_14", "RestrictionTypeID_15", "RestrictionTypeID_16", "RestrictionTypeID_17", "RestrictionTypeID_18",
-                           "RestrictionTypeID_19", "RestrictionTypeID_20", "RestrictionTypeID_21", "RestrictionTypeID_22", "RestrictionTypeID_23",
-                           "RestrictionTypeID_24", "RestrictionTypeID_25", "RestrictionTypeID_26", "RestrictionTypeID_27", "RestrictionTypeID_28",
-                           "RestrictionTypeID_29", "RestrictionTypeID_30", "RestrictionTypeID_31", "RestrictionTypeID_32", "RestrictionTypeID_33",
-                           "RestrictionTypeID_34", "RestrictionTypeID_35", "RestrictionTypeID_36", "RestrictionTypeID_37", "RestrictionTypeID_38",
-                           "RestrictionTypeID_39", "RestrictionTypeID_40", "RestrictionTypeID_41", "RestrictionTypeID_42", "RestrictionTypeID_43",
-                           "RestrictionTypeID_44", "RestrictionTypeID_45", "RestrictionTypeID_46", "RestrictionTypeID_47", "RestrictionTypeID_48",
-                           "RestrictionTypeID_49", "RestrictionTypeID_50",
-
-                           "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended",
-                           "SuspensionNotes",
-                           "Photos_01", "Photos_02", "Photos_03"
-
-                           ]
-        """
-        surveyIDField = 'SurveyID'
         # See if OK was pressed
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            # pass
 
-            layerItemsList = self.layerList.getSelectedLayers()
-            for currLayerItem in layerItemsList:
-                TOMsMessageLog.logMessage("Processing {} ...".format(currLayerItem.text()), level=Qgis.Info)
+            surveysToProcess = self.itemList.getSelectedItems()
 
-                self.masterLayer = QgsProject.instance().mapLayersByName(currLayerItem.text())[0]
+            # get folder for processing
+            searchFolder = str(QFileDialog.getExistingDirectory(self.iface.mainWindow(), "Select Directory", QgsExpressionContextUtils.projectScope(QgsProject.instance()).variable('project_path')))
+
+            TOMsMessageLog.logMessage("search folder is {} ...".format(searchFolder),
+                                      level=Qgis.Warning)
+
+
+
+            # https://stackoverflow.com/questions/3964681/find-all-files-in-a-directory-with-extension-txt-in-python
+            for root, dirs, files in os.walk(searchFolder):
+                for file in files:
+                    if file.endswith(".gpkg"):
+                        currGpkg = os.path.abspath(os.path.join(root, file))
+                        TOMsMessageLog.logMessage("Processing {} ...".format(currGpkg), level=Qgis.Warning)
+
+                        dbConn = QSqlDatabase.addDatabase("QSQLITE")
+                        dbConn.setDatabaseName(currGpkg)
+                        if not dbConn.open():
+                            QMessageBox.critical(None, "Cannot open database",
+                                                 "Unable to establish a database connection.\n\n"
+                                                 "Click Cancel to exit.", QMessageBox.Cancel)
+                        else:
+                            self.processGpkg(dbConn, surveysToProcess)
+
+                        dbConn.close()
+
+
+    def processGpkg(self, dbConn, surveysToProcess):
+
+        TOMsMessageLog.logMessage("In processGpkg ...", level=Qgis.Warning)
+
+        # see if the table "RestrictionsInSurveys" exists
+        tablesInCurrGpkg = dbConn.tables()
+
+        if 'RestrictionsInSurveys' in tablesInCurrGpkg:
+            TOMsMessageLog.logMessage("In processVRMs. RestrictionsInSurveys found ...", level=Qgis.Warning)
+
+            for currSurveyItem in surveysToProcess:
+                TOMsMessageLog.logMessage("Processing {} ...".format(currSurveyItem.text()), level=Qgis.Warning)
+                currSurveyID = self.surveyDictionary[currSurveyItem.text()]
+                TOMsMessageLog.logMessage("currSurveyID is {} ...".format(currSurveyID),
+                                          level=Qgis.Warning)
+
+                self.processVRMs(dbConn, currSurveyID)
+
+    def processVRMs(self, dbConn, currSurveyID):
+        TOMsMessageLog.logMessage("In processVRMs ...", level=Qgis.Warning)
+
+        # relevant layers
+        restrictionsInSurveysLayer = QgsProject.instance().mapLayersByName('restrictionsInSurveys')[0]
+        VRMsLayer = QgsProject.instance().mapLayersByName('VRMs')[0]
+
+        expr = QgsExpression("\"SurveyID\" = {}".format(currSurveyID))
+        iterator = restrictionsInSurveysLayer.getFeatures(QgsFeatureRequest(expr))
+
+        # update details in "RestrictionsInSurveys" layer
+
+        queryQualifier = ''
+        query = QSqlQuery(
+        "SELECT SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, Photos_01, Photos_02, Photos_03 FROM RestrictionsInSurveys WHERE SurveyID = {}".format(currSurveyID))
+        query.exec()
+
+        SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, \
+        SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, \
+        Photos_01, Photos_02, Photos_03 = range(13)
+
+        #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
+
+        while query.next():
+            TOMsMessageLog.logMessage("In getCurrSurvey: currSurveyID: {}; surveyID: {}, BeatTitle: {}".format(currSurveyID, query.value(SurveyID), query.value(BeatTitle)), level=Qgis.Warning)
+            surveyList.append(query.value(BeatTitle))
+            surveyDictionary[query.value(BeatTitle)] = query.value(SurveyID)
+            if int(currSurveyID) == int(query.value(SurveyID)):
+                currSurveyName = query.value(BeatTitle)
+
+
+                try:
+
+                    currFeature[layer.fields().indexFromName(fieldName)] = value
+
+
+                except Exception as e:
+
+                    reply = QMessageBox.information(None, "Error",
+                                                    "onAttributeChangedClass2. Update failed for: {}({}): {}; {}".format(
+                                                        layer.name(), fieldName, value, e),
+                                                    QMessageBox.Ok)  # rollback all changes
+
+                # add details to "VRMs" layer
+
+
+
+                """self.masterLayer = QgsProject.instance().mapLayersByName(currLayerItem.text())[0]
                 #self.masterLayer = self.dlg.cb_layerMaster.currentLayer()
 
                 #QMessageBox.information(self.iface.mainWindow(),"hello world","%s has %d features." %(self.masterLayer.name(),self.masterLayer.featureCount()))
@@ -384,11 +350,11 @@ class loadOcc:
                         parent = QgsProject.instance().layerTreeRoot().findLayer(layer.id()).parent().name()
                         TOMsMessageLog.logMessage(
                             "In loadOcc. count of records added within " + parent + ":" + layer.name() + ": " + str(layerFeatureCount),
-                            level=Qgis.Warning)
+                            level=Qgis.Warning)"""
 
                 TOMsMessageLog.logMessage("In loadOcc. Now committing ... ",
                                          level=Qgis.Info)
-                self.masterLayer.commitChanges()
+                #self.masterLayer.commitChanges()
 
     def isCurrOcclayer(self, layer, currSurveyID, surveyIDField):
 
@@ -420,29 +386,22 @@ class loadOcc:
 
         return False
 
-    def copyAttributes(self, feature, layer):
+    def copyAttributes(self, feature, masterLayer):
 
         # copies relevant details into the master Layer
 
         status = True
         currAttribs = feature.attributes()
 
-        # get primary key ... and use in query
-        """
-        pk_attrs_idxs = layer.primaryKeyAttributes()
-        assert len(pk_attrs_idxs) == 1, 'We do not support composite primary keys: {}'.format(pk_attrs_idxs)
-        pk_attr_idx = pk_attrs_idxs[0]
-        pk_attr = layer.fields().names()[pk_attr_idx]
-        """
         pk_attr = "GeometryID"
         currGeometryID = feature.attribute(pk_attr)
 
         TOMsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
                                  level=Qgis.Info)
         # Now find the row for this GeometryID in masterLayer
-        query = ('"{}" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(pk_attr, currGeometryID)
+        query = ('"SurveyID" = {} AND "GeometryID" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(currSurveyID, currGeometryID)
         expr = QgsExpression(query)
-        selection = self.masterLayer.getFeatures(QgsFeatureRequest(expr))
+        selection = masterLayer.getFeatures(QgsFeatureRequest(expr))
 
         #masterIterator = (row for row in selection)
         try:
@@ -473,13 +432,13 @@ class loadOcc:
 
                     TOMsMessageLog.logMessage("In copyAttributes. Key error occurred updating field " + field + " in " + str(currGeometryID), level=Qgis.Warning)
 
-            status = self.masterLayer.updateFeature(masterRow)
+            status = masterLayer.updateFeature(masterRow)
 
             if status == False:
-                QMessageBox.information(self.iface.mainWindow(), "In copyAttributes",  "Error occurred updating record " + currGeometryID)
+                QMessageBox.information(self.iface.mainWindow(), "In copyAttributes",  "Error occurred updating record surveyID {}, GeometryID {}:".format(currSurveyID, currGeometryID))
 
         else:
-            TOMsMessageLog.logMessage("In copyAttributes: duplicate details for " + str(currGeometryID), level=Qgis.Warning)
+            TOMsMessageLog.logMessage("In copyAttributes: duplicate details for surveyID {}, GeometryID {}:".format(currSurveyID, currGeometryID), level=Qgis.Warning)
             return False
         #selection.close()
 
@@ -488,20 +447,30 @@ class loadOcc:
     def setupUi(self):
 
         self.dlg = QDialog()
-        self.dlg.setWindowTitle("Import occupancy data")
+        self.dlg.setWindowTitle("Import VRM data")
         self.dlg.setWindowModality(Qt.ApplicationModal)
 
         self.generalLayout = QVBoxLayout()
 
-        layerGroup = QGroupBox("Choose layers to import")
+        layerGroup = QGroupBox("Choose time periods to import")
         # test = QLabel()
         # test.setText("Choose layers to export and confirm location of output")
         # self.generalLayout.addWidget(test)
 
+        surveyList = list()
+        self.surveyDictionary = {}
+        surveysLayer = QgsProject.instance().mapLayersByName('Surveys')[0]
+        surveysIterator = surveysLayer.getFeatures()
+
+        for currSurvey in surveysIterator:
+            currSurvey.attribute("BeatTitle")
+            surveyList.append(currSurvey.attribute("BeatTitle"))
+            self.surveyDictionary[currSurvey.attribute("BeatTitle")] = currSurvey.attribute("SurveyID")
+
         # add map layer list
-        self.layerList = checkableMapLayerList()
+        self.itemList = checkableList(sorted(surveyList))
         vbox1 = QVBoxLayout()
-        vbox1.addWidget(self.layerList)
+        vbox1.addWidget(self.itemList)
         layerGroup.setLayout(vbox1)
         self.generalLayout.addWidget(layerGroup)
 
@@ -524,6 +493,118 @@ class loadOcc:
         self.generalLayout.addWidget(self.buttonBox)
 
         self.dlg.setLayout(self.generalLayout)
-        checkableMapLayerListCtrl(self.layerList)
+        checkableListCtrl(self.itemList)
 
+
+class checkableListCtrl:
+    """PyCalc Controller class."""
+    def __init__(self, view):
+        """Controller initializer."""
+        self._view = view
+        # Connect signals and slots
+        self._connectSignals()
+
+    def _connectSignals(self):
+        """Connect signals and slots."""
+        self._view.select_all_cb.clicked.connect(lambda: self._view.selectAllCheckChanged(self._view.select_all_cb, self._view.model))
+        self._view.view.clicked.connect(lambda: self._view.listviewCheckChanged(self._view.model, self._view.select_all_cb))
+        self._view.view.clicked[QModelIndex].connect(self._view.updateSelectedItems)
+
+class checkableList(QWidget):
+
+    # create a checkable list of the items
+
+    def __init__(self, listToUse, parent=None):
+        QWidget.__init__(self, parent)
+
+        #itemList = listToUse
+        #self.iface = iface
+
+        """for layer in itemList:
+            print(layer.name())"""
+
+        self.selectedItems = []
+
+        layout = QVBoxLayout()
+        self.model = QStandardItemModel()
+
+        self.select_all_cb = QCheckBox('Check All')
+        self.select_all_cb.setChecked(True)
+        self.select_all_cb.setStyleSheet('margin-left: 5px; font: bold')
+        #self.select_all_cb.stateChanged.connect(lambda: selectAllCheckChanged(select_all_cb, model))
+        layout.addWidget(self.select_all_cb)
+
+        self.view = QListView()
+        self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.view.setSelectionMode(QAbstractItemView.NoSelection)
+        self.view.setSelectionRectVisible(False)
+
+        for itemFromList in listToUse:
+            item = QStandardItem(itemFromList)
+            # item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+            # item.setData(QVariant(Qt.Checked), Qt.CheckStateRole)
+            item.setCheckable(True)
+            item.setSelectable(False)
+            item.setCheckState(QtCore.Qt.Checked)
+            self.model.appendRow(item)
+            self.selectedItems.append(item)
+
+        self.view.setModel(self.model)
+
+        #view.clicked.connect(lambda: listviewCheckChanged(item, model, select_all_cb))
+
+        layout.addWidget(self.view)
+
+        self.setLayout(layout)
+        """if parent:
+            parent.setLayout(layout)
+        else:
+            window = QWidget()
+            window.setLayout(layout)"""
+        #window.show()
+
+    def selectAllCheckChanged(self, select_all_cb, model):
+        TOMsMessageLog.logMessage("IN selectAllCheckChanged",
+                                 level=Qgis.Warning)
+        for index in range(model.rowCount()):
+            item = model.item(index)
+            if item.isCheckable():
+                if select_all_cb.isChecked():
+                    item.setCheckState(QtCore.Qt.Checked)
+                    self.selectedItems.append(item)
+                else:
+                    item.setCheckState(QtCore.Qt.Unchecked)
+                    self.selectedItems.remove(item)
+
+        TOMsMessageLog.logMessage("IN selectAllCheckChanged: len list {}".format(len(self.selectedItems)),
+                                  level=Qgis.Warning)
+
+    def listviewCheckChanged(self, model, select_all_cb):
+        ''' updates the select all checkbox based on the listview '''
+        # model = self.listview.model()
+        TOMsMessageLog.logMessage("IN listviewCheckChanged",
+                                 level=Qgis.Warning)
+        items = [model.item(index) for index in range(model.rowCount())]
+        if all(item.checkState() == QtCore.Qt.Checked for item in items):
+            select_all_cb.setTristate(False)
+            select_all_cb.setCheckState(QtCore.Qt.Checked)
+        elif any(item.checkState() == QtCore.Qt.Checked for item in items):
+            select_all_cb.setTristate(True)
+            select_all_cb.setCheckState(QtCore.Qt.PartiallyChecked)
+        else:
+            select_all_cb.setTristate(False)
+            select_all_cb.setCheckState(QtCore.Qt.Unchecked)
+
+    def updateSelectedItems(self, index):
+        #QMessageBox.information(self.iface.mainWindow(), "debug", "IN updateSelectedLayers: {}".format(self.model.itemFromIndex(index)))
+        TOMsMessageLog.logMessage("IN updateSelectedItems: {}".format(index) ,
+                                 level=Qgis.Warning)
+        item = self.model.itemFromIndex(index)
+        if item.checkState() == QtCore.Qt.Checked:
+            self.selectedItems.append(item)
+        else:
+            self.selectedItems.remove(item)
+
+    def getSelectedItems(self):
+        return self.selectedItems
 
