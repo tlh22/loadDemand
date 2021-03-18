@@ -54,7 +54,7 @@ from qgis.core import (
     QgsMessageLog,
     QgsProject,
     QgsApplication, QgsExpression, QgsFeatureRequest, QgsMapLayer,
-    QgsExpressionContextUtils
+    QgsExpressionContextUtils, QgsFeature, QgsTransaction
 )
 
 from qgis.gui import (QgsMapCanvas)
@@ -64,9 +64,11 @@ from .resources import *
 # Import the code for the dialog
 from loadOcc.load_Occ_dialog import loadOccDialog
 from TOMsExport.checkableMapLayerList import checkableMapLayerListCtrl, checkableMapLayerList
+from TOMs.core.TOMsTransaction import TOMsTransaction
 
 import os
 import os.path
+from pydoc import locate
 #from qgis.gui import *
 #from qgis.core import *
 
@@ -246,23 +248,32 @@ class loadVRMs:
                 TOMsMessageLog.logMessage("currSurveyID is {} ...".format(currSurveyID),
                                           level=Qgis.Warning)
 
-                self.processVRMs(dbConn, currSurveyID)
+                self.processRestrictionsForSurvey(dbConn, currSurveyID)
 
-    def processVRMs(self, dbConn, currSurveyID):
-        TOMsMessageLog.logMessage("In processVRMs ...", level=Qgis.Warning)
+
+    def processRestrictionsForSurvey(self, dbConn, currSurveyID):
+        TOMsMessageLog.logMessage("In processRestrictionsForSurvey ...", level=Qgis.Warning)
+
+
+        # get any details that have been "Done"
+
 
         # relevant layers
-        restrictionsInSurveysLayer = QgsProject.instance().mapLayersByName('restrictionsInSurveys')[0]
+        restrictionsInSurveysLayer = QgsProject.instance().mapLayersByName('RestrictionsInSurveys')[0]
         VRMsLayer = QgsProject.instance().mapLayersByName('VRMs')[0]
 
-        expr = QgsExpression("\"SurveyID\" = {}".format(currSurveyID))
-        iterator = restrictionsInSurveysLayer.getFeatures(QgsFeatureRequest(expr))
+        #localTransactionGroup = TOMsTransaction(self.iface)
+        #localTransactionGroup.prepareLayerSet([restrictionsInSurveysLayer, VRMsLayer])
+        #localTransactionGroup = QgsTransaction.create([restrictionsInSurveysLayer, VRMsLayer])
+        #localTransactionGroup.begin()
 
-        # update details in "RestrictionsInSurveys" layer
+        for l in [restrictionsInSurveysLayer, VRMsLayer]:
+            l.startEditing()
 
-        queryQualifier = ''
+        # TODO: set up transaction
+
         query = QSqlQuery(
-        "SELECT SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, Photos_01, Photos_02, Photos_03 FROM RestrictionsInSurveys WHERE SurveyID = {}".format(currSurveyID))
+        "SELECT SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, Photos_01, Photos_02, Photos_03 FROM RestrictionsInSurveys WHERE SurveyID = {} AND Done IS TRUE".format(currSurveyID))
         query.exec()
 
         SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, \
@@ -271,176 +282,170 @@ class loadVRMs:
 
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 
+        vrmCopyStatus = True
+
         while query.next():
-            TOMsMessageLog.logMessage("In getCurrSurvey: currSurveyID: {}; surveyID: {}, BeatTitle: {}".format(currSurveyID, query.value(SurveyID), query.value(BeatTitle)), level=Qgis.Warning)
-            surveyList.append(query.value(BeatTitle))
-            surveyDictionary[query.value(BeatTitle)] = query.value(SurveyID)
-            if int(currSurveyID) == int(query.value(SurveyID)):
-                currSurveyName = query.value(BeatTitle)
+            TOMsMessageLog.logMessage("Considering: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
 
+            thisRecord = query.record()
+            status = self.copyRestrictionsInSurveyAttributes(thisRecord, restrictionsInSurveysLayer, query.value(SurveyID), query.value(GeometryID))
 
+            # status is false when error or no rows found
+            if status:
+                vrmCopyStatus = self.processVRMs(dbConn, VRMsLayer, query.value(SurveyID), query.value(GeometryID))
+                if not vrmCopyStatus:
+                    TOMsMessageLog.logMessage(
+                        "Error occurred in processVRMs", level=Qgis.Warning)
+                    break
+
+        if vrmCopyStatus:
+            TOMsMessageLog.logMessage("**** Committing: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)),
+                level=Qgis.Warning)
+            #commitStatus = localTransactionGroup.commit()
+            for l in [restrictionsInSurveysLayer, VRMsLayer]:
                 try:
-
-                    currFeature[layer.fields().indexFromName(fieldName)] = value
-
-
+                    l.commitChanges()
                 except Exception as e:
+                    TOMsMessageLog.logMessage(
+                        "In processVRMs. Error occurred committing details for surveyID {}".format(query.value(SurveyID)), level=Qgis.Warning)
+                    QMessageBox.critical(None, "processRestrictionsForSurvey",
+                                         "Unexcepted error occurred during commit {}".format(e),
+                                         "Click Cancel to exit.", QMessageBox.Cancel)
+                    return False
 
-                    reply = QMessageBox.information(None, "Error",
-                                                    "onAttributeChangedClass2. Update failed for: {}({}): {}; {}".format(
-                                                        layer.name(), fieldName, value, e),
-                                                    QMessageBox.Ok)  # rollback all changes
-
-                # add details to "VRMs" layer
-
-
-
-                """self.masterLayer = QgsProject.instance().mapLayersByName(currLayerItem.text())[0]
-                #self.masterLayer = self.dlg.cb_layerMaster.currentLayer()
-
-                #QMessageBox.information(self.iface.mainWindow(),"hello world","%s has %d features." %(self.masterLayer.name(),self.masterLayer.featureCount()))
-
-                self.masterLayer.startEditing()
-
-                TOMsMessageLog.logMessage("In loadOcc. masterLayer: " + str(self.masterLayer.name()),
-                                         level=Qgis.Warning)
-
-                #VRMfeatures = []
-                masterFields = self.masterLayer.fields()
-
-                #self.idxSurveyTime = self.masterLayer.fields().indexFromName("SurveyTime")
-                self.idxSurveyID = self.masterLayer.fields().indexFromName(surveyIDField)
-
+        else:
+            TOMsMessageLog.logMessage("**** ROLLING BACK: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)),
+                level=Qgis.Warning)
+            for l in [restrictionsInSurveysLayer, VRMsLayer]:
                 try:
-                    firstMaster = next(row for row in self.masterLayer.getFeatures())
-                except StopIteration:
-                    QMessageBox.information(self.iface.mainWindow(), "Checking time periods",  "No rows in " + self.masterLayer.name())
-                    return
+                    l.rollBack()
+                except Exception as e:
+                    TOMsMessageLog.logMessage(
+                        "In processVRMs. Error occurred rolling back details for surveyID {}".format(query.value(SurveyID)), level=Qgis.Warning)
+                    QMessageBox.critical(None, "processRestrictionsForSurvey",
+                                         "Unexcepted error occurred during commit {}".format(e),
+                                         "Click Cancel to exit.", QMessageBox.Cancel)
+                    return False
 
-                currSurveyID = firstMaster[self.idxSurveyID]
-                #currSurveyTime = firstMaster[self.idxSurveyTime]
+            #localTransactionGroup.rollback()
 
-                TOMsMessageLog.logMessage("In loadOcc. currSurveyID: " + str(currSurveyID),
-                                         level=Qgis.Warning)
 
-                # For each layer in the project file
+    def processVRMs(self, dbConn, vrmsLayer, currSurveyID, currGeometryID):
+        TOMsMessageLog.logMessage("In processVRMs for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Warning)
 
-                for layer in layers:
+        # select all VRMs for this survey/GeometryID and add to layer
 
-                    if self.isCurrOcclayer(layer, currSurveyID, surveyIDField):
+        query = QSqlQuery(
+        "SELECT SurveyID, GeometryID, PositionID, VRM, VehicleTypeID, RestrictionTypeID, PermitTypeID, Notes FROM VRMs WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
+        )
+        query.exec()
 
-                        # Select the rows (GeometryIDs) where Done = “true”
-                        query = "\"Done\" = 'true'"
-                        query = "\"Done\""
-                        expr = QgsExpression(query)
-                        #selection = layer.getFeatures(QgsFeatureRequest(expr))
+        SurveyID, GeometryID, PositionID, VRM, VehicleTypeID, RestrictionTypeID, PermitTypeID, Notes = range(8)
 
-                        #layer.setSelectedFeatures([k.id() for k in selection])
-                        #QMessageBox.information(self.iface.mainWindow(), "In loadOcc",  "count within %s: %d" %(layer.name(), layer.selectedFeatureCount()))
+        #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 
-                        # Now copy the required rows/attributes into the MasterLayer
+        while query.next():
+            TOMsMessageLog.logMessage("Considering VRMs: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
 
-                        layerFeatureCount = 0
-                        for feature in layer.getFeatures(QgsFeatureRequest(expr)):
+            thisRecord = query.record()
+            fields = vrmsLayer.dataProvider().fields()
+            newRow = QgsFeature()
+            newRow.setFields(fields)
 
-                            status = self.copyAttributes(feature, layer)
-                            if status:
-                                layerFeatureCount = layerFeatureCount + 1
+            for fieldIdx in range(SurveyID, Notes):
 
-                        parent = QgsProject.instance().layerTreeRoot().findLayer(layer.id()).parent().name()
-                        TOMsMessageLog.logMessage(
-                            "In loadOcc. count of records added within " + parent + ":" + layer.name() + ": " + str(layerFeatureCount),
-                            level=Qgis.Warning)"""
+                fieldValue = thisRecord.field(fieldIdx).value()
+                if fieldValue is not None:
+                    try:
 
-                TOMsMessageLog.logMessage("In loadOcc. Now committing ... ",
-                                         level=Qgis.Info)
-                #self.masterLayer.commitChanges()
+                        idxVRMsField = vrmsLayer.fields().indexFromName(thisRecord.fieldName(fieldIdx))
+                        vrmsFieldType = vrmsLayer.fields().at(idxVRMsField).typeName()
+                        #TOMsMessageLog.logMessage("In processVRMs: Adding field {} of type {}: {}".format(
+                        #    thisRecord.fieldName(fieldIdx), vrmsFieldType, fieldValue), level=Qgis.Warning)
+                        newRow[idxVRMsField] = self.convertType(vrmsFieldType, fieldValue)
 
-    def isCurrOcclayer(self, layer, currSurveyID, surveyIDField):
+                    except IndexError:
+                        TOMsMessageLog.logMessage("In processVRMs: Index error occurred updating field {} in survey {} to {}".format(
+                            thisRecord.fieldName(fieldIdx), query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
+                        return False
+                    except KeyError:
+                        TOMsMessageLog.logMessage("In processVRMs. Key error occurred updating field {} in survey {} to {}".format(
+                            thisRecord.fieldName(fieldIdx), query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
+                        return False
+                    except Exception as e:
+                        TOMsMessageLog.logMessage("In processVRMs. Error occurred updating field {} in {}".format(thisRecord.fieldName(fieldIdx), str(currGeometryID)), level=Qgis.Warning)
+                        QMessageBox.critical(None, "processVRMs",
+                                                       "Unexcepted error occurred {}".format(e),
+                                                       "Click Cancel to exit.", QMessageBox.Cancel)
+                        return False
 
-        # checks to see if this is a layer is for the correct survey period
+            vrmsLayer.addFeature(newRow)
 
-        if layer != self.masterLayer:
+        return True
 
-            if layer.type() == QgsMapLayer.VectorLayer:
-                TOMsMessageLog.logMessage("In isCurrOcclayer. considering layer: " + str(layer.name()),
-                                         level=Qgis.Warning)
+    def convertType(self, type, value):
 
-                for field in layer.fields():
-                    if field.name() == "SurveyID":
-                        try:
-                            firstRow = next(row for row in layer.getFeatures())
-                        except StopIteration:
-                            TOMsMessageLog.logMessage(
-                                "In isCurrOcclayer. Error checking survey time: " + str(layer.name()),
-                                level=Qgis.Warning)
-                            return False
+        if type == 'bool':
+            value = bool(value)
 
-                        TOMsMessageLog.logMessage("In isCurrOcclayer. layer: {}  has surveyID {}".format(layer.name(), str(firstRow.attribute("SurveyID"))),
-                            level=Qgis.Warning)
+        return value
 
-                        if currSurveyID == firstRow.attribute(surveyIDField):
-                            TOMsMessageLog.logMessage("In isCurrOcclayer. layer: " + str(layer.name() + " is for processing ..."),
-                                                     level=Qgis.Warning)
-                            return True
-
-        return False
-
-    def copyAttributes(self, feature, masterLayer):
+    def copyRestrictionsInSurveyAttributes(self, featureDetails, masterLayer, currSurveyID, currGeometryID):
 
         # copies relevant details into the master Layer
 
         status = True
-        currAttribs = feature.attributes()
 
-        pk_attr = "GeometryID"
-        currGeometryID = feature.attribute(pk_attr)
-
-        TOMsMessageLog.logMessage("In copyAttributes. GeometryID: " + str(currGeometryID),
-                                 level=Qgis.Info)
+        TOMsMessageLog.logMessage("In copyRestrictionsInSurveyAttributes. GeometryID: " + str(currGeometryID),
+                                 level=Qgis.Warning)
         # Now find the row for this GeometryID in masterLayer
         query = ('"SurveyID" = {} AND "GeometryID" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(currSurveyID, currGeometryID)
         expr = QgsExpression(query)
         selection = masterLayer.getFeatures(QgsFeatureRequest(expr))
 
-        #masterIterator = (row for row in selection)
         try:
             masterRow = next(row for row in selection)
             rowFound = True
         except StopIteration:
-
-            """TOMsMessageLog.logMessage("In copyAttributes. Error retrieving GeometryID: " + str(currGeometryID),
-                                     level=Qgis.Info)"""
             rowFound = False
             status = False
 
         if rowFound == True:
 
-            for field in self.updateList:
+            TOMsMessageLog.logMessage("In copyRestrictionsInSurveyAttributes. Copying details for: {}".format(currGeometryID),
+                                                 level=Qgis.Info)
+            for fieldIdx in range(2,13):
 
-                idxCurrFieldValue = feature.fields().indexFromName(field)
-                idxMasterFieldValue = masterRow.fields().indexFromName(field)
+                idxMasterField = masterRow.fields().indexFromName(featureDetails.fieldName(fieldIdx))
+                masterFieldType =  masterRow.fields().at(idxMasterField).typeName()
+                #TOMsMessageLog.logMessage("In copyRestrictionsInSurveyAttributes: field {} is type {}".format(
+                #    featureDetails.fieldName(fieldIdx), masterFieldType), level=Qgis.Warning)
 
-                try:
-                    updStatus = masterRow.setAttribute(idxMasterFieldValue, feature[idxCurrFieldValue])
-                except IndexError:
-                    #updStatus = self.masterLayer.changeAttributeValue(masterRow.id(), masterRow.fieldNameIndex(field), feature.attribute(idxCurrFieldValue))
+                fieldValue = self.convertType(masterFieldType, featureDetails.field(fieldIdx).value())
 
-                    TOMsMessageLog.logMessage("In copyAttributes: Index error occurred updating field " + field + " in " + str(currGeometryID), level=Qgis.Warning)
-                except KeyError:
-                    #updStatus = self.masterLayer.changeAttributeValue(masterRow.id(), masterRow.fieldNameIndex(field), feature.attribute(idxCurrFieldValue))
-
-                    TOMsMessageLog.logMessage("In copyAttributes. Key error occurred updating field " + field + " in " + str(currGeometryID), level=Qgis.Warning)
+                if fieldValue is not None:
+                    try:
+                        #TOMsMessageLog.logMessage("In copyRestrictionsInSurveyAttributes: Updating field {} in {} with {}".format(
+                        #    featureDetails.fieldName(fieldIdx), currGeometryID, fieldValue), level=Qgis.Warning)
+                        masterRow.setAttribute(idxMasterField, fieldValue)
+                    except IndexError:
+                        TOMsMessageLog.logMessage("In copyRestrictionsInSurveyAttributes: Index error occurred updating field {} in {}".format(featureDetails.fieldName(fieldIdx), str(currGeometryID)), level=Qgis.Warning)
+                        return False
+                    except KeyError:
+                        TOMsMessageLog.logMessage("In copyRestrictionsInSurveyAttributes. Key error occurred updating field {} in {}".format(featureDetails.fieldName(fieldIdx), str(currGeometryID)), level=Qgis.Warning)
+                        return False
+                    except Exception as e:
+                        TOMsMessageLog.logMessage("In copyRestrictionsInSurveyAttributes. Error occurred updating field {} in {}".format(featureDetails.fieldName(fieldIdx), str(currGeometryID)), level=Qgis.Warning)
+                        QMessageBox.information(self.iface.mainWindow(), "ERROR", ("Unexcepted error occurred in copyRestrictionsInSurveyAttributes - {}".format(e)))
+                        return False
 
             status = masterLayer.updateFeature(masterRow)
 
             if status == False:
-                QMessageBox.information(self.iface.mainWindow(), "In copyAttributes",  "Error occurred updating record surveyID {}, GeometryID {}:".format(currSurveyID, currGeometryID))
+                QMessageBox.information(self.iface.mainWindow(), "In copyRestrictionsInSurveyAttributes",  "Error occurred updating record surveyID {}, GeometryID {}:".format(currSurveyID, currGeometryID))
 
         else:
-            TOMsMessageLog.logMessage("In copyAttributes: duplicate details for surveyID {}, GeometryID {}:".format(currSurveyID, currGeometryID), level=Qgis.Warning)
             return False
-        #selection.close()
 
         return status
 
