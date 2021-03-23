@@ -285,7 +285,7 @@ class loadVRMs:
         vrmCopyStatus = True
 
         while query.next():
-            TOMsMessageLog.logMessage("Considering: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
+            TOMsMessageLog.logMessage("Considering: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Info)
 
             thisRecord = query.record()
             status = self.copyRestrictionsInSurveyAttributes(thisRecord, restrictionsInSurveysLayer, query.value(SurveyID), query.value(GeometryID))
@@ -300,7 +300,7 @@ class loadVRMs:
 
         if vrmCopyStatus:
             TOMsMessageLog.logMessage("**** Committing: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)),
-                level=Qgis.Warning)
+                level=Qgis.Info)
             #commitStatus = localTransactionGroup.commit()
             for l in [restrictionsInSurveysLayer, VRMsLayer]:
                 try:
@@ -331,7 +331,7 @@ class loadVRMs:
 
 
     def processVRMs(self, dbConn, vrmsLayer, currSurveyID, currGeometryID):
-        TOMsMessageLog.logMessage("In processVRMs for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Warning)
+        TOMsMessageLog.logMessage("In processVRMs for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Info)
 
         # select all VRMs for this survey/GeometryID and add to layer
 
@@ -345,14 +345,14 @@ class loadVRMs:
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 
         while query.next():
-            TOMsMessageLog.logMessage("Considering VRMs: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
+            TOMsMessageLog.logMessage("Considering VRMs: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Info)
 
             thisRecord = query.record()
             fields = vrmsLayer.dataProvider().fields()
             newRow = QgsFeature()
             newRow.setFields(fields)
 
-            for fieldIdx in range(SurveyID, Notes):
+            for fieldIdx in range(SurveyID, Notes+1):
 
                 fieldValue = thisRecord.field(fieldIdx).value()
                 if fieldValue is not None:
