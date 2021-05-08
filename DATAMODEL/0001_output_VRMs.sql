@@ -25,7 +25,7 @@ SELECT v."ID", v."SurveyID", s."BeatTitle", v."GeometryID", su."RoadName",
 		v."PositionID", v."VRM", v."VehicleTypeID", v."VehicleType Description",
         v."RestrictionTypeID", v."RestrictionType Description",
         v."PermitTypeID", v."PermitType Description",
-        v."Notes"
+        v."Notes", "Enumerator", "DemandSurveyDateTime"
 
 FROM
 (SELECT "ID", "SurveyID", "GeometryID", "PositionID", "VRM", "VehicleTypeID", "VehicleTypes"."Description" AS "VehicleType Description",
@@ -42,7 +42,10 @@ FROM
 ORDER BY "GeometryID", "VRM") As v,
 	 	mhtc_operations."Supply" su
 	 	, demand."Surveys" s
+		, demand."RestrictionsInSurveys_ALL" r
 WHERE v."SurveyID" = s."SurveyID"
 AND v."GeometryID" = su."GeometryID"
-AND su."CPZ" = 'FP'
+AND r."SurveyID" = s."SurveyID"
+AND r."GeometryID" = su."GeometryID"
+AND su."CPZ" = 'HS'
 ORDER BY "GeometryID", "VRM", "SurveyID"

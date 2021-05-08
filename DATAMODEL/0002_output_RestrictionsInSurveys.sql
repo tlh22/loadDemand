@@ -12,7 +12,7 @@ FROM
 (SELECT ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
 ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity"
-FROM demand."RestrictionsInSurveys_7S" ris, demand."Surveys" su,
+FROM demand."RestrictionsInSurveys_ALL" ris, demand."Surveys" su,
 (mhtc_operations."Supply" AS a
  LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") AS s
  WHERE ris."SurveyID" = su."SurveyID"
