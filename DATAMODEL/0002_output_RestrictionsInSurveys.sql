@@ -59,3 +59,5 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, mhtc_operations."S
   ) AS v ON d."SurveyID" = v."SurveyID" AND d."GeometryID" = v."GeometryID"
   GROUP BY d."SurveyID", d."BeatTitle"
 ORDER BY d."SurveyID";
+
+
