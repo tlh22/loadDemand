@@ -42,10 +42,10 @@ FROM
 ORDER BY "GeometryID", "VRM") As v,
 	 	mhtc_operations."Supply" su
 	 	, demand."Surveys" s
-		, demand."RestrictionsInSurveys_ALL" r
+		, demand."RestrictionsInSurveys" r
 WHERE v."SurveyID" = s."SurveyID"
 AND v."GeometryID" = su."GeometryID"
 AND r."SurveyID" = s."SurveyID"
 AND r."GeometryID" = su."GeometryID"
-AND su."CPZ" = 'HS'
+--AND su."CPZ" = 'HS'
 ORDER BY "GeometryID", "VRM", "SurveyID"
