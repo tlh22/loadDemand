@@ -18,3 +18,13 @@ AND v."GeometryID" = r."GeometryID"
 AND r."SurveyArea"::int = a.id
 GROUP BY s."SurveyID", a.name
 ORDER BY s."SurveyID", a.name
+
+-- including road, GeometryID
+
+SELECT s."SurveyID", a.name, r."RoadName", r."GeometryID", COUNT(v."ID")
+FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
+WHERE v."SurveyID" = s."SurveyID"
+AND v."GeometryID" = r."GeometryID"
+AND r."SurveyArea"::int = a.id
+GROUP BY s."SurveyID", a.name, r."RoadName", r."GeometryID"
+ORDER BY s."SurveyID", a.name, r."RoadName", r."GeometryID"
