@@ -22,8 +22,6 @@ AND v1."VRM" NOT IN (
     AND v11."VRM" != v12."VRM"
     AND v11."ID" > v12."ID"
     AND levenshtein(v11."VRM"::text, v12."VRM"::text, 10, 10, 1) <= 2
-    AND v11."SurveyID" > 30
-    AND v12."SurveyID" > 30
 )
 ORDER BY v1."VRM";
 **/
@@ -50,3 +48,5 @@ AND v1."VRM" NOT IN (
     AND levenshtein(v11."VRM"::text, v12."VRM"::text, 10, 10, 1) <= 2
 )
 ;
+
+-- Very occassionally there is an incorrect change, e.g., when there is already a series with the candidate
