@@ -7,6 +7,34 @@ Final query amended ...
 
 ***/
 
+-- Load data into new table
+-- Load data into new table
+DROP TABLE IF EXISTS demand."VRMs_Final" CASCADE;
+CREATE TABLE demand."VRMs_Final"
+(
+  "ID" SERIAL,
+  "SurveyID" integer,
+  "SectionID" integer,
+  "GeometryID" character varying(12),
+  "PositionID" integer,
+  "VRM" character varying(12),
+  "VehicleTypeID" integer,
+  "RestrictionTypeID" integer,
+  "PermitTypeID" integer,
+  "Notes" character varying(255),
+  CONSTRAINT "VRMs_Final_pkey" PRIMARY KEY ("ID")
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE demand."VRMs_Final"
+  OWNER TO postgres;
+
+COPY demand."VRMs_Final"("ID", "SurveyID", "GeometryID", "VRM", "VehicleTypeID")
+FROM 'C:\Users\Public\Documents\PC2113_All_VRMs.csv'
+DELIMITER ','
+CSV HEADER;
+
 -- Basic approach
 SELECT
         "VRM",
@@ -19,41 +47,51 @@ FROM
     (
 
         SELECT "VRM", "SurveyID", "GeometryID",
-               lead("SurveyID", 1) over( partition by "VRM" order by "SurveyID", "GeometryID", "VRM"),
-               lag("SurveyID", 1) over(partition by "VRM" order by "SurveyID", "GeometryID", "VRM")
-        FROM demand."VRMs"
+               lead("SurveyID", 1) over( partition by "VRM", "SurveyDay" order by "SurveyID", "GeometryID", "VRM"),
+               lag("SurveyID", 1) over(partition by "VRM", "SurveyDay" order by "SurveyID", "GeometryID", "VRM")
+        FROM demand."VRMs_Final" v, "Surveys" s
+        WHERE v."SurveyID" = s."SurveyID"
         ORDER BY "VRM", "SurveyID"
 
      ) AS t
 
 ORDER BY "VRM", "SurveyID";
 
--- add fields to "VRMs"
+-- add fields to "VRMs_Final"
 
-ALTER TABLE demand."VRMs"
+ALTER TABLE demand."VRMs_Final"
     ADD COLUMN "isLast" boolean;
-ALTER TABLE demand."VRMs"
+ALTER TABLE demand."VRMs_Final"
     ADD COLUMN "isFirst" boolean;
-ALTER TABLE demand."VRMs"
+ALTER TABLE demand."VRMs_Final"
     ADD COLUMN "orphan" boolean;
 
-UPDATE demand."VRMs" AS v
+UPDATE demand."VRMs_Final" AS v
 SET "isLast" = (lead <> t."SurveyID" + 1 or lead is null),
     "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
     "orphan" = (lead <> t."SurveyID" + 1 or lead is null) and (lag <> t."SurveyID" - 1 or lag is null)
 FROM
     (
 
-        SELECT "VRM", "SurveyID", "GeometryID",
-               lead("SurveyID", 1) over( partition by "VRM" order by "SurveyID", "GeometryID", "VRM"),
-               lag("SurveyID", 1) over(partition by "VRM" order by "SurveyID", "GeometryID", "VRM")
-        FROM demand."VRMs"
+        SELECT "VRM", v."SurveyID", "GeometryID",
+               lead(v."SurveyID", 1) over( partition by "VRM", "SurveyDay" order by v."SurveyID", "GeometryID", "VRM"),
+               lag(v."SurveyID", 1) over(partition by "VRM", "SurveyDay" order by v."SurveyID", "GeometryID", "VRM")
+        FROM demand."VRMs_Final" v, demand."Surveys" s
+        WHERE s."SurveyID" = v."SurveyID"
         ORDER BY "VRM", "SurveyID"
 
      ) AS t
 WHERE v."VRM" = t."VRM"
 AND v."SurveyID" = t."SurveyID"
 AND v."GeometryID" = t."GeometryID";
+
+-- Now close at the end of the day
+
+UPDATE demand."VRMs_Final" AS v
+SET "isLast" = true
+WHERE "SurveyID" IN (112, 212, 312)
+AND "isLast" = false
+    "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
 
 -- Select ...
 
@@ -72,7 +110,7 @@ from
     -- will probably help with lots of values.
     (
         select min("SurveyID")
-        from demand."VRMs" as last
+        from demand."VRMs_Final" as last
         where "isLast" = true
         -- need this since isfirst=true, islast=true on an orphan sequence
         --and last."orphan" = false
@@ -81,6 +119,66 @@ from
         and first."GeometryID" = last."GeometryID"
     ) as last
     from
-        (select * from demand."VRMs" where "isFirst" = true) as first
+        (select * from demand."VRMs_Final" where "isFirst" = true) as first
 ) as t
 ;
+
+----
+
+select
+    --t."VRM",
+	su."SurveyID", --t."GeometryID",
+	y."RoadName",
+    y.first,
+    --coalesce (last, first) as last,
+	y.last,
+    y.span,
+	y.NrInSpan
+from
+demand."Surveys" su LEFT JOIN
+(
+    select
+        --t."VRM",
+        t."SurveyID", --t."GeometryID",
+        s."RoadName",
+        t.first,
+        coalesce (last, first) as last,
+        coalesce (t.last - t.first + 1, 1) As span,
+        COUNT (t."VRM") AS NrInSpan
+    from
+    (
+        select
+        "VRM", "SurveyID", "GeometryID",
+        "SurveyID" as first,
+        -- this will not be excellent perf. since were calling the view
+        -- for each row sequence found. Changing view into temp table
+        -- will probably help with lots of values.
+        (
+            select min(last."SurveyID")
+            from demand."VRMs_Final" as last, demand."Surveys" s
+            where "isLast" = true
+            -- need this since isfirst=true, islast=true on an orphan sequence
+            --and last."orphan" = false
+            and first."SurveyID" <= last."SurveyID" --- amended
+            and first."VRM" = last."VRM"
+            and first."GeometryID" = last."GeometryID"
+            AND last."SurveyID" = s."SurveyID"
+            AND s."SurveyDay" = first."SurveyDay"
+        ) as last
+        from
+            (select v.*, s."SurveyDay" from demand."VRMs_Final" v, demand."Surveys" s
+             where "isFirst" = true
+             AND v."SurveyID" = s."SurveyID") as first
+    ) as t, mhtc_operations."Supply" s
+    WHERE t."GeometryID" = s."GeometryID"
+    GROUP BY --t."VRM",
+             t."SurveyID",
+             --t."GeometryID",
+             s."RoadName",
+             t.first,
+	         t.last,
+             span
+
+) y ON su."SurveyID" = y."SurveyID"
+;
+
