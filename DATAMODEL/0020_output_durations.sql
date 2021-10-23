@@ -8,7 +8,6 @@ Final query amended ...
 ***/
 
 -- Load data into new table
--- Load data into new table
 DROP TABLE IF EXISTS demand."VRMs_Final" CASCADE;
 CREATE TABLE demand."VRMs_Final"
 (
@@ -93,6 +92,8 @@ WHERE "SurveyID" IN (112, 212, 312)
 AND "isLast" = false
     "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
 
+-- ?? do we need to open at start of day??
+
 -- Select ...
 
 select
@@ -123,7 +124,7 @@ from
 ) as t
 ;
 
-----
+----  Issue if vehicle changes GeometryID within day (but stays)
 
 select
     --t."VRM",
@@ -171,6 +172,7 @@ demand."Surveys" su LEFT JOIN
              AND v."SurveyID" = s."SurveyID") as first
     ) as t, mhtc_operations."Supply" s
     WHERE t."GeometryID" = s."GeometryID"
+    AND s."RestrictionTypeID" = 103
     GROUP BY --t."VRM",
              t."SurveyID",
              --t."GeometryID",
@@ -181,4 +183,45 @@ demand."Surveys" su LEFT JOIN
 
 ) y ON su."SurveyID" = y."SurveyID"
 ;
+
+
+--- ******* OK now ...
+
+SELECT "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", first, last, last-first+1 As span
+FROM (
+SELECT
+        first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID" As first, MIN(last."SurveyID") OVER (PARTITION BY last."SurveyID") As last
+FROM
+    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
+    FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
+    WHERE v."isFirst" = true
+    AND v."GeometryID" = su."GeometryID"
+    AND v."SurveyID" = s."SurveyID") AS first,
+    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
+    FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
+    WHERE v."isLast" = true
+    AND v."GeometryID" = su."GeometryID"
+    AND v."SurveyID" = s."SurveyID") AS last
+WHERE first."VRM" = last."VRM"
+AND first."RoadName" = last."RoadName"
+AND first."SurveyDay" = last."SurveyDay"
+AND first."SurveyID" < last."SurveyID"
+--AND first."VRM" IN ('PX16-XCD', 'CA64-RDS')
+) As y
+UNION
+SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."SurveyDay", v."SurveyID" As first, v."SurveyID" AS last, 1 AS span
+    FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
+    WHERE v."orphan" = true
+    AND v."GeometryID" = su."GeometryID"
+    AND v."SurveyID" = s."SurveyID";
+
+
+-- Check
+SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", su."RestrictionTypeID", v."VRM", "isFirst", "isLast", "orphan"
+FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
+WHERE v."GeometryID" = su."GeometryID"
+AND v."SurveyID" = s."SurveyID"
+--AND v."VRM" IN ('PX16-XCD', 'CA64-RDS')
+AND su."RoadName" IN ('The Mint')
+ORDER BY "SurveyID", "VRM"
 
