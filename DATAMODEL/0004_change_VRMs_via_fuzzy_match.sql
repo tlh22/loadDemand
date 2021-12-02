@@ -39,7 +39,7 @@ ORDER BY v1."VRM";
 **/
 
 -- Change details
-
+--SELECT demand."VRMs" AS v1
 UPDATE demand."VRMs" AS v1
 SET "VRM" = v2."VRM"
 FROM demand."VRMs" v2
@@ -62,3 +62,10 @@ AND v1."VRM" NOT IN (
 ;
 
 -- Very occassionally there is an incorrect change, e.g., when there is already a series with the candidate
+
+
+-- View changes
+
+SELECT "VRM", "VRM_Orig"
+FROM demand."VRMs"
+WHERE "VRM" <> "VRM_Orig";
