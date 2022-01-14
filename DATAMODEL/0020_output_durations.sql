@@ -88,7 +88,7 @@ AND v."GeometryID" = t."GeometryID";
 
 UPDATE demand."VRMs_Final" AS v
 SET "isLast" = true
-WHERE "SurveyID" IN (112, 212, 312)
+WHERE "SurveyID" IN (103, 110, 208, 308)
 AND "isLast" = false
     "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
 
