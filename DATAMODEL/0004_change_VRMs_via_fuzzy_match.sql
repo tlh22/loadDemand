@@ -6,12 +6,12 @@ CREATE EXTENSION IF NOT EXISTS "fuzzystrmatch" WITH SCHEMA "public";
 
 /**
 SELECT DISTINCT v1."GeometryID", v1."VRM", v2."VRM"
-FROM (SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", v."ID", v."VRM"
+FROM (SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", v."ID", v."VRM_Orig" AS "VRM"
 	  FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
 	  WHERE v."SurveyID" = s."SurveyID"
 	  AND v."GeometryID" = su."GeometryID"
 	 ) AS v1,
-     (SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", v."ID", v."VRM"
+     (SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", v."ID", v."VRM_Orig" AS "VRM"
 	  FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
 	  WHERE v."SurveyID" = s."SurveyID"
 	  AND v."GeometryID" = su."GeometryID"
@@ -24,8 +24,8 @@ AND v1."VRM" != v2."VRM"
 AND v1."ID" > v2."ID"
 AND levenshtein(v1."VRM"::text, v2."VRM"::text, 10, 10, 1) <= 2
 --AND v1."SurveyID" > 30
-AND v1."SurveyDay" = v2."SurveyDay"
-AND v1."RoadName" = 'Gibbet Marsh Car Park'
+--AND v1."SurveyDay" = v2."SurveyDay"
+--AND v1."RoadName" = 'Gibbet Marsh Car Park'
 AND v1."VRM" NOT IN (
     SELECT DISTINCT v11."VRM"
     FROM demand."VRMs" v11, demand."VRMs" v12
@@ -39,7 +39,7 @@ ORDER BY v1."VRM";
 **/
 
 -- Change details
-
+--SELECT demand."VRMs" AS v1
 UPDATE demand."VRMs" AS v1
 SET "VRM" = v2."VRM"
 FROM demand."VRMs" v2
@@ -62,3 +62,10 @@ AND v1."VRM" NOT IN (
 ;
 
 -- Very occassionally there is an incorrect change, e.g., when there is already a series with the candidate
+
+
+-- View changes
+
+SELECT "VRM", "VRM_Orig"
+FROM demand."VRMs"
+WHERE "VRM" <> "VRM_Orig";
