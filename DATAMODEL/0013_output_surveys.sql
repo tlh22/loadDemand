@@ -1,3 +1,4 @@
-SELECT "SurveyID", '' AS "Date", "SurveyDay", concat("BeatStartTime", '-', "BeatEndTime") AS "TimePeriod"
+
+SELECT "SurveyID", "SurveyDate", "SurveyDay", concat("BeatStartTime", '-', "BeatEndTime") AS "TimePeriod"
 	FROM demand."Surveys"
     ORDER BY "SurveyID";
