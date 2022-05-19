@@ -61,9 +61,9 @@ AND v."GeometryID" = t."GeometryID";
 
 UPDATE demand."VRMs_Final" AS v
 SET "isLast" = true
-WHERE "SurveyID" IN (103, 110, 208, 308)
+WHERE "SurveyID" IN (108, 208, 308, 408)
 AND "isLast" = false
-    "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
+-- ??    "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
 
 -- ?? do we need to open at start of day??
 

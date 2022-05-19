@@ -105,6 +105,7 @@ $BODY$
 --DO
 --$do$
 DECLARE
+    row RECORD;
     possible_spans RECORD;
     currentVRM TEXT;
     lastVRM TEXT;
@@ -113,56 +114,73 @@ DECLARE
     skip BOOLEAN;
 BEGIN
 
-    FOR possible_spans IN
-        SELECT "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", "firstSurveyID", "lastSurveyID", "lastSurveyID"-"firstSurveyID"+1 As span
-        FROM (
-            SELECT
-                first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID" As "firstSurveyID",
-                MIN(last."SurveyID") OVER (PARTITION BY last."SurveyID") As "lastSurveyID"
-            FROM
-                (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
-                FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
-                WHERE v."isFirst" = true
-                AND v."GeometryID" = su."GeometryID"
-                AND v."SurveyID" = s."SurveyID") AS first,
-                (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
-                FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
-                WHERE v."isLast" = true
-                AND v."GeometryID" = su."GeometryID"
-                AND v."SurveyID" = s."SurveyID") AS last
-            WHERE first."VRM" = last."VRM"
-            AND first."RoadName" = last."RoadName"
-            AND first."SurveyDay" = last."SurveyDay"
-            AND first."SurveyID" < last."SurveyID"
-            ) AS y
-            --ORDER BY "VRM", "firstSurveyID", "lastSurveyID"
-        UNION
-            SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."SurveyDay", v."SurveyID" As "firstSurveyID", v."SurveyID" AS "lastSurveyID", 1 AS span
-            FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
-            WHERE v."orphan" = true
-            AND v."GeometryID" = su."GeometryID"
-            AND v."SurveyID" = s."SurveyID"
-         ORDER BY "VRM", "firstSurveyID", "lastSurveyID"
+    FOR row IN SELECT "SurveyDay", min("SurveyID") as first, max("SurveyID") as last
+                    FROM demand."Surveys" s
+                    GROUP BY "SurveyDay"
+                    ORDER BY min("SurveyID")
     LOOP
 
-        skip = false;
-        currentVRM = possible_spans."VRM";
-        currentStartSurveyID = possible_spans."firstSurveyID";
+        RAISE NOTICE '***** Considering (%) [%-%]', row."SurveyDay", row.first, row.last;
 
-        RAISE NOTICE '*****--- Considering (%) starting at survey id %', currentVRM, currentStartSurveyID;
+        FOR possible_spans IN
+            SELECT "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", "firstSurveyID", "lastSurveyID", "lastSurveyID"-"firstSurveyID"+1 As span
+            FROM (
+                SELECT
+                    first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID" As "firstSurveyID",
+                    MIN(last."SurveyID") OVER (PARTITION BY last."SurveyID") As "lastSurveyID"
+                FROM
+                    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
+                    FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
+                    WHERE v."isFirst" = true
+                    AND v."GeometryID" = su."GeometryID"
+                    AND v."SurveyID" = s."SurveyID"
+                    AND s."SurveyDay" = row."SurveyDay"
+                    AND s."SurveyID" != row.first) AS first,
+                    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
+                    FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
+                    WHERE v."isLast" = true
+                    AND v."GeometryID" = su."GeometryID"
+                    AND v."SurveyID" = s."SurveyID"
+                    AND s."SurveyDay" = row."SurveyDay"
+                    AND s."SurveyID" != row.last) AS last
+                WHERE first."VRM" = last."VRM"
+                AND first."RoadName" = last."RoadName"
+                AND first."SurveyDay" = last."SurveyDay"
+                AND first."SurveyID" < last."SurveyID"
+                ) AS y
+                --ORDER BY "VRM", "firstSurveyID", "lastSurveyID"
+            UNION
+                SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."SurveyDay", v."SurveyID" As "firstSurveyID", v."SurveyID" AS "lastSurveyID", 1 AS span
+                FROM demand."VRMs_Final" v, demand."Surveys" s, mhtc_operations."Supply" su
+                WHERE v."orphan" = true
+                AND v."GeometryID" = su."GeometryID"
+                AND v."SurveyID" = s."SurveyID"
+                AND s."SurveyDay" = row."SurveyDay"
+                AND (s."SurveyID" != row.first
+                AND s."SurveyID" != row.last)
+             ORDER BY "VRM", "firstSurveyID", "lastSurveyID"
+        LOOP
 
-        IF currentVRM = lastVRM THEN
-            IF currentStartSurveyID = lastStartSurveyID THEN
-                -- Skip
-                --skip = true;
-                CONTINUE;
+            skip = false;
+            currentVRM = possible_spans."VRM";
+            currentStartSurveyID = possible_spans."firstSurveyID";
+
+            RAISE NOTICE '*****--- Considering (%) starting at survey id %', currentVRM, currentStartSurveyID;
+
+            IF currentVRM = lastVRM THEN
+                IF currentStartSurveyID = lastStartSurveyID THEN
+                    -- Skip
+                    --skip = true;
+                    CONTINUE;
+                END IF;
             END IF;
-        END IF;
 
-        RETURN NEXT possible_spans;
+            RETURN NEXT possible_spans;
 
-        lastVRM = currentVRM;
-        lastStartSurveyID = currentStartSurveyID;
+            lastVRM = currentVRM;
+            lastStartSurveyID = currentStartSurveyID;
+
+        END LOOP;
 
     END LOOP;
 
@@ -170,7 +188,6 @@ END;
 --$do$;
 $BODY$
 LANGUAGE plpgsql;
-
 
 -- Check
 SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", su."RestrictionTypeID", v."VRM", "isFirst", "isLast", "orphan"
@@ -181,3 +198,27 @@ AND v."SurveyID" = s."SurveyID"
 AND su."RoadName" IN ('The Mint')
 ORDER BY "SurveyID", "VRM"
 
+
+
+
+DO
+$do$
+DECLARE
+   row RECORD;
+BEGIN
+    FOR row IN SELECT "SurveyDay", min("SurveyID") as first, max("SurveyID") as last
+                FROM demand."Surveys" s
+                GROUP BY "SurveyDay"
+                ORDER BY min("SurveyID")
+    LOOP
+
+        RAISE NOTICE '***** Considering (%)', row."SurveyDay";
+
+        SELECT * FROM get_all_durations()
+        WHERE "SurveyDay" = row."SurveyDay"
+        AND ("firstSurveyID" = row.first
+        OR "lastSurveyID" = row.last)
+
+    END LOOP;
+END
+$do$;
