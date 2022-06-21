@@ -31,5 +31,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .loadVRMs import loadVRMs
-    return loadVRMs(iface)
+    from .loadDemand import loadDemand
+    return loadDemand(iface)
