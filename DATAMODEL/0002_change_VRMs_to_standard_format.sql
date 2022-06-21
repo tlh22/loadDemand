@@ -66,3 +66,4 @@ CASE
 END
 --FROM demand."VRMs"
 --WHERE "VRM" SIMILAR TO '[A-Z]{2}[O][0-9]-[A-Z]{3}'
+WHERE
