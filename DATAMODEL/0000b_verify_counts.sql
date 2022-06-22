@@ -62,9 +62,9 @@ ORDER BY "SurveyID";
 
 -- Step 1: Add new fields
 
-ALTER TABLE demand."Demand_Merged"
+ALTER TABLE demand."Counts"
     ADD COLUMN "Demand" double precision;
-ALTER TABLE demand."Demand_Merged"
+ALTER TABLE demand."Counts"
     ADD COLUMN "Stress" double precision;
 
 -- Step 2: calculate demand values using trigger
@@ -79,39 +79,67 @@ DECLARE
 	 vehicleWidth real := 0.0;
 	 motorcycleWidth real := 0.0;
 	 restrictionLength real := 0.0;
+	 Capacity INTEGER := 0;
 BEGIN
+
+    select "Value" into vehicleLength
+        from "mhtc_operations"."project_parameters"
+        where "Field" = 'VehicleLength';
+
+    select "Value" into vehicleWidth
+        from "mhtc_operations"."project_parameters"
+        where "Field" = 'VehicleWidth';
+
+    select "Value" into motorcycleWidth
+        from "mhtc_operations"."project_parameters"
+        where "Field" = 'MotorcycleWidth';
 
     IF vehicleLength IS NULL OR vehicleWidth IS NULL OR motorcycleWidth IS NULL THEN
         RAISE EXCEPTION 'Capacity parameters not available ...';
         RETURN OLD;
     END IF;
 
-    NEW."Demand" = COALESCE(NEW."ncars"::float, 0.0) + COALESCE(NEW."nlgvs"::float, 0.0)
-                    + COALESCE(NEW."nmcls"::float, 0.0)*0.33
-                    + (COALESCE(NEW."nogvs"::float, 0) + COALESCE(NEW."nogvs2"::float, 0) + COALESCE(NEW."nminib"::float, 0) + COALESCE(NEW."nbuses"::float, 0))*1.5
-                    + COALESCE(NEW."ntaxis"::float, 0);
+    SELECT "Capacity" into Capacity
+    FROM mhtc_operations."Supply"
+    WHERE "GeometryID" = NEW."GeometryID";
+
+    NEW."Demand" = COALESCE(NEW."NrCars"::float, 0.0) +
+                    COALESCE(NEW."NrLGVs"::float, 0.0) +
+                    COALESCE(NEW."NrMCLs"::float, 0.0)*0.33 +
+                    (COALESCE(NEW."NrOGVs"::float, 0.0) + COALESCE(NEW."NrMiniBuses"::float, 0.0) + COALESCE(NEW."NrBuses"::float, 0.0))*1.5 +
+                    COALESCE(NEW."NrTaxis"::float, 0.0)
+                    --- added for Camden
+                    + COALESCE(NEW."NrCars_Suspended"::float, 0.0) +
+                    COALESCE(NEW."NrLGVs_Suspended"::float, 0.0) +
+                    COALESCE(NEW."NrMCLs_Suspended"::float, 0.0)*0.33 +
+                    (COALESCE(NEW."NrOGVs_Suspended"::float, 0) + COALESCE(NEW."NrMiniBuses_Suspended"::float, 0) + COALESCE(NEW."NrBuses_Suspended"::float, 0))*1.5 +
+                    COALESCE(NEW."NrTaxis_Suspended"::float, 0);
 
     /* What to do about suspensions */
 
     CASE
-        WHEN NEW."Capacity" = 0 THEN
+        WHEN Capacity = 0 THEN
             CASE
-                WHEN NEW."Demand" > 0.0 THEN NEW."Stress" = 100.0;
+                WHEN NEW."Demand" > 0.0 THEN NEW."Stress" = 1.0;
                 ELSE NEW."Stress" = 0.0;
             END CASE;
         ELSE
-            CASE
-                WHEN NEW."Capacity"::float - COALESCE(NEW."sbays"::float, 0.0) > 0.0 THEN
-                    NEW."Stress" = NEW."Demand" / (NEW."Capacity"::float - COALESCE(NEW."sbays"::float, 0.0)) * 100.0;
-                ELSE
-                    CASE
-                        WHEN NEW."Demand" > 0.0 THEN NEW."Stress" = 100.0;
-                        ELSE NEW."Stress" = 0.0;
-                    END CASE;
-            END CASE;
+
+            NEW."Stress" = NEW."Demand" / Capacity::float;
+
     END CASE;
 
 	RETURN NEW;
 
 END;
 $$;
+
+-- Step 3: setup trigger
+
+DROP TRIGGER IF EXISTS "update_demand" ON "demand"."Counts";
+CREATE TRIGGER "update_demand" before insert or update on "demand"."Counts" FOR EACH ROW EXECUTE function "demand"."update_demand"();
+
+-- Step 4: trigger trigger
+
+UPDATE "demand"."Counts" SET "ReasonForSuspension" = "ReasonForSuspension";
+
