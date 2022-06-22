@@ -72,6 +72,8 @@ import os.path
 from pydoc import locate
 #from qgis.gui import *
 #from qgis.core import *
+from html.parser import HTMLParser
+
 
 # See following for using QgsMapLayerComboBox - https://stackoverflow.com/questions/44079328/python-load-module-in-parent-to-prevent-overwrite-problems
 
@@ -114,6 +116,7 @@ class loadDemand:
 
         #self.canvas = QgsMapCanvas()
         #self.root = QgsProject.instance().layerTreeRoot()
+        self.myHTMLParser = HTMLParser()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -426,15 +429,38 @@ class loadDemand:
 
             if demandCopyStatus == False:
                 QMessageBox.information(self.iface.mainWindow(), "In processCounts",  "Error occurred updating record surveyID {}, GeometryID {}:".format(currSurveyID, currGeometryID))
+                break
 
         TOMsMessageLog.logMessage("Finished processCounts for {}, {} ...".format(currSurveyID, currGeometryID),
                                   level=Qgis.Info)
         return demandCopyStatus
 
+    # as per recommendation from @freylis, compile once only
+    #CLEANR = re.compile('<.*?>')
+
+    def cleanhtml(self, raw_html):
+        #self.myHTMLParser.feed(raw_html)
+        #self.myHTMLParser.close()
+        cleantext = self.myHTMLParser.handle_data(raw_html)
+        return cleantext
+
     def convertType(self, type, value):
 
         if type == 'bool':
             value = bool(value)
+
+        if type == 'int4':
+            try:
+                value = int(value)
+            except ValueError:
+                value = 0
+            except TypeError:
+                TOMsMessageLog.logMessage("In convertType. error with value: " + str(value),
+                                          level=Qgis.Warning)
+                value = 0
+
+        if type == 'varchar':
+            value = self.cleanhtml(value)
 
         """for type in (int, float):
             try:
@@ -451,7 +477,7 @@ class loadDemand:
         status = True
 
         TOMsMessageLog.logMessage("In copyAttributesToMasterLayer. GeometryID: " + str(currGeometryID),
-                                 level=Qgis.Warning)
+                                 level=Qgis.Info)
         # Now find the row for this GeometryID in masterLayer
         query = ('"SurveyID" = {} AND "GeometryID" = \'{}\' AND ("Done" = \'false\' OR "Done" IS NULL)').format(currSurveyID, currGeometryID)
         expr = QgsExpression(query)
@@ -467,23 +493,37 @@ class loadDemand:
         if rowFound == True:
 
             nrFields = masterRow.attributeCount()
+            idx_SurveyID = masterRow.fieldNameIndex("SurveyID")
+            idx_GeometryID = masterRow.fieldNameIndex("GeometryID")
+
+            TOMsMessageLog.logMessage("In copyAttributesToMasterLayer. idx_SurveyID: {}; idx_GeometryID: {}".format(idx_SurveyID, idx_GeometryID),
+                                                 level=Qgis.Info)
 
             TOMsMessageLog.logMessage("In copyAttributesToMasterLayer. Copying details for: {}".format(currGeometryID),
                                                  level=Qgis.Info)
-            for fieldIdx in range(3,nrFields+1):
+            for fieldIdx in range(1, nrFields):
 
-                idxMasterField = masterRow.fields().indexFromName(featureDetails.fieldName(fieldIdx))
-                masterFieldType =  masterRow.fields().at(idxMasterField).typeName()
-                #TOMsMessageLog.logMessage("In copyAttributesToMasterLayer: field {} is type {}".format(
-                #    featureDetails.fieldName(fieldIdx), masterFieldType), level=Qgis.Warning)
+                if fieldIdx in [idx_SurveyID, idx_GeometryID]:
+                    continue
 
-                fieldValue = self.convertType(masterFieldType, featureDetails.field(fieldIdx).value())
+                # find out what the field is in the master layer
+                masterFieldName = masterRow.fields().at(fieldIdx).name()
+                masterFieldType = masterRow.fields().at(fieldIdx).typeName()
+                TOMsMessageLog.logMessage("In copyAttributesToMasterLayer: field {} {} is type {}".format(
+                    masterFieldName, fieldIdx, masterFieldType), level=Qgis.Info)
 
-                if fieldValue is not None:
+                # get the same named field in the gkpg
+                idxFeatureField = featureDetails.indexOf(masterFieldName)
+                currfieldValue = featureDetails.field(idxFeatureField).value()
+
+                if currfieldValue is not None and str(currfieldValue) != 'NULL':
+
+                    fieldValue = self.convertType(masterFieldType, currfieldValue)
+
                     try:
                         TOMsMessageLog.logMessage("In copyAttributesToMasterLayer: Updating field {} in {} with {}".format(
-                            featureDetails.fieldName(fieldIdx), currGeometryID, fieldValue), level=Qgis.Warning)
-                        masterRow.setAttribute(idxMasterField, fieldValue)
+                            featureDetails.fieldName(idxFeatureField), currGeometryID, fieldValue), level=Qgis.Info)
+                        masterRow.setAttribute(fieldIdx, fieldValue)
                     except IndexError:
                         TOMsMessageLog.logMessage("In copyAttributesToMasterLayer: Index error occurred updating field {} in {}".format(featureDetails.fieldName(fieldIdx), str(currGeometryID)), level=Qgis.Warning)
                         return False
