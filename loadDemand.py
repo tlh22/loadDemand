@@ -412,9 +412,9 @@ class loadDemand:
                                  "Click Cancel to exit.", QMessageBox.Cancel)
 
         SurveyID, SectionID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, \
-        SuspensionReference, NrBaysSuspended, ReasonForSuspension, DoubleParkingDetails, \
+        DoubleParkingDetails, \
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, \
-        NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended = range(29)
+        NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended = range(26)
 
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 
@@ -459,8 +459,8 @@ class loadDemand:
                                           level=Qgis.Warning)
                 value = 0
 
-        if type == 'varchar':
-            value = self.cleanhtml(value)
+        """if type == 'varchar':
+            value = self.cleanhtml(value)"""
 
         """for type in (int, float):
             try:

@@ -69,4 +69,24 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, mhtc_operations."S
   GROUP BY d."SurveyID", d."BeatTitle"
 ORDER BY d."SurveyID";
 
+-- for Smallfield - copy details for different survey ids
 
+UPDATE demand."Counts" c1
+	SET "NrCars"=c2."NrCars", "NrLGVs"=c2."NrLGVs", "NrMCLs"=c2."NrMCLs", "NrTaxis"=c2."NrTaxis", "NrOGVs"=c2."NrOGVs", "NrMiniBuses"=c2."NrMiniBuses", "NrBuses"=c2."NrBuses", "NrSpaces"=c2."NrSpaces", "Notes"=c2."Notes", "SuspensionReference"=c2."SuspensionReference", "NrBaysSuspended"=c2."NrBaysSuspended", "ReasonForSuspension"=c2."ReasonForSuspension", "DoubleParkingDetails"=c2."DoubleParkingDetails"
+	FROM demand."Counts" c2, mhtc_operations."Supply" s
+	WHERE c1."GeometryID" = c2."GeometryID"
+	AND c1."GeometryID" = s."GeometryID"
+	AND c2."SurveyID" = 103
+	AND c1."SurveyID" > 103
+	AND c1."SurveyID" < 200
+	AND s."SurveyArea" = '5';
+
+UPDATE demand."RestrictionsInSurveys" RiS1
+	SET "Enumerator"=RiS2."Enumerator", "Done"=RiS2."Done", "SuspensionReference"=RiS2."SuspensionReference", "SuspensionReason"=RiS2."SuspensionReason", "SuspensionLength"=RiS2."SuspensionLength", "NrBaysSuspended"=RiS2."NrBaysSuspended", "SuspensionNotes"=RiS2."SuspensionNotes", "Photos_01"=RiS2."Photos_01", "Photos_02"=RiS2."Photos_02", "Photos_03"=RiS2."Photos_03"
+    FROM demand."RestrictionsInSurveys" RiS2, mhtc_operations."Supply" s
+	WHERE RiS1."GeometryID" = RiS2."GeometryID"
+	AND RiS1."GeometryID" = s."GeometryID"
+	AND RiS2."SurveyID" = 103
+	AND RiS1."SurveyID" > 103
+	AND RiS1."SurveyID" < 200
+	AND s."SurveyArea" = '5';
