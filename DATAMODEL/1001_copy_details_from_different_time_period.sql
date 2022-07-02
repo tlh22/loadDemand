@@ -228,3 +228,50 @@ BEGIN
 
 END;
 $do$;
+
+
+
+-- update details for count
+
+
+DO
+$do$
+DECLARE
+    relevant_restriction_in_survey RECORD;
+    clone_restriction_id uuid;
+    current_done BOOLEAN := false;
+	nrCars INTEGER;
+	nrCarsSuspended INTEGER;
+BEGIN
+
+    FOR relevant_restriction_in_survey IN
+        SELECT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
+            FROM "demand"."RestrictionsInSurveys" RiS
+        WHERE RiS."SurveyID" IN (108)
+        AND "GeometryID" IN (SELECT DISTINCT RiS2."GeometryID"
+                            FROM "demand"."RestrictionsInSurveys" RiS2, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a, demand."Surveys" s
+                            WHERE RiS2."GeometryID" = r."GeometryID"
+                            AND RiS2."SurveyID" = s."SurveyID"
+                            AND r."SurveyArea" = a.name
+                            AND r."SurveyArea" IN ('1', '2')
+                            AND "Enumerator" = 'peter a'
+                            AND s."SurveyID" IN (108))
+    LOOP
+
+		RAISE NOTICE '*****--- Considering for % (%)', relevant_restriction_in_survey."GeometryID", relevant_restriction_in_survey."SurveyID";
+
+        UPDATE demand."Counts" AS c1
+            SET "NrCars"=c2."NrCars", "NrLGVs"=c2."NrLGVs", "NrMCLs"=c2."NrMCLs", "NrTaxis"=c2."NrTaxis", "NrPCLs"=c2."NrPCLs", "NrEScooters"=c2."NrEScooters", "NrDocklessPCLs"=c2."NrDocklessPCLs", "NrOGVs"=c2."NrOGVs", "NrMiniBuses"=c2."NrMiniBuses", "NrBuses"=c2."NrBuses", 
+            "NrSpaces"=c2."NrSpaces", "DoubleParkingDetails"=c2."DoubleParkingDetails", 
+            "NrCars_Suspended"=c2."NrCars_Suspended", "NrLGVs_Suspended"=c2."NrLGVs_Suspended", "NrMCLs_Suspended"=c2."NrMCLs_Suspended", "NrTaxis_Suspended"=c2."NrTaxis_Suspended", "NrPCLs_Suspended"=c2."NrPCLs_Suspended", "NrEScooters_Suspended"=c2."NrEScooters_Suspended", "NrDocklessPCLs_Suspended"=c2."NrDocklessPCLs_Suspended", "NrOGVs_Suspended"=c2."NrOGVs_Suspended", "NrMiniBuses_Suspended"=c2."NrMiniBuses_Suspended", "NrBuses_Suspended"=c2."NrBuses_Suspended"
+            FROM demand."Counts_PA" c2
+            WHERE c2."GeometryID" = relevant_restriction_in_survey."GeometryID"
+            AND c1."GeometryID" = c2."GeometryID"
+            AND c2."SurveyID" = 107
+            AND c1."SurveyID" = relevant_restriction_in_survey."SurveyID";
+       
+    END LOOP;
+
+END;
+$do$;
+

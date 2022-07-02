@@ -36,14 +36,14 @@ AS
 	**/
     SELECT row_number() OVER (PARTITION BY true::boolean) AS id,
     s."GeometryID", s.geom, s."RestrictionTypeID", s."GeomShapeID", s."AzimuthToRoadCentreLine", s."BayOrientation",
-    CASE WHEN d."Demand" > s."NrBays" THEN d."Demand"
+    CASE WHEN RiS."Demand" > s."NrBays" THEN RiS."Demand"
          ELSE s."NrBays"
     END AS "NrBays",
-    d."Capacity",
-    d."SurveyID", d."Demand"
+    s."Capacity",
+    RiS."SurveyID", RiS."Demand"
 
-    FROM demand."Supply_for_viewing_parking_locations" s, demand."Demand_Merged" d
-	WHERE d."GeometryID" = s."GeometryID"
+    FROM demand."Supply_for_viewing_parking_locations" s, demand."RestrictionsInSurveys" RiS
+	WHERE RiS."GeometryID" = s."GeometryID"
 
 WITH DATA;
 

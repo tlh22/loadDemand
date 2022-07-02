@@ -8,7 +8,7 @@ AS
     SELECT
         row_number() OVER (PARTITION BY true::boolean) AS id,
 
-    RiS."SurveyID", s."GeometryID", s.geom, s."RestrictionTypeID", s."RoadName", s."CapacityFromDemand" AS "Capacity", COALESCE(RiS."NrBaysSuspended", 0) AS "NrBaysSuspended",
+    RiS."SurveyID", s."GeometryID", s.geom, s."RestrictionTypeID", s."RoadName", s."SideOfStreet", s."CapacityFromDemand" AS "Capacity", COALESCE(RiS."NrBaysSuspended", 0) AS "NrBaysSuspended",
 	RiS."Demand",
     RiS."Demand_Standard" AS "NrParkedInBays", RiS."Demand_Other" AS "NrParkedOnYLs", -- for Camden
     RiS."Stress"
