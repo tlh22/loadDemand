@@ -399,7 +399,7 @@ class loadDemand:
         TOMsMessageLog.logMessage("In processCounts for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Info)
 
         query = QSqlQuery(
-        "SELECT SurveyID, SectionID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, SuspensionReference, NrBaysSuspended, ReasonForSuspension, DoubleParkingDetails, NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended FROM Counts WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
+        "SELECT SurveyID, SectionID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, DoubleParkingDetails, NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended FROM Counts WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
         , dbConn)
         try:
             query.exec()
