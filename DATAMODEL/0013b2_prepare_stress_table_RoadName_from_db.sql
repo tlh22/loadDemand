@@ -77,12 +77,31 @@ AS
                 END
         END "Stress"
     FROM (
-    SELECT "SurveyID", s."RoadName", SUM(s."Capacity") AS "Capacity", SUM(d."Demand") AS "Demand"
-    FROM mhtc_operations."Supply" s, demand."Demand_Merged" d
-    WHERE s."GeometryID" = d."GeometryID"
-    AND s."RestrictionTypeID" NOT IN (117, 118)  -- Motorcycle bays
-    GROUP BY d."SurveyID", s."RoadName"
-    ORDER BY s."RoadName", d."SurveyID" ) a
+	
+    SELECT "SurveyID", "RoadName", 
+	SUM("Capacity") AS "Capacity", 
+	SUM("Demand") AS "Demand"
+    FROM (
+	    SELECT d."SurveyID", su."RoadName", 
+		CASE WHEN ("RestrictionTypeID" < 200 OR
+			"RestrictionTypeID" = 201 OR
+			"RestrictionTypeID" = 216 OR
+			"RestrictionTypeID" = 217 OR
+			"RestrictionTypeID" = 227) THEN
+			su."Capacity" - COALESCE("NrBaysSuspended", 0.0)
+		ELSE
+			su."Capacity"
+		END AS "Capacity",
+		RiS."Demand"
+		FROM mhtc_operations."Supply" su, demand."Counts" d, demand."RestrictionsInSurveys" RiS
+		WHERE su."GeometryID" = d."GeometryID"
+		AND d."GeometryID" = RiS."GeometryID"
+		AND d."SurveyID" = RiS."SurveyID"
+		AND su."RestrictionTypeID" NOT IN (117, 118)  -- Motorcycle bays
+		) b
+    GROUP BY "SurveyID", "RoadName"
+    ORDER BY "RoadName", "SurveyID" ) a
+
     ) d
 	WHERE s."name1" = d."RoadName"
 WITH DATA;

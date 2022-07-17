@@ -7,21 +7,15 @@ ALTER TABLE demand."RestrictionsInSurveys"
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "Demand_Other" double precision;  -- This is the count fo all vehicles in the suspensions tab
+    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Stress" double precision;
-
--- reset NrBaysSuspended values
-
-UPDATE demand."Demand_Merged"
-SET ncars = NULL
-WHERE ncars = '';
 
 -- Step 2: calculate demand values using trigger
 
 -- set up trigger for demand and stress
 
-CREATE OR REPLACE FUNCTION "demand"."update_demand_sections"() RETURNS "trigger"
+CREATE OR REPLACE FUNCTION "demand"."update_demand_counts"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
@@ -56,7 +50,21 @@ DECLARE
     NrBuses_Suspended INTEGER := 0;
     Supply_Capacity INTEGER := 0;
     Capacity INTEGER := 0;
+	NrBaysSuspended INTEGER := 0;
+	RestrictionTypeID INTEGER;
 BEGIN
+
+    select "Value" into vehicleLength
+        from "mhtc_operations"."project_parameters"
+        where "Field" = 'VehicleLength';
+
+    select "Value" into vehicleWidth
+        from "mhtc_operations"."project_parameters"
+        where "Field" = 'VehicleWidth';
+
+    select "Value" into motorcycleWidth
+        from "mhtc_operations"."project_parameters"
+        where "Field" = 'MotorcycleWidth';
 
     IF vehicleLength IS NULL OR vehicleWidth IS NULL OR motorcycleWidth IS NULL THEN
         RAISE EXCEPTION 'Capacity parameters not available ...';
@@ -76,7 +84,13 @@ BEGIN
 	WHERE "GeometryID" = NEW."GeometryID"
 	AND "SurveyID" = NEW."SurveyID";
 
-	SELECT "CapacityFromDemand"
+	SELECT "RestrictionTypeID"   -- what happens if field does not exist?
+    INTO RestrictionTypeID
+	FROM mhtc_operations."Supply"
+	WHERE "GeometryID" = NEW."GeometryID";
+	
+    -- From Camden where determining capacity from sections
+	SELECT "CapacityFromDemand", "RestrictionTypeID"   -- what happens if field does not exist?
     INTO Supply_Capacity
 	FROM mhtc_operations."Supply"
 	WHERE "GeometryID" = NEW."GeometryID";
@@ -99,15 +113,24 @@ BEGIN
         (COALESCE(NrOGVs::float, 0.0) + COALESCE(NrMiniBuses::float, 0.0) + COALESCE(NrBuses::float, 0.0))*1.5 +
         COALESCE(NrTaxis::float, 0.0);
 
-    NEW."Demand_Other" = COALESCE(NrCars_Suspended::float, 0.0) +
+    NEW."DemandInSuspendedAreas" = COALESCE(NrCars_Suspended::float, 0.0) +
         COALESCE(NrLGVs_Suspended::float, 0.0) +
         COALESCE(NrMCLs_Suspended::float, 0.0)*0.33 +
         (COALESCE(NrOGVs_Suspended::float, 0) + COALESCE(NrMiniBuses_Suspended::float, 0) + COALESCE(NrBuses_Suspended::float, 0))*1.5 +
         COALESCE(NrTaxis_Suspended::float, 0);
 
     /* What to do about suspensions */
-
-    Capacity = Supply_Capacity -  COALESCE(NEW."NrBaysSuspended", 0.0);
+	
+	IF (RestrictionTypeID = 201 OR
+		RestrictionTypeID = 216 OR
+		RestrictionTypeID = 217 OR
+		RestrictionTypeID = 227) THEN
+		NrBaysSuspended = COALESCE(NEW."NrBaysSuspended", 0.0);
+	ELSE
+		NrBaysSuspended = 0.0;
+	END IF;
+	
+    Capacity = Supply_Capacity - NrBaysSuspended;
 
     IF Capacity <= 0.0 THEN
         IF NEW."Demand" > 0.0 THEN
@@ -127,7 +150,7 @@ $$;
 -- create trigger
 
 DROP TRIGGER IF EXISTS update_demand ON demand."RestrictionsInSurveys";
-CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_sections"();
+CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
 
 -- trigger trigger
 

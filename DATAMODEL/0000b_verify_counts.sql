@@ -109,12 +109,21 @@ BEGIN
                     (COALESCE(NEW."NrOGVs"::float, 0.0) + COALESCE(NEW."NrMiniBuses"::float, 0.0) + COALESCE(NEW."NrBuses"::float, 0.0))*1.5 +
                     COALESCE(NEW."NrTaxis"::float, 0.0)
                     --- added for Camden
-                    + COALESCE(NEW."NrCars_Suspended"::float, 0.0) +
+                    /***
+					+ COALESCE(NEW."NrCars_Suspended"::float, 0.0) +
                     COALESCE(NEW."NrLGVs_Suspended"::float, 0.0) +
                     COALESCE(NEW."NrMCLs_Suspended"::float, 0.0)*0.33 +
                     (COALESCE(NEW."NrOGVs_Suspended"::float, 0) + COALESCE(NEW."NrMiniBuses_Suspended"::float, 0) + COALESCE(NEW."NrBuses_Suspended"::float, 0))*1.5 +
                     COALESCE(NEW."NrTaxis_Suspended"::float, 0);
+					***/
 
+	/***NEW."VehiclesInSuspendedArea" = COALESCE(NEW."NrCars_Suspended"::float, 0.0) +
+                    COALESCE(NEW."NrLGVs_Suspended"::float, 0.0) +
+                    COALESCE(NEW."NrMCLs_Suspended"::float, 0.0)*0.33 +
+                    (COALESCE(NEW."NrOGVs_Suspended"::float, 0) + COALESCE(NEW."NrMiniBuses_Suspended"::float, 0) + COALESCE(NEW."NrBuses_Suspended"::float, 0))*1.5 +
+                    COALESCE(NEW."NrTaxis_Suspended"::float, 0); ***/
+	--NEW."BaysSuspended" = 
+	
     /* What to do about suspensions */
 
     CASE
@@ -141,5 +150,6 @@ CREATE TRIGGER "update_demand" before insert or update on "demand"."Counts" FOR 
 
 -- Step 4: trigger trigger
 
-UPDATE "demand"."Counts" SET "ReasonForSuspension" = "ReasonForSuspension";
+UPDATE "demand"."Counts" SET "DoubleParkingDetails" = "DoubleParkingDetails";
+
 

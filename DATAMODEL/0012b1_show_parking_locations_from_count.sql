@@ -42,8 +42,9 @@ AS
     s."Capacity",
     RiS."SurveyID", RiS."Demand"
 
-    FROM demand."Supply_for_viewing_parking_locations" s, demand."RestrictionsInSurveys" RiS
+    FROM demand."Supply_for_viewing_parking_locations" s, demand."RestrictionsInSurveys" RiS, mhtc_operations."Supply" su
 	WHERE RiS."GeometryID" = s."GeometryID"
+	AND RiS."GeometryID" = su."GeometryID"
 
 WITH DATA;
 

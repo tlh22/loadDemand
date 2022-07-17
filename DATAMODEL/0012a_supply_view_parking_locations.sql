@@ -40,7 +40,10 @@ SELECT "GeometryID", geom, "RestrictionLength", "RestrictionTypeID",
              ELSE "GeomShapeID"
          END
          , "AzimuthToRoadCentreLine", "BayOrientation",
-         CASE WHEN "NrBays" = -1 THEN "Capacity"
+         CASE WHEN "NrBays" = -1 THEN 
+			CASE WHEN "Capacity" = 0 THEN ROUND(ST_LENGTH(geom)/5.0)
+				ELSE "Capacity"
+				END
               ELSE "NrBays"
          END AS "NrBays", "Capacity"  -- increase the NrBays value to deal with over parked areas
 
