@@ -52,3 +52,16 @@ AND v."GeometryID" = su."GeometryID"
 AND su."CPZ" = 'FP'
 ORDER BY "GeometryID", "VRM", "SurveyID"
 
+--- Clear counts
+
+-- Remove "Done" flag and clear any details
+
+UPDATE demand."RestrictionsInSurveys" AS ris
+SET "DemandSurveyDateTime" = NULL, "Enumerator" = NULL, "Done" = NULL, "SuspensionReference" = NULL, "SuspensionReason" = NULL,
+"SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL
+WHERE "SurveyID" >=201
+AND "SurveyID" <= 212
+AND "GeometryID" IN (SELECT DISTINCT r."GeometryID"
+                            FROM mhtc_operations."Supply" r
+                            WHERE r."SurveyArea" IN ('2')
+                            )

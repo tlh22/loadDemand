@@ -1,49 +1,4 @@
-/*
-To create stress maps, steps are:
-1.	Check that demand fields are correct
-2. Prepare view with query below
-*/
 
--- Ensure demand fields are tidy
-UPDATE demand."Demand_Merged"
-SET ncars = NULL
-WHERE ncars = '';
-
-UPDATE demand."Demand_Merged"
-SET nlgvs = NULL
-WHERE nlgvs = '';
-
-UPDATE demand."Demand_Merged"
-SET nmcls = NULL
-WHERE nmcls = '';
-
-UPDATE demand."Demand_Merged"
-SET nogvs = NULL
-WHERE nogvs = '';
-
-UPDATE demand."Demand_Merged"
-SET nogvs2 = NULL
-WHERE nogvs2 = '';
-
-UPDATE demand."Demand_Merged"
-SET nbuses = NULL
-WHERE nbuses = '';
-
-UPDATE demand."Demand_Merged"
-SET nminib = NULL
-WHERE nminib = '';
-
-UPDATE demand."Demand_Merged"
-SET ntaxis = NULL
-WHERE ntaxis = '';
-
-UPDATE demand."Demand_Merged"
-SET nspaces = NULL
-WHERE nspaces = '';
-
-UPDATE demand."Demand_Merged"
-SET sbays = NULL
-WHERE sbays = '';
 
 -- Now prepare stress
 
@@ -88,7 +43,7 @@ AS
 			"RestrictionTypeID" = 216 OR
 			"RestrictionTypeID" = 217 OR
 			"RestrictionTypeID" = 227) THEN
-			su."Capacity" - COALESCE("NrBaysSuspended", 0.0)
+			su."Capacity" - COALESCE(RiS."NrBaysSuspended", 0.0)
 		ELSE
 			su."Capacity"
 		END AS "Capacity",
@@ -138,7 +93,7 @@ SELECT "SurveyID", "RoadName", "Capacity", "Demand",
         END "Stress"
     FROM (
     SELECT "SurveyID", s."RoadName", SUM(s."Capacity") AS "Capacity", SUM(d."Demand") AS "Demand"
-    FROM mhtc_operations."Supply" s, demand."Demand_Merged" d
+    FROM mhtc_operations."Supply" s, demand."Counts" d
     WHERE s."GeometryID" = d."GeometryID"
     AND s."RestrictionTypeID" NOT IN (117, 118)  -- Motorcycle bays
     GROUP BY d."SurveyID", s."RoadName"

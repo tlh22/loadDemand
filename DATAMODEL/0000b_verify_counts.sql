@@ -107,7 +107,7 @@ BEGIN
                     COALESCE(NEW."NrLGVs"::float, 0.0) +
                     COALESCE(NEW."NrMCLs"::float, 0.0)*0.33 +
                     (COALESCE(NEW."NrOGVs"::float, 0.0) + COALESCE(NEW."NrMiniBuses"::float, 0.0) + COALESCE(NEW."NrBuses"::float, 0.0))*1.5 +
-                    COALESCE(NEW."NrTaxis"::float, 0.0)
+                    COALESCE(NEW."NrTaxis"::float, 0.0);
                     --- added for Camden
                     /***
 					+ COALESCE(NEW."NrCars_Suspended"::float, 0.0) +
