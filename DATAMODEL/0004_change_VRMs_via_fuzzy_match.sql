@@ -38,6 +38,14 @@ AND v1."VRM" NOT IN (
 ORDER BY v1."VRM";
 **/
 
+SELECT v1.*, v2."VRM", v2."SurveyID"
+FROM demand."VRMs_Final" v2 , demand."VRMs_Final" v1
+WHERE v1."GeometryID" = v2."GeometryID"
+AND v2."SurveyID" = v1."SurveyID" + 1
+AND v1."VRM" != v2."VRM"
+AND levenshtein(v1."VRM"::text, v2."VRM"::text, 10, 10, 1) <= 1
+AND (v1."VRM" NOT LIKE 'NO%')
+
 -- Change details
 --SELECT demand."VRMs" AS v1
 UPDATE demand."VRMs" AS v1
