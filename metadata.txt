@@ -7,7 +7,7 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=loadVRMs
+name=loadDemand
 qgisMinimumVersion=3.0
 description=Loads data from occupancy survey
 version=0.1
