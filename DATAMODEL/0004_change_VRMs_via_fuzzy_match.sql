@@ -39,17 +39,17 @@ ORDER BY v1."VRM";
 **/
 
 -- Change details
---SELECT demand."VRMs" AS v1
-UPDATE demand."VRMs" AS v1
-SET "VRM" = v2."VRM"
-FROM demand."VRMs" v2
+--SELECT v2."VRM", v1."VRM"
+--FROM demand."VRMs_Final" AS v1, demand."VRMs_Final" AS v2
+UPDATE demand."VRMs" AS v2
+SET "VRM" = v1."VRM"
+FROM demand."VRMs" v1
 WHERE v1."GeometryID" = v2."GeometryID"
 AND v1."SurveyID" != v2."SurveyID"
 AND v1."VRM" != v2."VRM"
 AND v1."ID" < v2."ID"
 AND levenshtein(v1."VRM"::text, v2."VRM"::text, 10, 10, 1) <= 2
-AND (v1."SurveyID" < 30 AND v1."SurveyID" > 20)   -- need to ensure that v1 and v2 have the same "SurveyDay"
-AND (v2."SurveyID" < 30 AND v2."SurveyID" > 20)
+AND v1."SurveyID" / 100 = v2."SurveyID" / 100   -- need to ensure that v1 and v2 have the same "SurveyDay"
 AND v1."VRM" NOT IN (
     SELECT DISTINCT v11."VRM"
     FROM demand."VRMs" v11, demand."VRMs" v12

@@ -179,13 +179,14 @@ BEGIN
 
 
     FOR relevant_restriction_in_survey IN
-        SELECT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
+        SELECT DISTINCT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
             FROM "demand_WGR"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
         WHERE RiS."GeometryID" = r."GeometryID"
         AND r."SurveyArea" = a.name
         AND r."SurveyArea" IN ('7S-2', '7S-4')
         AND RiS."Done" IS true
         AND RiS."SurveyID" = wgs_survey_id
+		--AND RiS."DemandSurveyDateTime" < '2022-06-29'::date
     LOOP
 
         RAISE NOTICE '*****--- Processing % moving from (%) to (%)', relevant_restriction_in_survey."GeometryID", wgs_survey_id, demand_survey_id;
@@ -218,7 +219,9 @@ BEGIN
         END IF;
 
         UPDATE "demand_WGR"."RestrictionsInSurveys"
-        SET "Done" = false
+        SET "Done" = false, "Enumerator" = NULL, "DemandSurveyDateTime" = NULL, "SuspensionReference" = NULL,
+		"SuspensionReason" = NULL, "SuspensionLength" = NULL, "NrBaysSuspended"=NULL, "SuspensionNotes"=NULL,
+		"Photos_01"=NULL, "Photos_02"=NULL, "Photos_03"=NULL
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
         AND "SurveyID" = wgs_survey_id;
 
