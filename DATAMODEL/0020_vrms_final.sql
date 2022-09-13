@@ -11,7 +11,6 @@ CREATE TABLE demand."VRMs_Final"
   "SurveyID" integer,
   "SectionID" integer,
   "GeometryID" character varying(12),
-  "RoadName" character varying(100),
   "PositionID" integer,
   "VRM" character varying(12),
   "VehicleTypeID" integer,
