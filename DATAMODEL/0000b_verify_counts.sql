@@ -1,33 +1,8 @@
 /**
-Check the number of VRMs collected within each pass
+Check the count collected within each pass
 **/
 
-SELECT v."SurveyID", s."BeatTitle", COUNT(v."ID")
-FROM demand."VRMs" v, demand."Surveys" s
-WHERE v."SurveyID" = s."SurveyID"
-GROUP BY v."SurveyID", s."BeatTitle"
-ORDER BY v."SurveyID";
 
-
--- Use this to get break down by area - and then create a pivot table in Excel
-
-SELECT s."SurveyID", a.name, COUNT(v."ID")
-FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
-WHERE v."SurveyID" = s."SurveyID"
-AND v."GeometryID" = r."GeometryID"
-AND r."SurveyArea"::int = a.id
-GROUP BY s."SurveyID", a.name
-ORDER BY s."SurveyID", a.name
-
--- including road, GeometryID
-
-SELECT s."SurveyID", a.name, r."RoadName", r."GeometryID", COUNT(v."ID")
-FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
-WHERE v."SurveyID" = s."SurveyID"
-AND v."GeometryID" = r."GeometryID"
-AND r."SurveyArea"::int = a.id
-GROUP BY s."SurveyID", a.name, r."RoadName", r."GeometryID"
-ORDER BY s."SurveyID", a.name, r."RoadName", r."GeometryID"
 
 
 **********
@@ -58,6 +33,54 @@ SELECT "SurveyID",
 FROM demand."Counts"
 GROUP BY "SurveyID"
 ORDER BY "SurveyID";
+
+--
+
+SELECT s."SurveyID", z.name, z."Total"
+FROM demand."Surveys" s
+LEFT JOIN
+    (SELECT y."SurveyID", a.name, y."Total"
+    FROM mhtc_operations."SurveyAreas" a
+    LEFT JOIN
+
+     (SELECT c."SurveyID", r."SurveyArea",
+            SUM(COALESCE("NrCars"::float, 0.0) +
+            COALESCE("NrLGVs"::float, 0.0) +
+            COALESCE("NrMCLs"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs"::float, 0) + COALESCE("NrMiniBuses"::float, 0) + COALESCE("NrBuses"::float, 0))*1.5 +
+            COALESCE("NrTaxis"::float, 0)) As "Demand",
+            SUM("NrSpaces") AS "Spaces",
+            SUM(COALESCE("NrCars_Suspended"::float, 0.0) +
+            COALESCE("NrLGVs_Suspended"::float, 0.0) +
+            COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
+            COALESCE("NrTaxis_Suspended"::float, 0)) As "Other_Demand",
+            SUM(COALESCE("NrCars"::float, 0.0) +
+            COALESCE("NrLGVs"::float, 0.0) +
+            COALESCE("NrMCLs"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs"::float, 0) + COALESCE("NrMiniBuses"::float, 0) + COALESCE("NrBuses"::float, 0))*1.5 +
+            COALESCE("NrTaxis"::float, 0) +
+            COALESCE("NrSpaces"::float, 0.0) +
+            COALESCE("NrCars_Suspended"::float, 0.0) +
+            COALESCE("NrLGVs_Suspended"::float, 0.0) +
+            COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
+            COALESCE("NrTaxis_Suspended"::float, 0)) As "Total"
+          FROM demand."Counts" c, mhtc_operations."Supply" r
+          WHERE "SurveyID" > 0
+          AND c."GeometryID" = r."GeometryID"
+          GROUP BY c."SurveyID", r."SurveyArea"
+          ORDER BY c."SurveyID", r."SurveyArea") AS y
+
+          ON y."SurveyArea"::integer = a.id) AS z
+          ON z."SurveyID" = s."SurveyID"
+          ORDER BY s."SurveyID", z."name"
+
+--
+
+
+
+
 
 
 -- Step 1: Add new fields
