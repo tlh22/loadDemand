@@ -65,3 +65,65 @@ AND "GeometryID" IN (SELECT DISTINCT r."GeometryID"
                             FROM mhtc_operations."Supply" r
                             WHERE r."SurveyArea" IN ('2')
                             )
+
+
+-- remove VRMs and clear RiS
+DO
+$do$
+DECLARE
+    relevant_restriction_in_survey RECORD;
+    clone_restriction_id uuid;
+    current_done BOOLEAN := false;
+	curr_survey_id INTEGER := 101;
+	--new_survey_id INTEGER := 109;
+BEGIN
+
+    FOR relevant_restriction_in_survey IN
+        SELECT DISTINCT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
+            FROM "demand_WGR"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
+        WHERE RiS."GeometryID" = r."GeometryID"
+        AND r."SurveyAreaID" = a."Code"
+        AND a."SurveyAreaName" IN ('7S-6')
+        AND RiS."Done" IS true
+        AND RiS."SurveyID" = curr_survey_id
+		--AND RiS."DemandSurveyDateTime" < '2022-06-29'::date
+    LOOP
+
+        -- check to see if the restriction already has a value
+        SELECT "Done"
+        INTO current_done
+        FROM "demand_WGR"."RestrictionsInSurveys"
+        WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
+        AND "SurveyID" = curr_survey_id;
+
+        IF current_done IS true THEN
+
+            RAISE NOTICE '*****--- Clearing % from (%) ', relevant_restriction_in_survey."GeometryID", curr_survey_id;
+
+            UPDATE "demand_WGR"."RestrictionsInSurveys"
+            SET "DemandSurveyDateTime" = NULL, "Enumerator" = NULL, "Done" = NULL, "SuspensionReference" = NULL, "SuspensionReason" = NULL,
+            "SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL
+            WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
+            AND "SurveyID" = curr_survey_id;
+
+            -- Now remove VRMs
+
+            DELETE FROM "demand_WGR"."VRMs"
+            WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
+            AND "SurveyID" = curr_survey_id;
+
+        END IF;
+
+    END LOOP;
+
+END;
+$do$;
+
+
+-- verify clearance
+SELECT RiS."SurveyID", "SurveyAreaName", RiS."GeometryID"
+FROM "demand_WGR"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
+WHERE RiS."Done" is 'true'
+AND RiS."GeometryID" = r."GeometryID"
+AND r."SurveyAreaID" = a."Code"
+AND a."SurveyAreaName" = '7S-7'

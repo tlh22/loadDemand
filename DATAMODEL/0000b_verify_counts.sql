@@ -36,14 +36,14 @@ ORDER BY "SurveyID";
 
 --
 
-SELECT s."SurveyID", z.name, z."Total"
+SELECT s."SurveyID", z."SurveyAreaName", z."Total"
 FROM demand."Surveys" s
 LEFT JOIN
-    (SELECT y."SurveyID", a.name, y."Total"
+    (SELECT y."SurveyID", a."SurveyAreaName", y."Total"
     FROM mhtc_operations."SurveyAreas" a
     LEFT JOIN
 
-     (SELECT c."SurveyID", r."SurveyArea",
+     (SELECT c."SurveyID", r."SurveyAreaID",
             SUM(COALESCE("NrCars"::float, 0.0) +
             COALESCE("NrLGVs"::float, 0.0) +
             COALESCE("NrMCLs"::float, 0.0)*0.33 +
@@ -69,19 +69,14 @@ LEFT JOIN
           FROM demand."Counts" c, mhtc_operations."Supply" r
           WHERE "SurveyID" > 0
           AND c."GeometryID" = r."GeometryID"
-          GROUP BY c."SurveyID", r."SurveyArea"
-          ORDER BY c."SurveyID", r."SurveyArea") AS y
+          GROUP BY c."SurveyID", r."SurveyAreaID"
+          ORDER BY c."SurveyID", r."SurveyAreaID") AS y
 
-          ON y."SurveyArea"::integer = a.id) AS z
+          ON y."SurveyAreaID"::integer = a."Code") AS z
           ON z."SurveyID" = s."SurveyID"
-          ORDER BY s."SurveyID", z."name"
+          ORDER BY s."SurveyID", z."SurveyAreaName"
 
 --
-
-
-
-
-
 
 -- Step 1: Add new fields
 
