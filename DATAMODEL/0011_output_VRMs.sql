@@ -48,6 +48,7 @@ ORDER BY "GeometryID", "VRM") As v
 WHERE v."SurveyID" = s."SurveyID"
 AND r."SurveyID" = s."SurveyID"
 AND r."GeometryID" = v."GeometryID"
+AND s."SurveyID" > 0
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 ORDER BY "GeometryID", "VRM", "SurveyID"
