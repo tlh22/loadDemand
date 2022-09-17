@@ -1,4 +1,35 @@
 -- deal with 0 and O
+/***
+ * Permitted marks are:
+
+ 1.  A group consisting of two letters and two numbers followed by a group of 3 letters (for example DE51 ABC).
+
+Diagrams 1a and 1b.
+2.  A group consisting of a single letter and not more than 3 numbers followed by a group of 3 letters (for example A123 ABC).
+
+Diagrams 2a, 2b and 2c.
+3.  A group of 3 letters followed by a group consisting of not more than 3 numbers and a single letter (for example ABC 123A).
+
+Diagrams 3a, 3b and 3c.
+4.  A group of 4 numbers followed by a single letter or a group of 2 letters (for example 1234 AB, 1234 A).
+
+Diagrams 4a and 4b.
+5.  A group of not more than 3 numbers followed by a group of not more than 3 letters (for example 123 ABC, 123 AB, 12 A).
+
+Diagrams 5a and 5b.
+6.  A group of not more than 3 letters followed by a group of not more than 3 numbers (for example ABC 123, AB 123, A 12).
+
+Diagrams 6a and 6b.
+7.  A single letter or group of 2 letters followed by a group of 4 numbers (for example AB 1234, A 1234).
+
+Diagrams 7a and 7b.
+8.  A group of 3 letters followed by a group of 4 numbers (for example ABZ 1234, being a form of mark issued only in Northern Ireland).
+
+Diagrams 8a and 8b.
+9.  A group of 4 numbers followed by a group of 3 letters (for example 1234 ABZ, being a form of mark issued only in Northern Ireland).
+
+
+ ***/
 
 UPDATE demand."VRMs"
 SET "VRM" =
@@ -9,6 +40,9 @@ CASE
 	WHEN "VRM" SIMILAR TO '[0][A-Z][0-9]{2}-[A-Z]{3}' THEN regexp_replace("VRM", '[0]([A-Z][0-9]{2}-[A-Z]{3})', 'O\1')  -- First character is 0
 	WHEN "VRM" SIMILAR TO '[A-Z][0][0-9]{2}-[A-Z]{3}' THEN regexp_replace("VRM", '([A-Z])[0]([0-9]{2}-[A-Z]{3})', '\1O\2')  -- Second character is 0
 	WHEN "VRM" SIMILAR TO '[A-Z]{2}[O][0-9]-[A-Z]{3}' THEN regexp_replace("VRM", '([A-Z]{2})[O]([0-9]-[A-Z]{3})', '\10\2') -- Third character is O
+    WHEN "VRM" SIMILAR TO '[A-Z]{2}[I][0-9]-[A-Z]{3}' THEN regexp_replace("VRM", '([A-Z]{2})[O]([0-9]-[A-Z]{3})', '\11\2') -- Third character is 1
+    WHEN "VRM" SIMILAR TO '[A-Z]{2}[I][O]-[A-Z]{3}' THEN regexp_replace("VRM", '([A-Z]{2})[I][O](-[A-Z]{3})', '\110\2')  -- Third/Forth character is IO
+    WHEN "VRM" SIMILAR TO '[A-Z]{2}[I][I]-[A-Z]{3}' THEN regexp_replace("VRM", '([A-Z]{2})[I][I](-[A-Z]{3})', '\111\2')  -- Third/Forth character is II
 	WHEN "VRM" SIMILAR TO '[A-Z]{2}[0-9][O]-[A-Z]{3}' THEN regexp_replace("VRM", '([A-Z]{2}[0-9])[O](-[A-Z]{3})', '\10\2') -- Fourth character is O
 	WHEN "VRM" SIMILAR TO '[A-Z]{2}[0-9]{2}-[0][A-Z]{2}' THEN regexp_replace("VRM", '([A-Z]{2}[0-9]{2}-)[0]([A-Z]{2})', '\1O\2')  -- Fifth character is 0
 	WHEN "VRM" SIMILAR TO '[A-Z]{2}[0-9]{2}-[A-Z][0][A-Z]' THEN regexp_replace("VRM", '([A-Z]{2}[0-9]{2}-[A-Z])[0]([A-Z])', '\1O\2')  -- Sixth character is 0
@@ -38,6 +72,11 @@ CASE
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9]{2}-[A-Z]{3}' THEN "VRM"
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9]{2}[A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z][0-9]{2})([A-Z])-([A-Z]{2})', '\1-\2\3')
 
+	WHEN "VRM" SIMILAR TO '[A-Z][O][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[O]([0-9])([A-Z])-([A-Z]{2})', '\10\2-\3\4') -- Second character is O
+    WHEN "VRM" SIMILAR TO '[A-Z][I][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I]([0-9]([A-Z])-([A-Z]{2})', '\11\2-\3\4') -- Second character is 1
+    WHEN "VRM" SIMILAR TO '[A-Z][I][O][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I][0]([A-Z])-([A-Z]{2})', '\110-\2\3')  -- Second/Third character is IO
+    WHEN "VRM" SIMILAR TO '[A-Z][I][I][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I][I]([A-Z])-([A-Z]{2})', '\111-\2\3')  -- Second/Third character is II
+
     -- Tidy Previous UK (A9-AAA)
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9]-[A-Z]{3}' THEN "VRM"
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]{2}-[A-Z]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z]{2})-([A-Z])', '\1-\2\3')
@@ -61,6 +100,8 @@ CASE
 
     -- (999-AAA)
     WHEN "VRM" SIMILAR TO '[0-9]{3}[A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([0-9]{3})([A-Z])-([A-Z]{2})', '\1-\2\3')
+
+    --- anything where there are three letters at the end ??
 
 	ELSE "VRM"
 END
