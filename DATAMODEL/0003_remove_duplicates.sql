@@ -17,3 +17,12 @@ WHERE v1."VRM" = v2."VRM"
 AND v1."GeometryID" = v2."GeometryID"
 AND v1."SurveyID" = v2."SurveyID"
 AND v1."ID" < v2."ID";
+
+-- Remove blanks
+
+DELETE FROM demand."VRMs"
+WHERE LENGTH(TRIM("VRM")) = 0
+AND "VehicleTypeID" IS NULL
+AND "PermitTypeID" IS NULL
+AND LENGTH(TRIM("Notes")) = 0;
+
