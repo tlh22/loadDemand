@@ -8,28 +8,50 @@ Check the count collected within each pass
 **********
 -- Check
 SELECT "SurveyID",
-    SUM(COALESCE("NrCars"::float, 0.0) +
-	COALESCE("NrLGVs"::float, 0.0) +
-    COALESCE("NrMCLs"::float, 0.0)*0.33 +
-    (COALESCE("NrOGVs"::float, 0) + COALESCE("NrMiniBuses"::float, 0) + COALESCE("NrBuses"::float, 0))*1.5 +
-    COALESCE("NrTaxis"::float, 0)) As "Demand",
-    SUM("NrSpaces") AS "Spaces",
-    SUM(COALESCE("NrCars_Suspended"::float, 0.0) +
-	COALESCE("NrLGVs_Suspended"::float, 0.0) +
-    COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
-    (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
-    COALESCE("NrTaxis_Suspended"::float, 0)) As "Other_Demand",
-    SUM(COALESCE("NrCars"::float, 0.0) +
-	COALESCE("NrLGVs"::float, 0.0) +
-    COALESCE("NrMCLs"::float, 0.0)*0.33 +
-    (COALESCE("NrOGVs"::float, 0) + COALESCE("NrMiniBuses"::float, 0) + COALESCE("NrBuses"::float, 0))*1.5 +
-    COALESCE("NrTaxis"::float, 0) +
-    COALESCE("NrSpaces"::float, 0.0) +
-    COALESCE("NrCars_Suspended"::float, 0.0) +
-	COALESCE("NrLGVs_Suspended"::float, 0.0) +
-    COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
-    (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
-    COALESCE("NrTaxis_Suspended"::float, 0)) As "Total"
+            SUM(COALESCE("NrCars"::float, 0.0) +
+            COALESCE("NrLGVs"::float, 0.0) +
+            COALESCE("NrMCLs"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs"::float, 0) + COALESCE("NrMiniBuses"::float, 0) + COALESCE("NrBuses"::float, 0))*1.5 +
+            COALESCE("NrTaxis"::float, 0)) As "Demand",
+            SUM("NrSpaces") AS "Spaces",
+            SUM(COALESCE("NrCars_Suspended"::float, 0.0) +
+            COALESCE("NrLGVs_Suspended"::float, 0.0) +
+            COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
+            COALESCE("NrTaxis_Suspended"::float, 0)) As "Suspended_Demand",
+            SUM(COALESCE("NrCarsIdling"::float, 0.0) +
+            COALESCE("NrLGVsIdling"::float, 0.0) +
+            COALESCE("NrMCLsIdling"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsIdling"::float, 0) + COALESCE("NrMiniBusesIdling"::float, 0) + COALESCE("NrBusesIdling"::float, 0))*1.5 +
+            COALESCE("NrTaxisIdling"::float, 0)) As "Idling_Demand",
+            SUM(COALESCE("NrCarsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrLGVsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrMCLsParkedIncorrectly"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsParkedIncorrectly"::float, 0) + COALESCE("NrMiniBusesParkedIncorrectly"::float, 0) + COALESCE("NrBusesParkedIncorrectly"::float, 0))*1.5 +
+            COALESCE("NrTaxisParkedIncorrectly"::float, 0)) As "ParkedIncorrectly_Demand",
+            SUM(COALESCE("NrCars"::float, 0.0) +
+            COALESCE("NrLGVs"::float, 0.0) +
+            COALESCE("NrMCLs"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs"::float, 0) + COALESCE("NrMiniBuses"::float, 0) + COALESCE("NrBuses"::float, 0))*1.5 +
+            COALESCE("NrTaxis"::float, 0) +
+            COALESCE("NrSpaces"::float, 0.0) +
+            COALESCE("NrCars_Suspended"::float, 0.0) +
+            COALESCE("NrLGVs_Suspended"::float, 0.0) +
+            COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
+            COALESCE("NrTaxis_Suspended"::float, 0)) +
+            SUM(COALESCE("NrCarsIdling"::float, 0.0) +
+            COALESCE("NrLGVsIdling"::float, 0.0) +
+            COALESCE("NrMCLsIdling"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsIdling"::float, 0) + COALESCE("NrMiniBusesIdling"::float, 0) + COALESCE("NrBusesIdling"::float, 0))*1.5 +
+            COALESCE("NrTaxisIdling"::float, 0)) +
+            SUM(COALESCE("NrCarsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrLGVsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrMCLsParkedIncorrectly"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsParkedIncorrectly"::float, 0) + COALESCE("NrMiniBusesParkedIncorrectly"::float, 0) + COALESCE("NrBusesParkedIncorrectly"::float, 0))*1.5 +
+            COALESCE("NrTaxisParkedIncorrectly"::float, 0))
+             As "Total"
+
 FROM demand."Counts"
 GROUP BY "SurveyID"
 ORDER BY "SurveyID";
@@ -54,7 +76,17 @@ LEFT JOIN
             COALESCE("NrLGVs_Suspended"::float, 0.0) +
             COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
             (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
-            COALESCE("NrTaxis_Suspended"::float, 0)) As "Other_Demand",
+            COALESCE("NrTaxis_Suspended"::float, 0)) As "Suspended_Demand",
+            SUM(COALESCE("NrCarsIdling"::float, 0.0) +
+            COALESCE("NrLGVsIdling"::float, 0.0) +
+            COALESCE("NrMCLsIdling"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsIdling"::float, 0) + COALESCE("NrMiniBusesIdling"::float, 0) + COALESCE("NrBusesIdling"::float, 0))*1.5 +
+            COALESCE("NrTaxisIdling"::float, 0)) As "Idling_Demand",
+            SUM(COALESCE("NrCarsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrLGVsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrMCLsParkedIncorrectly"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsParkedIncorrectly"::float, 0) + COALESCE("NrMiniBusesParkedIncorrectly"::float, 0) + COALESCE("NrBusesParkedIncorrectly"::float, 0))*1.5 +
+            COALESCE("NrTaxisParkedIncorrectly"::float, 0)) As "ParkedIncorrectly_Demand",
             SUM(COALESCE("NrCars"::float, 0.0) +
             COALESCE("NrLGVs"::float, 0.0) +
             COALESCE("NrMCLs"::float, 0.0)*0.33 +
@@ -65,7 +97,18 @@ LEFT JOIN
             COALESCE("NrLGVs_Suspended"::float, 0.0) +
             COALESCE("NrMCLs_Suspended"::float, 0.0)*0.33 +
             (COALESCE("NrOGVs_Suspended"::float, 0) + COALESCE("NrMiniBuses_Suspended"::float, 0) + COALESCE("NrBuses_Suspended"::float, 0))*1.5 +
-            COALESCE("NrTaxis_Suspended"::float, 0)) As "Total"
+            COALESCE("NrTaxis_Suspended"::float, 0)) +
+            SUM(COALESCE("NrCarsIdling"::float, 0.0) +
+            COALESCE("NrLGVsIdling"::float, 0.0) +
+            COALESCE("NrMCLsIdling"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsIdling"::float, 0) + COALESCE("NrMiniBusesIdling"::float, 0) + COALESCE("NrBusesIdling"::float, 0))*1.5 +
+            COALESCE("NrTaxisIdling"::float, 0)) +
+            SUM(COALESCE("NrCarsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrLGVsParkedIncorrectly"::float, 0.0) +
+            COALESCE("NrMCLsParkedIncorrectly"::float, 0.0)*0.33 +
+            (COALESCE("NrOGVsParkedIncorrectly"::float, 0) + COALESCE("NrMiniBusesParkedIncorrectly"::float, 0) + COALESCE("NrBusesParkedIncorrectly"::float, 0))*1.5 +
+            COALESCE("NrTaxisParkedIncorrectly"::float, 0))
+             As "Total"
           FROM demand."Counts" c, mhtc_operations."Supply" r
           WHERE "SurveyID" > 0
           AND c."GeometryID" = r."GeometryID"

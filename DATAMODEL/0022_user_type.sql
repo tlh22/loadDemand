@@ -9,44 +9,46 @@
  ***/
 
 ALTER TABLE demand."VRMs_Final"
-    ADD COLUMN "UserType" character varying(100);
+    ADD COLUMN "UserTypeID" INTEGER;
 
 UPDATE demand."VRMs_Final"
-SET "UserType" = NULL;
+SET "UserTypeID" = NULL;
 
 -- Residents
-UPDATE demand."VRMs_Final"
-SET "UserType" = 'Resident'
-WHERE "SurveyID" = 101
-OR "SurveyID" = 201;
+UPDATE demand."VRMs_Final" v
+SET "UserTypeID" = 1
+FROM demand."Surveys" s
+WHERE s."SurveyID" = v."SurveyID"
+AND s."BeatStartTime" = '0000';
 
 UPDATE demand."VRMs_Final"
-SET "UserType" = 'Resident'
+SET "UserTypeID" = 1
 WHERE "VRM" IN (
     SELECT "VRM"
     FROM demand."VRMs_Final"
-    WHERE "UserType" = 'Resident'
+    WHERE "UserTypeID" = 1
 );
 
 -- Commuter
 UPDATE demand."VRMs_Final"
-SET "UserType" = 'Commuter'
-WHERE "UserType" IS NULL
+SET "UserTypeID" = 2
+WHERE "UserTypeID" IS NULL
 AND "VRM" IN (
     SELECT v1."VRM"
     FROM demand."VRMs_Final" v1, demand."VRMs_Final" v2
     WHERE v1."VRM" = v2."VRM"
     AND v1."ID" < v2."ID"
     AND (
-            (v1."SurveyID" = 102 AND v2."SurveyID" = 103)
+            (v1."SurveyID" = 101 AND v2."SurveyID" = 102)
             OR (v1."SurveyID" = 202 AND v2."SurveyID" = 203)
+            OR (v1."SurveyID" = 302 AND v2."SurveyID" = 303)
         )
 );
 
 -- Visitor
 UPDATE demand."VRMs_Final"
-SET "UserType" = 'Visitor'
-WHERE "UserType" IS NULL;
+SET "UserTypeID" = 3
+WHERE "UserTypeID" IS NULL;
 
 -- final output
 
@@ -54,7 +56,7 @@ SELECT v."ID", v."SurveyID", s."SurveyDay", CONCAT(s."BeatStartTime", '-', "Beat
         v."RoadName", v."RestrictionType Description", v."SideOfStreet",
 		v."GeometryID", v."VRM", v."VehicleTypeID", v."VehicleType Description",
         v."PCU",
-        v."UserType",
+        "UserType Description",
         --v."PermitTypeID", v."PermitType Description",
         v."Notes"
 
@@ -64,14 +66,15 @@ FROM
        su."RestrictionTypeID",
 		"BayLineTypes"."Description" AS "RestrictionType Description",
         "PermitTypeID", "PermitTypes"."Description" AS "PermitType Description",
-        a."Notes", su."RoadName", su."SideOfStreet", a."UserType", "VehicleTypes"."PCU"
+        a."Notes", su."RoadName", su."SideOfStreet", "UserTypes"."Description" AS "UserType Description", "VehicleTypes"."PCU"
 
 FROM
-     ((((demand."VRMs_Final" AS a
+     (((((demand."VRMs_Final" AS a
 	 LEFT JOIN mhtc_operations."Supply" AS su ON a."GeometryID" = su."GeometryID")
      LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON su."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
      LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code")
      LEFT JOIN "demand_lookups"."PermitTypes" AS "PermitTypes" ON a."PermitTypeID" is not distinct from "PermitTypes"."Code")
+     LEFT JOIN "demand_lookups"."UserTypes" AS "UserTypes" ON a."UserTypeID" is not distinct from "UserTypes"."Code")
 ORDER BY "GeometryID", "VRM") As v
 	 	, demand."Surveys" s
 		, demand."RestrictionsInSurveys" r
@@ -167,3 +170,42 @@ AND r."GeometryID" = v."GeometryID"
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 ORDER BY "SurveyID", "GeometryID", "VRM"
+
+
+
+/***
+ * Re-export VRMs
+ ***/
+
+SELECT v."ID", v."SurveyID", s."BeatTitle", v."GeometryID", v."RoadName",
+		v."PositionID", v."VRM", v."VehicleTypeID", v."VehicleType Description", v."PCU",
+        v."RestrictionTypeID", v."RestrictionType Description",
+        v."PermitTypeID", v."PermitType Description",
+        v."Notes", v."UserType Description"
+
+FROM
+(SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM",
+"VehicleTypeID", "VehicleTypes"."Description" AS "VehicleType Description", "VehicleTypes"."PCU" AS "PCU",
+       su."RestrictionTypeID",
+		"BayLineTypes"."Description" AS "RestrictionType Description",
+        "PermitTypeID", "PermitTypes"."Description" AS "PermitType Description",
+        a."Notes", "RoadName", "UserTypes"."Description" AS "UserType Description"
+
+FROM
+     (((((demand."VRMs_Final" AS a
+	 LEFT JOIN mhtc_operations."Supply" AS su ON a."GeometryID" = su."GeometryID")
+     LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON su."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
+     LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code")
+     LEFT JOIN "demand_lookups"."PermitTypes" AS "PermitTypes" ON a."PermitTypeID" is not distinct from "PermitTypes"."Code")
+     LEFT JOIN "demand_lookups"."UserTypes" AS "UserTypes" ON a."UserTypeID" is not distinct from "UserTypes"."Code")
+ORDER BY "GeometryID", "VRM") As v
+	 	, demand."Surveys" s
+		, demand."RestrictionsInSurveys_Final" r
+WHERE v."SurveyID" = s."SurveyID"
+AND r."SurveyID" = s."SurveyID"
+AND r."GeometryID" = v."GeometryID"
+AND s."SurveyID" > 0
+--AND su."CPZ" = 'HS'
+--AND s."SurveyID" > 20 and s."SurveyID" < 30
+ORDER BY "GeometryID", "VRM", "SurveyID"
+
