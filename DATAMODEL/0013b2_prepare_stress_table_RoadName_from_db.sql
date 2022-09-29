@@ -8,10 +8,10 @@ AS
     SELECT
         row_number() OVER (PARTITION BY true::boolean) AS sid,
     s."name1" AS "RoadName", s.geom,
-    d."SurveyID", d."Stress" AS "Stress"
+    d."SurveyID", d."Capacity", d."Demand", d."Stress" AS "Stress"
 	FROM highways_network."roadlink" s,
 	(
-	SELECT "SurveyID", "RoadName",
+	SELECT "SurveyID", "RoadName", "Capacity", "Demand",
         CASE
             WHEN "Capacity" = 0 THEN
                 CASE

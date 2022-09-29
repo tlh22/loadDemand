@@ -104,7 +104,7 @@ ALTER TABLE demand."RestrictionsInSurveys_Final"
 
 UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "Capacity" =
-    CASE WHEN (s."Capacity" - RiS."NrBaysSuspended") > 0 THEN (s."Capacity" - RiS."NrBaysSuspended")
+     CASE WHEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0)) > 0 THEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0))
          ELSE 0
          END
 FROM mhtc_operations."Supply" s
@@ -136,9 +136,9 @@ SET "Stress" =
     CASE
         WHEN "Capacity" = 0 THEN
             CASE
-                WHEN "Demand" > 0.0 THEN 100.0
+                WHEN COALESCE("Demand", 0) > 0.0 THEN 100.0
                 ELSE 0.0
             END
         ELSE
-            "Demand" / "Capacity"::float * 100.0
+            COALESCE("Demand", 0) / "Capacity"::float * 100.0
     END;
