@@ -80,6 +80,16 @@ FROM 'C:\Users\Public\Documents\SYS2201_RiS_Final.csv'
 DELIMITER ','
 CSV HEADER;
 
+-- Insert records that were not Done
+
+INSERT INTO demand."RestrictionsInSurveys_Final"("SurveyID", "GeometryID", "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference",
+"SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes", "Photos_01", "Photos_02", "Photos_03")
+SELECT "SurveyID", RiS."GeometryID", "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference",
+"SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
+FROM demand."RestrictionsInSurveys" RiS, mhtc_operations."Supply" s
+WHERE RiS."GeometryID" = s."GeometryID"
+AND "Done" IS NULL OR "Done" IS false;
+
 /***
 UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "geom" = s."geom"
@@ -94,7 +104,7 @@ ALTER TABLE demand."RestrictionsInSurveys_Final"
 
 UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "Capacity" =
-    CASE WHEN (s."Capacity" - RiS."NrBaysSuspended") > 0 THEN (s."Capacity" - RiS."NrBaysSuspended")
+     CASE WHEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0)) > 0 THEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0))
          ELSE 0
          END
 FROM mhtc_operations."Supply" s
@@ -126,9 +136,9 @@ SET "Stress" =
     CASE
         WHEN "Capacity" = 0 THEN
             CASE
-                WHEN "Demand" > 0.0 THEN 100.0
+                WHEN COALESCE("Demand", 0) > 0.0 THEN 100.0
                 ELSE 0.0
             END
         ELSE
-            "Demand" / "Capacity"::float * 100.0
+            COALESCE("Demand", 0) / "Capacity"::float * 100.0
     END;
