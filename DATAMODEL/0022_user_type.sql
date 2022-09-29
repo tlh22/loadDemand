@@ -209,3 +209,21 @@ AND s."SurveyID" > 0
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 ORDER BY "GeometryID", "VRM", "SurveyID"
 
+
+SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", d."SideOfStreet",
+d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
+d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", d."Demand"
+FROM
+(SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", s."RoadName", s."SideOfStreet",
+"DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
+ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity", v."Demand"
+FROM demand."RestrictionsInSurveys_Final" ris, demand."Surveys" su,
+(mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") AS s
+ WHERE ris."SurveyID" = su."SurveyID"
+ AND ris."GeometryID" = s."GeometryID"
+ --AND s."CPZ" = '7S'
+ --AND substring(su."BeatTitle" from '\((.+)\)') LIKE '7S%'
+ ) as d
+
+ORDER BY d."SurveyID", d."GeometryID";
