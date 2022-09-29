@@ -36,7 +36,7 @@ AND v1."VRM" NOT IN (
     AND levenshtein(v11."VRM"::text, v12."VRM"::text, 10, 10, 1) <= 2
 )
 ORDER BY v1."VRM";
-**/
+
 
 SELECT v1.*, v2."VRM", v2."SurveyID"
 FROM demand."VRMs_Final" v2 , demand."VRMs_Final" v1
@@ -44,7 +44,8 @@ WHERE v1."GeometryID" = v2."GeometryID"
 AND v2."SurveyID" = v1."SurveyID" + 1
 AND v1."VRM" != v2."VRM"
 AND levenshtein(v1."VRM"::text, v2."VRM"::text, 10, 10, 1) <= 1
-AND (v1."VRM" NOT LIKE 'NO%')
+AND (v1."VRM" NOT LIKE 'NO%');
+**/
 
 -- Change details
 --SELECT v2."VRM", v1."VRM"
@@ -55,7 +56,7 @@ FROM demand."VRMs" v1
 WHERE v1."GeometryID" = v2."GeometryID"
 AND v1."SurveyID" != v2."SurveyID"
 AND v1."VRM" != v2."VRM"
-AND v1."ID" < v2."ID"
+AND v1."ID" > v2."ID"
 AND levenshtein(v1."VRM"::text, v2."VRM"::text, 10, 10, 1) <= 2
 AND v1."SurveyID" / 100 = v2."SurveyID" / 100   -- need to ensure that v1 and v2 have the same "SurveyDay"
 AND v1."VRM" NOT IN (
@@ -73,7 +74,34 @@ AND v1."VRM" NOT IN (
 
 
 -- View changes
-
+/*
 SELECT "VRM", "VRM_Orig"
 FROM demand."VRMs"
 WHERE "VRM" <> "VRM_Orig";
+*/
+
+/*
+ *  Differences in front part of reg plate
+ *
+
+SELECT DISTINCT (v1."VRM"),  v2."VRM", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
+FROM demand."VRMs" v1, demand."VRMs" v2
+WHERE v1."ID" > v2."ID"
+AND v1."GeometryID" = v2."GeometryID"
+AND substring(v1."VRM", '.+-(.+)') = substring(v2."VRM", '.+-(.+)')
+AND substring(v1."VRM", '(.+)-.+') != substring(v2."VRM", '(.+)-.+')
+ORDER BY v1."VRM"
+
+ *
+ * Differences in rear part
+ *
+
+SELECT DISTINCT (v1."VRM"),  v2."VRM", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
+FROM demand."VRMs" v1, demand."VRMs" v2
+WHERE v1."ID" > v2."ID"
+AND v1."GeometryID" = v2."GeometryID"
+AND substring(v1."VRM", '.+-(.+)') != substring(v2."VRM", '.+-(.+)')
+AND substring(v1."VRM", '(.+)-.+') = substring(v2."VRM", '(.+)-.+')
+ORDER BY v1."VRM"
+
+*/

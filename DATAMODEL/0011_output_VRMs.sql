@@ -1,18 +1,23 @@
 --
 
-SELECT v."ID", v."SurveyID", s."BeatTitle", v."GeometryID", v."RoadName",
-		v."PositionID", v."VRM", v."VRM_Orig", v."VehicleTypeID", v."VehicleType Description",
-        v."RestrictionTypeID", v."RestrictionType Description",
+SELECT v."ID", v."SurveyID", s."SurveyDay", s."BeatStartTime" || '-' || s."BeatEndTime" AS "SurveyTime",
+        v."GeometryID", v."RestrictionTypeID", v."RestrictionType Description",
+        v."RoadName", v."SideOfStreet",
+		v."PositionID", v."VRM", v."VRM_Orig",
+		v."VehicleTypeID", v."VehicleType Description", v."PCU",
         v."PermitTypeID", v."PermitType Description",
-        v."Notes", "Enumerator", "DemandSurveyDateTime"
+        v."Notes", "Enumerator", "DemandSurveyDateTime",
+        r."NrBaysSuspended",
+        CONCAT( COALESCE("SuspensionReference" || '; ', ''), COALESCE("SuspensionReason" || '; ', ''),
+                 COALESCE("SuspensionLength" || '; ', ''), COALESCE("SuspensionNotes" || '; ', '') )
 
 FROM
 (SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM", "VRM_Orig",
-"VehicleTypeID", "VehicleTypes"."Description" AS "VehicleType Description",
+"VehicleTypeID", "VehicleTypes"."Description" AS "VehicleType Description", "VehicleTypes"."PCU" AS "PCU",
        su."RestrictionTypeID",
 		"BayLineTypes"."Description" AS "RestrictionType Description",
         "PermitTypeID", "PermitTypes"."Description" AS "PermitType Description",
-        a."Notes", "RoadName"
+        a."Notes", "RoadName", "SideOfStreet"
 
 FROM
      ((((demand."VRMs" AS a
@@ -30,4 +35,3 @@ AND s."SurveyID" > 0
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 ORDER BY "GeometryID", "VRM", "SurveyID"
-

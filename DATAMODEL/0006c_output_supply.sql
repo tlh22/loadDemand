@@ -7,21 +7,10 @@
 --
 
 SELECT
-"GeometryID",
-        CASE WHEN "RestrictionTypeID" = 225 THEN
-                 CASE
-                    WHEN "UnacceptableTypeID" IS NOT NULL THEN 220
-                    ELSE 216
-                 END
-                 WHEN "RestrictionTypeID" = 224 THEN
-                 CASE
-                    WHEN "UnacceptableTypeID" IS NOT NULL THEN 221
-                    ELSE 201
-                 END
-             ELSE "RestrictionTypeID"
-        END AS "RestrictionTypeID",
+"GeometryID", "RestrictionTypeID",
 "BayLineTypes"."Description" AS "RestrictionDescription",
 "GeomShapeID", COALESCE("RestrictionGeomShapeTypes"."Description", '') AS "Restriction Shape Description",
+
 a."RoadName", a."StartStreet" AS "RoadFrom", a."EndStreet" AS "RoadTo", a."SideOfStreet", "RC_Sections_merged"."SectionName", COALESCE("SurveyAreas"."SurveyAreaName", '')  AS "SurveyAreaName",
 
        CASE WHEN ("RestrictionTypeID" < 200 OR "RestrictionTypeID" IN (227, 228, 229, 231)) THEN COALESCE("TimePeriods1"."Description", '')
@@ -66,11 +55,11 @@ FROM
 ORDER BY "RestrictionTypeID", "GeometryID"
 
 
-
 /*
 For car parks
 */
 
+/***
 SELECT
 "GeometryID", "RestrictionTypeID", "RestrictionPolygonTypes"."Description" AS "RestrictionDescription",
 "GeomShapeID", COALESCE("RestrictionGeomShapeTypes"."Description", '') AS "Restriction Shape Description",
@@ -90,12 +79,13 @@ FROM
 WHERE "RestrictionTypeID" = 25 -- car park
 
 ORDER BY "RestrictionTypeID", "GeometryID";
-
+***/
 
 /**
 For sections
 **/
 
+/***
 SELECT
 s."GeometryID", s."RestrictionTypeID", 'Subsection' AS "RestrictionDescription",
 10 AS "GeomShapeID", 'Parallel Line' AS "Restriction Shape Description",
@@ -110,3 +100,4 @@ a."RoadName", a."StartStreet" AS "RoadFrom", a."EndStreet" AS "RoadTo", a."SideO
 FROM "mhtc_operations"."RC_Sections_merged" a, "demand"."SupplyForDemand" s
 WHERE ST_Equals(a.geom, s.geom)
 ORDER BY s."GeometryID";
+***/
