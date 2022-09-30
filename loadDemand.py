@@ -208,8 +208,8 @@ class loadDemand:
         if result:
 
             self.surveyType = self.getDemandSurveyType()
-            TOMsMessageLog.logMessage("In run. surveyType: {}".format(self.surveyType),
-                                      level=Qgis.Info)
+            TOMsMessageLog.logMessage("In loadDemand. surveyType: {}".format(self.surveyType),
+                                      level=Qgis.Warning)
 
             surveysToProcess = self.itemList.getSelectedItems()
 
@@ -269,8 +269,10 @@ class loadDemand:
 
         if self.surveyType == 'Count':
             demandLayer = QgsProject.instance().mapLayersByName('Counts')[0]
+            TOMsMessageLog.logMessage("In processRestrictionsForSurvey. Processing Counts ...", level=Qgis.Warning)
         else:
             demandLayer = QgsProject.instance().mapLayersByName('VRMs')[0]
+            TOMsMessageLog.logMessage("In processRestrictionsForSurvey. Processing VRMs ...", level=Qgis.Warning)
 
         for l in [restrictionsInSurveysLayer, demandLayer]:
             l.startEditing()
@@ -399,8 +401,10 @@ class loadDemand:
         TOMsMessageLog.logMessage("In processCounts for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Info)
 
         query = QSqlQuery(
-        "SELECT SurveyID, SectionID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, DoubleParkingDetails, NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended FROM Counts WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
+        "SELECT SurveyID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, DoubleParkingDetails, NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended, NrCarsIdling, NrCarsParkedIncorrectly, NrLGVsIdling, NrLGVsParkedIncorrectly, NrMCLsIdling, NrMCLsParkedIncorrectly, NrTaxisIdling, NrTaxisParkedIncorrectly, NrOGVsIdling, NrOGVsParkedIncorrectly, NrMiniBusesIdling, NrMiniBusesParkedIncorrectly, NrBusesIdling, NrBusesParkedIncorrectly, NrCarsWithDisabledBadgeParkedInPandD FROM Counts WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
         , dbConn)
+        TOMsMessageLog.logMessage("In processCounts {} ...".format(query.lastQuery()),
+                                  level=Qgis.Info)
         try:
             query.exec()
         except Exception as e:
@@ -411,10 +415,12 @@ class loadDemand:
                                  "Unexcepted error occurred {}".format(e),
                                  "Click Cancel to exit.", QMessageBox.Cancel)
 
-        SurveyID, SectionID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, \
+        SurveyID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, \
         DoubleParkingDetails, \
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, \
-        NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended = range(26)
+        NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended, \
+        NrCarsIdling, NrCarsParkedIncorrectly, NrLGVsIdling, NrLGVsParkedIncorrectly, NrMCLsIdling, NrMCLsParkedIncorrectly, NrTaxisIdling, NrTaxisParkedIncorrectly, NrOGVsIdling, NrOGVsParkedIncorrectly, NrMiniBusesIdling, NrMiniBusesParkedIncorrectly, NrBusesIdling, NrBusesParkedIncorrectly, \
+        NrCarsWithDisabledBadgeParkedInPandD = range(40)
 
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 
