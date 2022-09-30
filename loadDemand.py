@@ -223,11 +223,11 @@ class loadDemand:
             for root, dirs, files in os.walk(searchFolder):
                 for file in files:
                     if file.endswith(".gpkg"):
-                        currGpkg = os.path.abspath(os.path.join(root, file))
-                        TOMsMessageLog.logMessage("Processing {} ...".format(currGpkg), level=Qgis.Warning)
+                        self.currGpkg = os.path.abspath(os.path.join(root, file))
+                        TOMsMessageLog.logMessage("Processing {} ...".format(self.currGpkg), level=Qgis.Warning)
 
                         dbConn = QSqlDatabase.addDatabase("QSQLITE")
-                        dbConn.setDatabaseName(currGpkg)
+                        dbConn.setDatabaseName(self.currGpkg)
 
                         if not dbConn.open():
                             QMessageBox.critical(None, "Cannot open database",
@@ -278,13 +278,13 @@ class loadDemand:
         # TODO: set up transaction
 
         query = QSqlQuery(
-        "SELECT SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, Photos_01, Photos_02, Photos_03 FROM RestrictionsInSurveys WHERE SurveyID = {} AND Done IS TRUE".format(currSurveyID)
+        "SELECT SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, Photos_01, Photos_02, Photos_03, '{}' FROM RestrictionsInSurveys WHERE SurveyID = {} AND Done IS TRUE".format(self.currGpkg, currSurveyID)
         , dbConn)
         query.exec()
 
         SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, \
         SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, \
-        Photos_01, Photos_02, Photos_03 = range(13)
+        Photos_01, Photos_02, Photos_03, CaptureSource = range(14)
 
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 
