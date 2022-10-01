@@ -280,7 +280,7 @@ class loadDemand:
         # TODO: set up transaction
 
         query = QSqlQuery(
-        "SELECT SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, Photos_01, Photos_02, Photos_03, '{}' FROM RestrictionsInSurveys WHERE SurveyID = {} AND Done IS TRUE".format(self.currGpkg, currSurveyID)
+        "SELECT SurveyID, GeometryID, DemandSurveyDateTime, Enumerator, Done, SuspensionReference, SuspensionReason, SuspensionLength, NrBaysSuspended, SuspensionNotes, Photos_01, Photos_02, Photos_03, \'{}\' AS CaptureSource FROM RestrictionsInSurveys WHERE SurveyID = {} AND Done IS TRUE".format(self.currGpkg, currSurveyID)
         , dbConn)
         query.exec()
 
@@ -428,7 +428,7 @@ class loadDemand:
 
         while query.next():
 
-            TOMsMessageLog.logMessage("Updating count details: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Info)
+            TOMsMessageLog.logMessage("Updating count details: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
 
             thisRecord = query.record()
             demandCopyStatus = self.copyAttributesToMasterLayer(thisRecord, countsLayer, query.value(SurveyID), query.value(GeometryID))

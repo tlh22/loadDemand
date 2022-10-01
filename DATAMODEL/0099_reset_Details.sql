@@ -136,7 +136,7 @@ DECLARE
     relevant_restriction_in_survey RECORD;
     clone_restriction_id uuid;
     current_done BOOLEAN := false;
-	curr_survey_id INTEGER := 201;
+	curr_survey_id INTEGER := 101;
 BEGIN
 
     FOR relevant_restriction_in_survey IN
@@ -144,10 +144,10 @@ BEGIN
             FROM "demand"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
         WHERE RiS."GeometryID" = r."GeometryID"
         AND r."SurveyAreaID" = a."Code"
-        AND a."SurveyAreaName" IN ('C-2')
+        --AND a."SurveyAreaName" IN ('C-2')
         AND RiS."Done" IS true
         AND RiS."SurveyID" = curr_survey_id
-		--AND RiS."DemandSurveyDateTime" < '2022-06-29'::date
+		AND RiS."DemandSurveyDateTime" > '2022-09-26'::date
     LOOP
 
         -- check to see if the restriction already has a value
@@ -170,7 +170,15 @@ BEGIN
             -- Now reset Counts
 
             UPDATE demand."Counts"
-                SET "NrCars"=NULL, "NrLGVs"=NULL, "NrMCLs"=NULL, "NrTaxis"=NULL, "NrPCLs"=NULL, "NrEScooters"=NULL, "NrDocklessPCLs"=NULL, "NrOGVs"=NULL, "NrMiniBuses"=NULL, "NrBuses"=NULL, "NrSpaces"=NULL, "Notes"=NULL, "DoubleParkingDetails"=NULL, "NrCars_Suspended"=NULL, "NrLGVs_Suspended"=NULL, "NrMCLs_Suspended"=NULL, "NrTaxis_Suspended"=NULL, "NrPCLs_Suspended"=NULL, "NrEScooters_Suspended"=NULL, "NrDocklessPCLs_Suspended"=NULL, "NrOGVs_Suspended"=NULL, "NrMiniBuses_Suspended"=NULL, "NrBuses_Suspended"=NULL
+                --SET "NrCars"=NULL, "NrLGVs"=NULL, "NrMCLs"=NULL, "NrTaxis"=NULL, "NrPCLs"=NULL, "NrEScooters"=NULL, "NrDocklessPCLs"=NULL, "NrOGVs"=NULL, "NrMiniBuses"=NULL, "NrBuses"=NULL, "NrSpaces"=NULL, "Notes"=NULL, "DoubleParkingDetails"=NULL, "NrCars_Suspended"=NULL, "NrLGVs_Suspended"=NULL, "NrMCLs_Suspended"=NULL, "NrTaxis_Suspended"=NULL, "NrPCLs_Suspended"=NULL, "NrEScooters_Suspended"=NULL, "NrDocklessPCLs_Suspended"=NULL, "NrOGVs_Suspended"=NULL, "NrMiniBuses_Suspended"=NULL, "NrBuses_Suspended"=NULL
+"NrCars"=NULL, "NrLGVs"=NULL, "NrMCLs"=NULL, "NrTaxis"=NULL, "NrPCLs"=NULL, "NrEScooters"=NULL,
+"NrDocklessPCLs"=NULL, "NrOGVs"=NULL, "NrMiniBuses"=NULL, "NrBuses"=NULL, "NrSpaces"=NULL, "Notes"=NULL, "DoubleParkingDetails"=NULL,
+"NrCars_Suspended"=NULL, "NrLGVs_Suspended"=NULL, "NrMCLs_Suspended"=NULL, "NrTaxis_Suspended"=NULL, "NrPCLs_Suspended"=NULL,
+"NrEScooters_Suspended"=NULL, "NrDocklessPCLs_Suspended"=NULL, "NrOGVs_Suspended"=NULL, "NrMiniBuses_Suspended"=NULL,
+"NrBuses_Suspended"=NULL, "NrCarsIdling"=NULL, "NrCarsParkedIncorrectly"=NULL, "NrLGVsIdling"=NULL, "NrLGVsParkedIncorrectly"=NULL,
+"NrMCLsIdling"=NULL, "NrMCLsParkedIncorrectly"=NULL, "NrTaxisIdling"=NULL, "NrTaxisParkedIncorrectly"=NULL, "NrOGVsIdling"=NULL,
+"NrOGVsParkedIncorrectly"=NULL, "NrMiniBusesIdling"=NULL, "NrMiniBusesParkedIncorrectly"=NULL, "NrBusesIdling"=NULL,
+"NrBusesParkedIncorrectly"=NULL, "NrCarsWithDisabledBadgeParkedInPandD"=NULL
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = curr_survey_id;
 
