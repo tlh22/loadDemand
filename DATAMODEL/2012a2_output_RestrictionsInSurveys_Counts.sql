@@ -6,14 +6,15 @@ Need to change for each CPZ - and ensure correct Supply details
 
 SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", d."SideOfStreet",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", v."Demand", regexp_replace("Notes", '(.*?)(?<=<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">)(.*?)(?=<\/p>)', '\2', 'g')
+d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", v."Demand", regexp_replace(v."Notes", '(.*?)(?<=<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">)(.*?)(?=<\/p>)', '\2', 'g')  AS "Notes", "SurveyAreaName"
 FROM
 (SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", s."RoadName", s."SideOfStreet",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
-ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity"
+ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity", s."SurveyAreaName"
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
-(mhtc_operations."Supply" AS a
- LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") AS s
+((mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
+ LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS s
  WHERE ris."SurveyID" = su."SurveyID"
  AND ris."GeometryID" = s."GeometryID"
  --AND s."CPZ" = '7S'
