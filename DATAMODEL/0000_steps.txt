@@ -1,0 +1,46 @@
+
+
+ - output supply
+ - copy photos and rename
+
+-- For VRMs
+* use scripts in 1000s
+
+1. verify completeness of all beats
+2. standardise VRM formats
+3. remove duplicates and blanks
+4. use "fuzzy" match
+5. check "non-standard" VRMs
+6. calculate demand
+7. output VRMs and RiS
+
+-- For Counts
+* use scripts in 2000s
+
+1. verify completeness of all beats
+2. calculate demand
+3. output Counts and RiS
+
+--- Within spreadsheets, deal with:
+ - Suspensions (ensure consistency across beats)
+ - VRMs (check for consistency)
+
+-- Reimport into
+
+VRMs_Final
+RestrictionsInSurveys_Final
+
+-- Further processing (possibly)
+ - user type
+ - durations
+
+  - capacity after demand (for subsections)
+
+
+-- for plans
+ - supply - ensure that labels are correct and that all restriction types are showing ?? - TODO
+ - photo locations
+ -
+
+-- Copy/rename photos with street names - and separate out those for suspensions
+
