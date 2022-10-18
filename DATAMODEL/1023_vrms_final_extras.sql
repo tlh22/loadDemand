@@ -25,7 +25,13 @@ WITH (
 ALTER TABLE demand."VRMs_Final_extras"
   OWNER TO postgres;
 
+-- import
+COPY demand."VRMs_Final_extras"("SurveyID", "GeometryID", "PositionID", "VRM", "VehicleTypeID", "PermitTypeID", "Notes")
+FROM 'C:\Users\Public\Documents\PC2209_WGR_All_VRMs_3_extras.csv'
+DELIMITER ','
+CSV HEADER;
 
+/***
 --INSERT INTO demand."VRMs_Final_extras" ("SurveyID", "GeometryID", "PositionID", "VRM", "VehicleTypeID", "PermitTypeID", "Notes")
 SELECT 401, v1."GeometryID", v1."PositionID", v1."VRM", v1."VehicleTypeID", v1."PermitTypeID", v1."Notes"
 FROM demand."VRMs_Final" v1, demand."VRMs_Final" v2
@@ -41,6 +47,7 @@ AND v1."VRM" NOT IN (SELECT "VRM" FROM demand."VRMs_Final_extras"
  AND v1."VRM" NOT IN (SELECT "VRM" FROM demand."VRMs_Final"
 					 WHERE "SurveyID" = 401)
 ORDER BY v1."GeometryID", v1."VRM"
+***/
 
 -- Update RiS
 
@@ -60,11 +67,13 @@ AND RiS."GeometryID" = t."GeometryID";
 -- Now copy extras into final
 
 -- first delete any already used
+/***
 DELETE FROM demand."VRMs_Final_extras" e
 USING demand."VRMs_Final" v
 WHERE e."SurveyID" = v."SurveyID"
 AND e."GeometryID" = v."GeometryID"
 AND e."VRM" = v."VRM";
+***/
 
 -- add any new ones
 INSERT INTO demand."VRMs_Final" ("SurveyID", "GeometryID", "PositionID", "VRM", "VehicleTypeID", "PermitTypeID", "Notes")

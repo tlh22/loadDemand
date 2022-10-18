@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS demand."RestrictionsInSurveys_Final"
     "Photos_01" character varying(255) COLLATE pg_catalog."default",
     "Photos_02" character varying(255) COLLATE pg_catalog."default",
     "Photos_03" character varying(255) COLLATE pg_catalog."default",
-    --geom geometry(LineString,27700) NOT NULL,
+    geom geometry(LineString,27700),
     CONSTRAINT "RestrictionsInSurveys_Final_pkey" PRIMARY KEY ("SurveyID", "GeometryID")
 )
 
@@ -52,55 +52,9 @@ FROM demand."RestrictionsInSurveys" RiS, mhtc_operations."Supply" s
 WHERE RiS."GeometryID" = s."GeometryID"
 AND "Done" IS NULL OR "Done" IS false;
 
-/***
+-- add geom
+
 UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "geom" = s."geom"
 FROM mhtc_operations."Supply" s
 WHERE RiS."GeometryID" = s."GeometryID";
-***/
-
--- Update capacity and demand
-
-ALTER TABLE demand."RestrictionsInSurveys_Final"
-    ADD COLUMN "Capacity" INTEGER;
-
-UPDATE demand."RestrictionsInSurveys_Final" RiS
-SET "Capacity" =
-     CASE WHEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0)) > 0 THEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0))
-         ELSE 0
-         END
-FROM mhtc_operations."Supply" s
-WHERE RiS."GeometryID" = s."GeometryID";
-
--- Demand
-
-ALTER TABLE demand."RestrictionsInSurveys_Final"
-    ADD COLUMN "Demand" FLOAT;
-
-UPDATE demand."RestrictionsInSurveys_Final" RiS
-SET "Demand" = v."Demand"
-FROM
-(SELECT a."SurveyID", a."GeometryID", SUM("VehicleTypes"."PCU") AS "Demand"
-        FROM (demand."VRMs_Final" AS a
-        LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code")
-        GROUP BY a."SurveyID", a."GeometryID"
-  ) AS v
-WHERE RiS."GeometryID" = v."GeometryID"
-AND RiS."SurveyID" = v."SurveyID";
-
--- Stress
-
-ALTER TABLE demand."RestrictionsInSurveys_Final"
-    ADD COLUMN "Stress" FLOAT;
-
-UPDATE demand."RestrictionsInSurveys_Final" RiS
-SET "Stress" =
-    CASE
-        WHEN "Capacity" = 0 THEN
-            CASE
-                WHEN COALESCE("Demand", 0) > 0.0 THEN 100.0
-                ELSE 0.0
-            END
-        ELSE
-            COALESCE("Demand", 0) / "Capacity"::float * 100.0
-    END;
