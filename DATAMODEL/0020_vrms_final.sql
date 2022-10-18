@@ -26,7 +26,7 @@ ALTER TABLE demand."VRMs_Final"
   OWNER TO postgres;
 
 COPY demand."VRMs_Final"("SurveyID", "GeometryID", "PositionID", "VRM", "VehicleTypeID", "Notes")
-FROM 'C:\Users\Public\Documents\STH2211_All_VRMs.csv'
+FROM 'C:\Users\Public\Documents\PC2209_WGR_All_VRMs_local_2.csv'
 DELIMITER ','
 CSV HEADER;
 
