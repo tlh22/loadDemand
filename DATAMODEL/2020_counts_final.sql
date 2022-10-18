@@ -1,42 +1,4 @@
-/***
- * Reload amended VRMs
- ***/
-
--- Load data into new table
--- Load data into new table
-DROP TABLE IF EXISTS demand."VRMs_Final" CASCADE;
-CREATE TABLE demand."VRMs_Final"
-(
-  "ID" SERIAL,
-  "SurveyID" integer,
-  "SectionID" integer,
-  "GeometryID" character varying(12),
-  "PositionID" integer,
-  "VRM" character varying(12),
-  "VehicleTypeID" integer,
-  "RestrictionTypeID" integer,
-  "PermitTypeID" integer,
-  "Notes" character varying(255),
-  CONSTRAINT "VRMs_Final_pkey" PRIMARY KEY ("ID")
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE demand."VRMs_Final"
-  OWNER TO postgres;
-
-COPY demand."VRMs_Final"("SurveyID", "GeometryID", "PositionID", "VRM", "VehicleTypeID", "Notes")
-FROM 'C:\Users\Public\Documents\STH2211_All_VRMs.csv'
-DELIMITER ','
-CSV HEADER;
-
-
---
-
-UPDATE demand."VRMs_Final"
-SET "VehicleTypeID" = 1
-WHERE "VehicleTypeID" = 0;
-
+-- Counts_Final ??
 
 -- RiS
 
@@ -74,12 +36,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS "RiS_Final_unique_idx"
     ("SurveyID" ASC NULLS LAST, "GeometryID" COLLATE pg_catalog."default" ASC NULLS LAST)
     TABLESPACE pg_default;
 
-COPY demand."RestrictionsInSurveys_Final"("SurveyID", "GeometryID", "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference",
-"SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes", "Photos_01", "Photos_02", "Photos_03")
-FROM 'C:\Users\Public\Documents\SYS2201_RiS_Final.csv'
-DELIMITER ','
-CSV HEADER;
-
 -- Insert records that were not Done
 
 INSERT INTO demand."RestrictionsInSurveys_Final"("SurveyID", "GeometryID", "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference",
@@ -88,7 +44,8 @@ SELECT "SurveyID", RiS."GeometryID", "DemandSurveyDateTime", "Enumerator", "Done
 "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
 FROM demand."RestrictionsInSurveys" RiS, mhtc_operations."Supply" s
 WHERE RiS."GeometryID" = s."GeometryID"
-AND "Done" IS NULL OR "Done" IS false;
+--AND "Done" IS NULL OR "Done" IS false
+;
 
 /***
 UPDATE demand."RestrictionsInSurveys_Final" RiS
@@ -102,6 +59,14 @@ WHERE RiS."GeometryID" = s."GeometryID";
 ALTER TABLE demand."RestrictionsInSurveys_Final"
     ADD COLUMN "Capacity" INTEGER;
 
+ALTER TABLE demand."RestrictionsInSurveys_Final"
+    ADD COLUMN "Demand" FLOAT;
+
+ALTER TABLE demand."RestrictionsInSurveys_Final"
+    ADD COLUMN "Stress" FLOAT;
+
+---
+
 UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "Capacity" =
      CASE WHEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0)) > 0 THEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0))
@@ -112,24 +77,24 @@ WHERE RiS."GeometryID" = s."GeometryID";
 
 -- Demand
 
-ALTER TABLE demand."RestrictionsInSurveys_Final"
-    ADD COLUMN "Demand" FLOAT;
-
 UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "Demand" = v."Demand"
 FROM
-(SELECT a."SurveyID", a."GeometryID", SUM("VehicleTypes"."PCU") AS "Demand"
-        FROM (demand."VRMs_Final" AS a
-        LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code")
-        GROUP BY a."SurveyID", a."GeometryID"
+(SELECT "SurveyID", "GeometryID",
+      COALESCE("NrCars"::float, 0.0) +
+        COALESCE("NrLGVs"::float, 0.0) +
+        COALESCE("NrMCLs"::float, 0.0)*0.33 +
+        (COALESCE("NrOGVs"::float, 0.0) + COALESCE("NrMiniBuses"::float, 0.0) + COALESCE("NrBuses"::float, 0.0))*1.5 +
+        COALESCE("NrTaxis"::float, 0.0) +
+        (COALESCE("NrPCLs"::float, 0.0) + COALESCE("NrEScooters"::float, 0.0) + COALESCE("NrDocklessPCLs"::float, 0.0))*0.2
+         AS "Demand",
+			 "Notes"
+   FROM demand."Counts"
   ) AS v
 WHERE RiS."GeometryID" = v."GeometryID"
 AND RiS."SurveyID" = v."SurveyID";
 
 -- Stress
-
-ALTER TABLE demand."RestrictionsInSurveys_Final"
-    ADD COLUMN "Stress" FLOAT;
 
 UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "Stress" =
@@ -142,3 +107,26 @@ SET "Stress" =
         ELSE
             COALESCE("Demand", 0) / "Capacity"::float * 100.0
     END;
+
+-- Output
+
+SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", d."SideOfStreet",
+d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
+d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", d."Demand"
+FROM
+(SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", s."RoadName", s."SideOfStreet",
+"DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
+ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."Capacity", ris."Demand"
+FROM demand."RestrictionsInSurveys_Final" ris, demand."Surveys" su,
+(mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") AS s
+ WHERE ris."SurveyID" = su."SurveyID"
+ AND ris."GeometryID" = s."GeometryID"
+ --AND s."CPZ" = '7S'
+ --AND substring(su."BeatTitle" from '\((.+)\)') LIKE '7S%'
+ ) as d
+
+WHERE d."SurveyID" > 0
+--AND d."Done" IS true
+AND d."RoadName" NOT LIKE '%Car Park%'
+ORDER BY d."SurveyID", d."GeometryID";
