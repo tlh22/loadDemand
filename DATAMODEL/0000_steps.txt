@@ -1,10 +1,13 @@
 Main steps:
 
-1. Check that everything is loaded correctly and copy photos over
-2. Check suspensions (from notes)
-3. Check supply (from notes)
-4. Process - including calculating demand/stress
-5. Output
+1. Check that everything is loaded correctly
+2. Copy photos over
+3. Check suspensions (from notes)
+4. Check supply (from notes)
+6. Process
+    - Check VRMs (or count values)
+    - Calculate demand/stress
+7. Output
 
 
 

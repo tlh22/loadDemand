@@ -199,3 +199,29 @@ ALTER TABLE IF EXISTS demand."VRMs"
 
 ALTER TABLE IF EXISTS demand."VRMs_Staging"
     RENAME TO "VRMs";
+
+/***
+ * Change back ...
+
+
+ALTER TABLE IF EXISTS demand."Surveys"
+    RENAME TO "Surveys_Staging";
+
+ALTER TABLE IF EXISTS demand."Surveys_orig"
+    RENAME TO "Surveys";
+
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    RENAME TO "RestrictionsInSurveys_Staging";
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys_orig"
+    RENAME TO "RestrictionsInSurveys";
+
+
+ALTER TABLE IF EXISTS demand."VRMs"
+    RENAME TO "VRMs_Staging";
+
+ALTER TABLE IF EXISTS demand."VRMs_orig"
+    RENAME TO "VRMs";
+
+***/

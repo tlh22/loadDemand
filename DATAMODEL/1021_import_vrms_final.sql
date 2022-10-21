@@ -9,13 +9,14 @@ CREATE TABLE demand."VRMs_Final"
 (
   "ID" SERIAL,
   "SurveyID" integer,
-  "SectionID" integer,
   "GeometryID" character varying(12),
   "PositionID" integer,
   "VRM" character varying(12),
+  "InternationalCodeID" integer,
   "VehicleTypeID" integer,
-  "RestrictionTypeID" integer,
   "PermitTypeID" integer,
+  "ParkingActivityTypeID" integer,
+  "ParkingMannerTypeID" integer,
   "Notes" character varying(255),
   CONSTRAINT "VRMs_Final_pkey" PRIMARY KEY ("ID")
 )
@@ -36,3 +37,13 @@ CSV HEADER;
 UPDATE demand."VRMs_Final"
 SET "VehicleTypeID" = 1
 WHERE "VehicleTypeID" = 0;
+
+
+/***
+
+INSERT INTO demand."VRMs_Final"(
+	"SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes")
+SELECT "SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes"
+	FROM demand."VRMs";
+
+***/

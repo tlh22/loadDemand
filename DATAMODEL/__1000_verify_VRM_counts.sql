@@ -11,20 +11,19 @@ ORDER BY v."SurveyID";
 
 -- Use this to get break down by area - and then create a pivot table in Excel
 
-SELECT s."SurveyID", p."SurveyAreaName", COUNT(p."ID")
-FROM "demand"."Surveys" s LEFT JOIN
-(SELECT a."SurveyAreaName", v."SurveyID", v."ID"
- FROM "demand"."RestrictionsInSurveys" RiS, "demand"."VRMs" v, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
+SELECT s."SurveyID", p.name, COUNT(p."ID")
+FROM demand."Surveys" s LEFT JOIN
+(SELECT a.name, v."SurveyID", v."ID"
+ FROM demand."RestrictionsInSurveys" RiS, demand."VRMs" v, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
  WHERE v."SurveyID" = RiS."SurveyID"
  AND v."GeometryID" = r."GeometryID"
  AND v."GeometryID" = RiS."GeometryID"
  AND RiS."Done" = 'true'
- AND r."SurveyAreaID" = a."Code"
+ AND r."SurveyArea" = a.name
  --AND a.name = '7S-WGR'
  ) AS p ON p."SurveyID" = s."SurveyID"
-WHERE s."SurveyID" > 0
-GROUP BY s."SurveyID", p."SurveyAreaName"
-ORDER BY s."SurveyID", p."SurveyAreaName"
+GROUP BY s."SurveyID", p.name
+ORDER BY s."SurveyID", p.name
 
 -- including road, GeometryID
 
