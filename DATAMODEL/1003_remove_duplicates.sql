@@ -21,8 +21,9 @@ AND v1."ID" < v2."ID";
 -- Remove blanks
 
 DELETE FROM demand."VRMs"
-WHERE LENGTH(TRIM("VRM")) = 0
-AND "VehicleTypeID" IS NULL
-AND "PermitTypeID" IS NULL
-AND LENGTH(TRIM("Notes")) = 0;
+WHERE ("VRM" = '-' OR "VRM" IS NULL)
+AND ("VehicleTypeID" IS NULL OR "VehicleTypeID" = 0)
+AND ("PermitTypeID" IS NULL OR "PermitTypeID" = 0)
+AND ("InternationalCodeID" IS NULL OR "InternationalCodeID" = 0)
+AND ("Notes" IS NULL OR LENGTH(TRIM("Notes")) = 0);
 
