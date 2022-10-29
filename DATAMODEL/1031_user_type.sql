@@ -39,7 +39,7 @@ AND "VRM" IN (
     WHERE v1."VRM" = v2."VRM"
     AND v1."ID" < v2."ID"
     AND (
-            (v1."SurveyID" = 101 AND v2."SurveyID" = 102)
+            (v1."SurveyID" = 102 AND v2."SurveyID" = 103)
             OR (v1."SurveyID" = 202 AND v2."SurveyID" = 203)
             OR (v1."SurveyID" = 302 AND v2."SurveyID" = 303)
         )
@@ -132,6 +132,20 @@ SELECT DISTINCT "VRM", "UserType"
 FROM demand."VRMs_Final"
 	) AS y
 GROUP BY "UserType"
+
+-- Cambridge
+
+SELECT "SurveyAreaName", "UserTypeID", COUNT("UserTypeID")
+FROM (
+SELECT DISTINCT "VRM", "SurveyAreaName", "UserTypeID"
+FROM demand."VRMs_Final" v, mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
+
+	WHERE v."GeometryID" = su."GeometryID"
+	--AND "SurveyAreaName" LIKE 'Romsey East%'
+
+	) AS y
+GROUP BY "SurveyAreaName", "UserTypeID"
+ORDER BY "SurveyAreaName", "UserTypeID"
 
 -- Output "VRMs_Final"
 
@@ -227,3 +241,66 @@ FROM demand."RestrictionsInSurveys_Final" ris, demand."Surveys" su,
  ) as d
 
 ORDER BY d."SurveyID", d."GeometryID";
+
+
+
+-- Cambridge
+
+UPDATE demand."VRMs_Final"
+SET "UserTypeID" = NULL;
+
+-- Resident
+
+UPDATE demand."VRMs_Final" v
+SET "UserTypeID" = 1
+FROM demand."Surveys" s, mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
+WHERE s."SurveyID" = v."SurveyID"
+AND v."GeometryID" = su."GeometryID"
+AND s."BeatStartTime" = '0000'
+AND "SurveyAreaName" LIKE 'Romsey East%';
+
+UPDATE demand."VRMs_Final" v_f
+SET "UserTypeID" = 1
+FROM mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
+WHERE "VRM" IN (
+    SELECT "VRM"
+    FROM demand."VRMs_Final" v, mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
+    WHERE "UserTypeID" = 1
+	AND v."GeometryID" = su."GeometryID"
+	AND "SurveyAreaName" LIKE 'Romsey East%'
+)
+AND v_f."GeometryID" = su."GeometryID"
+AND "SurveyAreaName" LIKE 'Romsey East%';
+
+-- Commuter
+UPDATE demand."VRMs_Final" v_f
+SET "UserTypeID" = 2
+FROM mhtc_operations."Supply" sup LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON sup."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
+WHERE "UserTypeID" IS NULL
+AND "VRM" IN (
+    SELECT v1."VRM"
+    FROM
+    (demand."VRMs_Final" AS v LEFT JOIN (mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code") as p ON v."GeometryID" = p."GeometryID") AS v1,
+    (demand."VRMs_Final" AS v LEFT JOIN (mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS p ON v."GeometryID" = p."GeometryID") AS v2
+    WHERE v1."VRM" = v2."VRM"
+    AND v1."ID" != v2."ID"
+    AND (
+            (v1."SurveyID" = 1002 AND v2."SurveyID" = 1003)
+            OR (v1."SurveyID" = 2002 AND v2."SurveyID" = 2003)
+            OR (v1."SurveyID" = 3002 AND v2."SurveyID" = 3003)
+        )
+
+    AND v1."SurveyAreaName" LIKE 'Romsey East%'
+    AND v2."SurveyAreaName" LIKE 'Romsey East%'
+)
+AND v_f."GeometryID" = sup."GeometryID"
+AND "SurveyAreaName" LIKE 'Romsey East%';
+
+
+-- Visitor
+UPDATE demand."VRMs_Final" v_f
+SET "UserTypeID" = 3
+FROM mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
+WHERE "UserTypeID" IS NULL
+AND v_f."GeometryID" = su."GeometryID"
+AND "SurveyAreaName" LIKE 'Romsey East%';

@@ -2,7 +2,7 @@
  * Reload amended RiS
  ***/
 
-DROP TABLE IF EXISTS demand."RestrictionsInSurveys_Final";
+DROP TABLE IF EXISTS demand."RestrictionsInSurveys_Final" CASCADE;
 
 CREATE TABLE IF NOT EXISTS demand."RestrictionsInSurveys_Final"
 (
@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS demand."RestrictionsInSurveys_Final"
     "Photos_02" character varying(255) COLLATE pg_catalog."default",
     "Photos_03" character varying(255) COLLATE pg_catalog."default",
     geom geometry(LineString,27700),
+    "CaptureSource" character varying(255) COLLATE pg_catalog."default",
     CONSTRAINT "RestrictionsInSurveys_Final_pkey" PRIMARY KEY ("SurveyID", "GeometryID")
 )
 
@@ -58,3 +59,11 @@ UPDATE demand."RestrictionsInSurveys_Final" RiS
 SET "geom" = s."geom"
 FROM mhtc_operations."Supply" s
 WHERE RiS."GeometryID" = s."GeometryID";
+
+-- add CaptureSource
+
+UPDATE demand."RestrictionsInSurveys_Final" RiS_f
+SET "CaptureSource" = RiS."CaptureSource"
+FROM demand."RestrictionsInSurveys" RiS
+WHERE RiS_f."GeometryID" = RiS."GeometryID"
+AND RiS_f."SurveyID" = RiS."SurveyID";
