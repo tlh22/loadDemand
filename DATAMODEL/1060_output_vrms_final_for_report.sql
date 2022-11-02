@@ -3,6 +3,7 @@
 SELECT v."ID", v."SurveyID", s."SurveyDay" AS "Survey Day", s."BeatStartTime" || '-' || s."BeatEndTime" AS "Survey Time"
         , v."GeometryID", v."Restriction Type"
         , v."RoadName" AS "Road Name", v."SideOfStreet" AS "Side of Street"
+		, v."SurveyAreaName"
 		, v."VRM"
 		, "Country"
 		, v."Vehicle Type", v."PCU"
@@ -26,7 +27,7 @@ FROM
 		, "ParkingMannerTypes"."Description" AS "ParkingMannerType Description"
 		, "UserTypes"."Description" AS "UserType Description"
         , a."Notes", "RoadName", "SideOfStreet"
-
+ 		, "SurveyAreas"."SurveyAreaName" AS "SurveyAreaName"
 FROM
      ((((((((("demand"."VRMs_Final" AS a
 	 LEFT JOIN mhtc_operations."Supply" AS su ON a."GeometryID" = su."GeometryID")
