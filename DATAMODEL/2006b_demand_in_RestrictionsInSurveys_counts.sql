@@ -4,10 +4,14 @@
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Demand" double precision;
+--ALTER TABLE demand."RestrictionsInSurveys"
+--    ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
+--ALTER TABLE demand."RestrictionsInSurveys"
+--    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
+
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
-ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
+    ADD COLUMN "Capacity" double precision;
+
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Stress" double precision;
 
@@ -23,6 +27,18 @@ DECLARE
 	 vehicleWidth real := 0.0;
 	 motorcycleWidth real := 0.0;
 	 restrictionLength real := 0.0;
+	 carPCU real := 0.0;
+	 lgvPCU real := 0.0;
+	 mclPCU real := 0.0;
+	 ogvPCU real := 0.0;
+	 busPCU real := 0.0;
+	 pclPCU real := 0.0;
+	 taxiPCU real := 0.0;
+	 otherPCU real := 0.0;
+	 minibusPCU real := 0.0;
+	 docklesspclPCU real := 0.0;
+	 escooterPCU real := 0.0;
+
 	 NrCars INTEGER := 0;
 	 NrLGVs INTEGER := 0;
 	 NrMCLs INTEGER := 0;
@@ -48,10 +64,33 @@ DECLARE
     NrOGVs_Suspended INTEGER := 0;
     NrMiniBuses_Suspended INTEGER := 0;
     NrBuses_Suspended INTEGER := 0;
+
+    NrCarsIdling INTEGER := 0;
+    NrLGVsIdling INTEGER := 0;
+    NrMCLsIdling INTEGER := 0;
+    NrTaxisIdling INTEGER := 0;
+    NrOGVsIdling INTEGER := 0;
+    NrMiniBusesIdling INTEGER := 0;
+    NrBusesIdling INTEGER := 0;
+
+    NrCarsParkedIncorrectly INTEGER := 0;
+    NrLGVsParkedIncorrectly INTEGER := 0;
+    NrMCLsParkedIncorrectly INTEGER := 0;
+    NrTaxisParkedIncorrectly INTEGER := 0;
+    NrOGVsParkedIncorrectly INTEGER := 0;
+    NrMiniBusesParkedIncorrectly INTEGER := 0;
+    NrBusesParkedIncorrectly INTEGER := 0;
+
+    NrCarsWithDisabledBadgeParkedInPandD INTEGER := 0;
+
     Supply_Capacity INTEGER := 0;
     Capacity INTEGER := 0;
 	NrBaysSuspended INTEGER := 0;
 	RestrictionTypeID INTEGER;
+
+	controlled BOOLEAN;
+	check_exists BOOLEAN;
+
 BEGIN
 
     select "Value" into vehicleLength
@@ -71,42 +110,130 @@ BEGIN
         RETURN OLD;
     END IF;
 
+    ---
+    select "PCU" into carPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'Car';
+
+    select "PCU" into lgvPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'LGV';
+
+    select "PCU" into mclPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'MCL';
+
+    select "PCU" into ogvPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'OGV';
+
+    select "PCU" into busPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'Bus';
+
+    select "PCU" into pclPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'PCL';
+
+    select "PCU" into taxiPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'Taxi';
+
+    select "PCU" into otherPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'Other';
+
+    select "PCU" into minibusPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'Minibus';
+
+    select "PCU" into docklesspclPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'Dockless PCL';
+
+    select "PCU" into escooterPCU
+        from "demand_lookups"."VehicleTypes"
+        where "Description" = 'E-Scooter';
+
+
+    IF carPCU IS NULL OR lgvPCU IS NULL OR mclPCU IS NULL OR ogvPCU IS NULL OR busPCU IS NULL OR
+       pclPCU IS NULL OR taxiPCU IS NULL OR otherPCU IS NULL OR minibusPCU IS NULL OR docklesspclPCU IS NULL OR escooterPCU IS NULL THEN
+        RAISE EXCEPTION 'PCU parameters not available ...';
+        RETURN OLD;
+    END IF;
+
     SELECT "NrCars", "NrLGVs", "NrMCLs", "NrTaxis", "NrPCLs", "NrEScooters", "NrDocklessPCLs", "NrOGVs", "NrMiniBuses", "NrBuses", "NrSpaces",
         "Notes", "DoubleParkingDetails",
         "NrCars_Suspended", "NrLGVs_Suspended", "NrMCLs_Suspended", "NrTaxis_Suspended", "NrPCLs_Suspended", "NrEScooters_Suspended",
-        "NrDocklessPCLs_Suspended", "NrOGVs_Suspended", "NrMiniBuses_Suspended", "NrBuses_Suspended"
+        "NrDocklessPCLs_Suspended", "NrOGVs_Suspended", "NrMiniBuses_Suspended", "NrBuses_Suspended",
+
+        "NrCarsIdling", "NrCarsParkedIncorrectly", "NrLGVsIdling", "NrLGVsParkedIncorrectly", "NrMCLsIdling", "NrMCLsParkedIncorrectly",
+        "NrTaxisIdling", "NrTaxisParkedIncorrectly", "NrOGVsIdling", "NrOGVsParkedIncorrectly", "NrMiniBusesIdling", "NrMiniBusesParkedIncorrectly",
+        "NrBusesIdling", "NrBusesParkedIncorrectly",
+        "NrCarsWithDisabledBadgeParkedInPandD",
+
+        "NrBaysSuspended"
+
     INTO
         NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces,
         Notes, DoubleParkingDetails,
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended,
-        NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended
-	FROM demand."Counts"
-	WHERE "GeometryID" = NEW."GeometryID"
-	AND "SurveyID" = NEW."SurveyID";
+        NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended,
 
-	SELECT "RestrictionTypeID"   -- what happens if field does not exist?
-    INTO RestrictionTypeID
-	FROM mhtc_operations."Supply"
-	WHERE "GeometryID" = NEW."GeometryID";
-	
+        NrCarsIdling, NrCarsParkedIncorrectly, NrLGVsIdling, NrLGVsParkedIncorrectly, NrMCLsIdling, NrMCLsParkedIncorrectly,
+        NrTaxisIdling, NrTaxisParkedIncorrectly, NrOGVsIdling, NrOGVsParkedIncorrectly, NrMiniBusesIdling, NrMiniBusesParkedIncorrectly,
+        NrBusesIdling, NrBusesParkedIncorrectly,
+        NrCarsWithDisabledBadgeParkedInPandD,
+
+        NrBaysSuspended
+
+	FROM demand."Counts" c, demand."RestrictionsInSurveys" RiS
+	WHERE c."GeometryID" = NEW."GeometryID"
+	AND c."SurveyID" = NEW."SurveyID"
+	AND c."GeometryID" = RiS."GeometryID"
+	AND c."SurveyID" = RiS."SurveyID";
+
     -- From Camden where determining capacity from sections
-	SELECT "CapacityFromDemand", "RestrictionTypeID"   -- what happens if field does not exist?
-    INTO Supply_Capacity
+	SELECT "Capacity", "RestrictionTypeID"   -- what happens if field does not exist?
+    INTO Supply_Capacity, RestrictionTypeID
 	FROM mhtc_operations."Supply"
 	WHERE "GeometryID" = NEW."GeometryID";
 
-    NEW."Demand" = COALESCE(NrCars::float, 0.0) +
-        COALESCE(NrLGVs::float, 0.0) +
-        COALESCE(NrMCLs::float, 0.0)*0.33 +
-        (COALESCE(NrOGVs::float, 0.0) + COALESCE(NrMiniBuses::float, 0.0) + COALESCE(NrBuses::float, 0.0))*1.5 +
-        COALESCE(NrTaxis::float, 0.0) +
-        -- include suspended vehicles
-        COALESCE(NrCars_Suspended::float, 0.0) +
-        COALESCE(NrLGVs_Suspended::float, 0.0) +
-        COALESCE(NrMCLs_Suspended::float, 0.0)*0.33 +
-        (COALESCE(NrOGVs_Suspended::float, 0) + COALESCE(NrMiniBuses_Suspended::float, 0) + COALESCE(NrBuses_Suspended::float, 0))*1.5 +
-        COALESCE(NrTaxis_Suspended::float, 0);
+    NEW."Demand" = COALESCE(NrCars::float, 0.0) * carPCU +
+        COALESCE(NrLGVs::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLs::float, 0.0) * mclPCU +
+        COALESCE(NrOGVs::float, 0.0) * ogvPCU + COALESCE(NrMiniBuses::float, 0.0) * minibusPCU + COALESCE(NrBuses::float, 0.0) * busPCU +
+        COALESCE(NrTaxis::float, 0.0) * taxiPCU +
+        COALESCE(NrPCLs::float, 0.0) * pclPCU +
+        COALESCE(NrEScooters::float, 0.0) * escooterPCU +
+        COALESCE(NrDocklessPCLs::float, 0.0) * docklesspclPCU +
 
+        /***
+        -- include suspended vehicles
+        COALESCE(NrCars_Suspended::float, 0.0) * carPCU +
+        COALESCE(NrLGVs_Suspended::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLs_Suspended::float, 0.0) * mclPCU +
+        COALESCE(NrOGVs_Suspended::float, 0) * ogvPCU + COALESCE(NrMiniBuses_Suspended::float, 0) * minibusPCU + COALESCE(NrBuses_Suspended::float, 0) * busPCU +
+        COALESCE(NrTaxis_Suspended::float, 0) +
+        COALESCE(NrPCLs_Suspended::float, 0.0) * pclPCU +
+        COALESCE(NrEScooters_Suspended::float, 0.0) * escooterPCU +
+        COALESCE(NrDocklessPCLs_Suspended::float, 0.0) * docklesspclPCU +
+        ***/
+
+        COALESCE(NrCarsIdling::float, 0.0) * carPCU +
+        COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
+        COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
+        COALESCE(NrTaxisIdling::float, 0) +
+
+        COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
+        COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
+        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
+        COALESCE(NrTaxisParkedIncorrectly::float, 0)
+        ;
+
+    /***
     NEW."Demand_Standard" = COALESCE(NrCars::float, 0.0) +
         COALESCE(NrLGVs::float, 0.0) +
         COALESCE(NrMCLs::float, 0.0)*0.33 +
@@ -118,19 +245,47 @@ BEGIN
         COALESCE(NrMCLs_Suspended::float, 0.0)*0.33 +
         (COALESCE(NrOGVs_Suspended::float, 0) + COALESCE(NrMiniBuses_Suspended::float, 0) + COALESCE(NrBuses_Suspended::float, 0))*1.5 +
         COALESCE(NrTaxis_Suspended::float, 0);
+    ***/
 
     /* What to do about suspensions */
-	
-	IF (RestrictionTypeID = 201 OR
-		RestrictionTypeID = 216 OR
-		RestrictionTypeID = 217 OR
-		RestrictionTypeID = 227) THEN
-		NrBaysSuspended = COALESCE(NEW."NrBaysSuspended", 0.0);
-	ELSE
-		NrBaysSuspended = 0.0;
+
+	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs
+		RestrictionTypeID = 217 OR RestrictionTypeID = 222 OR RestrictionTypeID = 226 OR   -- SRLs
+		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220      -- Unmarked within PPZ
+		) THEN
+
+        -- Need to check whether or not effected by control hours
+
+        RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
+
+        SELECT EXISTS INTO check_exists (
+            SELECT FROM
+                pg_tables
+            WHERE
+                schemaname = 'demand' AND
+                tablename  = 'TimePeriodsControlledDuringSurveyHours'
+            ) ;
+
+        IF check_exists THEN
+
+            SELECT "Controlled"
+            INTO controlled
+            FROM mhtc_operations."Supply" s, demand."TimePeriodsControlledDuringSurveyHours" t
+            WHERE s."GeometryID" = NEW."GeometryID"
+            AND s."NoWaitingTimeID" = t."TimePeriodID"
+            AND t."SurveyID" = NEW."SurveyID";
+
+            IF controlled THEN
+                RAISE NOTICE '*****--- capacity set to 0 ...';
+                Supply_Capacity = 0.0;
+            END IF;
+
+        END IF;
+
 	END IF;
-	
-    Capacity = Supply_Capacity - NrBaysSuspended;
+
+    Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
+    NEW."Capacity" = Capacity;
 
     IF Capacity <= 0.0 THEN
         IF NEW."Demand" > 0.0 THEN
