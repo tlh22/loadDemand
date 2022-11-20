@@ -350,11 +350,11 @@ class loadDemand:
         # select all VRMs for this survey/GeometryID and add to layer
 
         query = QSqlQuery(
-        "SELECT SurveyID, GeometryID, PositionID, VRM, VehicleTypeID, RestrictionTypeID, PermitTypeID, Notes FROM VRMs WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
+        "SELECT SurveyID, GeometryID, PositionID, VRM, InternationalCodeID, VehicleTypeID, PermitTypeID, ParkingActivityTypeID, ParkingMannerTypeID, Notes FROM VRMs WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
         , dbConn)
         query.exec()
 
-        SurveyID, GeometryID, PositionID, VRM, VehicleTypeID, RestrictionTypeID, PermitTypeID, Notes = range(8)
+        SurveyID, GeometryID, PositionID, VRM, InternationalCodeID, VehicleTypeID, PermitTypeID, ParkingActivityTypeID, ParkingMannerTypeID, Notes = range(10)
 
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 

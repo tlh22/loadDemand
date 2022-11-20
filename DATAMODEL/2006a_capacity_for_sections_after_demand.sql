@@ -72,3 +72,6 @@ BEGIN
 
 END;
 $do$;
+
+-- Could also be helpful to look at locations where demand is greater than capacity
+

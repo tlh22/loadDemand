@@ -114,3 +114,85 @@ FROM demand."RestrictionsInSurveys_Final" ris, demand."Surveys" su,
 WHERE d."SurveyID" > 0
 --AND d."Done" IS true
 ORDER BY d."GeometryID", d."SurveyID"
+
+-- RBKC
+
+SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description",
+d."DetailsOfControl",
+d."RoadName", d."SideOfStreet",
+d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
+d."Photos_01", d."Photos_02", d."Photos_03",
+d."RestrictionLength", d."Capacity", d."AvailableSpaces", v."Demand", v."NrSpaces",
+CASE WHEN d."AvailableSpaces" = 0 THEN
+        CASE WHEN v."Demand" > 0 THEN 1.0
+        ELSE 0.0
+        END
+     ELSE v."Demand"/d."AvailableSpaces"
+     END AS "Stress",
+regexp_replace(v."Notes", '(.*?)(?<=<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">)(.*?)(?=<\/p>)', '\2', 'g')  AS "Notes",
+"SurveyAreaName",
+        "NrCars", "NrLGVs", "NrMCLs", "NrTaxis", "NrPCLs", "NrEScooters", "NrDocklessPCLs", "NrOGVs", "NrMiniBuses", "NrBuses",
+        "NrSpaces", "Notes", "DoubleParkingDetails",
+        "NrCars_Suspended", "NrLGVs_Suspended", "NrMCLs_Suspended", "NrTaxis_Suspended", "NrPCLs_Suspended", "NrEScooters_Suspended",
+        "NrDocklessPCLs_Suspended", "NrOGVs_Suspended", "NrMiniBuses_Suspended", "NrBuses_Suspended",
+        "NrCarsIdling", "NrCarsParkedIncorrectly", "NrLGVsIdling", "NrLGVsParkedIncorrectly", "NrMCLsIdling", "NrMCLsParkedIncorrectly",
+        "NrTaxisIdling", "NrTaxisParkedIncorrectly", "NrOGVsIdling", "NrOGVsParkedIncorrectly", "NrMiniBusesIdling", "NrMiniBusesParkedIncorrectly",
+        "NrBusesIdling", "NrBusesParkedIncorrectly", "NrCarsWithDisabledBadgeParkedInPandD"
+FROM
+mhtc_operations."RBKC_RequestAreas" rbkc,
+(SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", a."RestrictionTypeID", "BayLineTypes"."Description" AS "RestrictionType Description",
+       CASE WHEN ("RestrictionTypeID" < 200 OR "RestrictionTypeID" IN (227, 228, 229, 231)) THEN COALESCE("TimePeriods1"."Description", '')
+            ELSE COALESCE("TimePeriods2"."Description", '')
+            END  AS "DetailsOfControl",
+a."RoadName", a."SideOfStreet", a."RestrictionLength",
+"DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
+ris."Photos_01", ris."Photos_02", ris."Photos_03", a."Capacity",
+     CASE WHEN (a."Capacity" - COALESCE(ris."NrBaysSuspended", 0)) > 0 THEN (a."Capacity" - COALESCE(ris."NrBaysSuspended", 0))
+         ELSE 0
+         END AS "AvailableSpaces",
+"SurveyAreas"."SurveyAreaName", ris.geom
+FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
+((((mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
+ LEFT JOIN "toms_lookups"."TimePeriods" AS "TimePeriods1" ON a."TimePeriodID" is not distinct from "TimePeriods1"."Code")
+ LEFT JOIN "toms_lookups"."TimePeriods" AS "TimePeriods2" ON a."NoWaitingTimeID" is not distinct from "TimePeriods2"."Code")
+ LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code")
+ WHERE ris."SurveyID" = su."SurveyID"
+ AND ris."GeometryID" = a."GeometryID"
+ --AND s."CPZ" = '7S'
+ --AND substring(su."BeatTitle" from '\((.+)\)') LIKE '7S%'
+ ) as d
+
+LEFT JOIN  (SELECT "SurveyID", "GeometryID",
+        "NrCars", "NrLGVs", "NrMCLs", "NrTaxis", "NrPCLs", "NrEScooters", "NrDocklessPCLs", "NrOGVs", "NrMiniBuses", "NrBuses",
+        "NrSpaces", "Notes", "DoubleParkingDetails",
+        "NrCars_Suspended", "NrLGVs_Suspended", "NrMCLs_Suspended", "NrTaxis_Suspended", "NrPCLs_Suspended", "NrEScooters_Suspended",
+        "NrDocklessPCLs_Suspended", "NrOGVs_Suspended", "NrMiniBuses_Suspended", "NrBuses_Suspended",
+        "NrCarsIdling", "NrCarsParkedIncorrectly", "NrLGVsIdling", "NrLGVsParkedIncorrectly", "NrMCLsIdling", "NrMCLsParkedIncorrectly",
+        "NrTaxisIdling", "NrTaxisParkedIncorrectly", "NrOGVsIdling", "NrOGVsParkedIncorrectly", "NrMiniBusesIdling", "NrMiniBusesParkedIncorrectly",
+        "NrBusesIdling", "NrBusesParkedIncorrectly", "NrCarsWithDisabledBadgeParkedInPandD",
+
+        COALESCE("NrCars"::float, 0.0) +
+        COALESCE("NrLGVs"::float, 0.0) +
+        COALESCE("NrMCLs"::float, 0.0)*0.2 +
+        (COALESCE("NrOGVs"::float, 0.0) + COALESCE("NrMiniBuses"::float, 0.0) + COALESCE("NrBuses"::float, 0.0))*1.5 +
+        COALESCE("NrTaxis"::float, 0.0) +
+        (COALESCE("NrPCLs"::float, 0.0) + COALESCE("NrEScooters"::float, 0.0) + COALESCE("NrDocklessPCLs"::float, 0.0))*0.1
+        +
+        COALESCE("NrCarsIdling"::float, 0.0) + COALESCE("NrCarsParkedIncorrectly"::float, 0.0) +
+        COALESCE("NrLGVsIdling"::float, 0.0) + COALESCE("NrLGVsParkedIncorrectly"::float, 0.0) +
+        COALESCE("NrMCLsIdling"::float, 0.0)*0.2 + COALESCE("NrMCLsIdling"::float, 0.0)*0.2 +
+        (COALESCE("NrOGVsIdling"::float, 0.0) + COALESCE("NrOGVsParkedIncorrectly"::float, 0.0) +
+        COALESCE("NrMiniBusesIdling"::float, 0.0) + COALESCE("NrMiniBusesParkedIncorrectly"::float, 0.0) +
+        COALESCE("NrBusesIdling"::float, 0.0)*1.5 + COALESCE("NrBusesParkedIncorrectly"::float, 0.0))*1.5 +
+        COALESCE("NrTaxisIdling"::float, 0.0) + COALESCE("NrTaxisParkedIncorrectly"::float, 0.0) +
+        COALESCE("NrCarsWithDisabledBadgeParkedInPandD"::float, 0.0)
+         AS "Demand"
+
+   FROM demand."Counts"
+   --GROUP BY "SurveyID", "GeometryID"
+  ) AS v ON d."SurveyID" = v."SurveyID" AND d."GeometryID" = v."GeometryID"
+WHERE d."SurveyID" > 0
+--AND d."Done" IS true
+AND ST_Within(d.geom, rbkc.geom)
+ORDER BY d."SurveyID", d."GeometryID";

@@ -73,7 +73,7 @@ CASE
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9]{2}[A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z][0-9]{2})([A-Z])-([A-Z]{2})', '\1-\2\3')
 
 	WHEN "VRM" SIMILAR TO '[A-Z][O][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[O]([0-9])([A-Z])-([A-Z]{2})', '\10\2-\3\4') -- Second character is O
-    WHEN "VRM" SIMILAR TO '[A-Z][I][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I]([0-9]([A-Z])-([A-Z]{2})', '\11\2-\3\4') -- Second character is 1
+    WHEN "VRM" SIMILAR TO '[A-Z][I][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I]([0-9])([A-Z])-([A-Z]{2})', '\11\2-\3\4') -- Second character is 1
     WHEN "VRM" SIMILAR TO '[A-Z][I][O][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I][0]([A-Z])-([A-Z]{2})', '\110-\2\3')  -- Second/Third character is IO
     WHEN "VRM" SIMILAR TO '[A-Z][I][I][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I][I]([A-Z])-([A-Z]{2})', '\111-\2\3')  -- Second/Third character is II
 

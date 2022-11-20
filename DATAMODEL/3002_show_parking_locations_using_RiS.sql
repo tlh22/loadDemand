@@ -1,6 +1,6 @@
 -- create view with to show stress
 
-drop materialized view IF EXISTS demand."Demand_view_to_show_parking_locations";
+drop materialized view IF EXISTS demand."Demand_view_to_show_parking_locations" CASCADE;
 
 create MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations"
 TABLESPACE pg_default

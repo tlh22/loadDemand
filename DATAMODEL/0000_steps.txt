@@ -1,3 +1,14 @@
+Main steps:
+
+1. Check that everything is loaded correctly
+2. Copy photos over
+3. Check suspensions (from notes)
+4. Check supply (from notes)
+6. Process
+    - Check VRMs (or count values)
+    - Calculate demand/stress
+7. Output
+
 
 
  - output supply
@@ -30,12 +41,22 @@
 VRMs_Final
 RestrictionsInSurveys_Final
 
+Any additional VRMs to be included separately as vrms_final_extra
+
 -- Further processing (possibly)
  - user type
  - durations
 
   - capacity after demand (for subsections)
 
+** Final output and reporting ...
+TODO:
+create supply report that summarises by road and allowable restriction ...
+create demand reports that summarise by:
+ - road
+ - restriction type
+
+also output of raw data - vrms or restriction (counts)
 
 -- for plans
  - supply - ensure that labels are correct and that all restriction types are showing ?? - TODO
