@@ -65,6 +65,14 @@ DECLARE
     NrMiniBuses_Suspended INTEGER := 0;
     NrBuses_Suspended INTEGER := 0;
 
+    NrCarsWaiting INTEGER := 0;
+    NrLGVsWaiting INTEGER := 0;
+    NrMCLsWaiting INTEGER := 0;
+    NrTaxisWaiting INTEGER := 0;
+    NrOGVsWaiting INTEGER := 0;
+    NrMiniBusesWaiting INTEGER := 0;
+    NrBusesWaiting INTEGER := 0;
+
     NrCarsIdling INTEGER := 0;
     NrLGVsIdling INTEGER := 0;
     NrMCLsIdling INTEGER := 0;
@@ -167,12 +175,21 @@ BEGIN
         "NrCars_Suspended", "NrLGVs_Suspended", "NrMCLs_Suspended", "NrTaxis_Suspended", "NrPCLs_Suspended", "NrEScooters_Suspended",
         "NrDocklessPCLs_Suspended", "NrOGVs_Suspended", "NrMiniBuses_Suspended", "NrBuses_Suspended",
 
-        "NrCarsIdling", "NrCarsParkedIncorrectly", "NrLGVsIdling", "NrLGVsParkedIncorrectly", "NrMCLsIdling", "NrMCLsParkedIncorrectly",
-        "NrTaxisIdling", "NrTaxisParkedIncorrectly", "NrOGVsIdling", "NrOGVsParkedIncorrectly", "NrMiniBusesIdling", "NrMiniBusesParkedIncorrectly",
-        "NrBusesIdling", "NrBusesParkedIncorrectly",
-        "NrCarsWithDisabledBadgeParkedInPandD",
+        "NrCarsWaiting", "NrLGVsWaiting", "NrMCLsWaiting", "NrTaxisWaiting", "NrOGVsWaiting", "NrMiniBusesWaiting", "NrBusesWaiting",
 
-        "NrBaysSuspended"
+        "NrCarsIdling", "NrLGVsIdling", "NrMCLsIdling",
+        "NrTaxisIdling", "NrOGVsIdling", "NrMiniBusesIdling",
+        "NrBusesIdling"
+
+        /***
+        ,"NrCarsParkedIncorrectly", "NrLGVsParkedIncorrectly", "NrMCLsParkedIncorrectly",
+        "NrTaxisParkedIncorrectly", "NrOGVsParkedIncorrectly", "NrMiniBusesParkedIncorrectly",
+        "NrBusesParkedIncorrectly",
+        ***/
+
+        --"NrCarsWithDisabledBadgeParkedInPandD",
+
+        ,"NrBaysSuspended"
 
     INTO
         NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces,
@@ -180,12 +197,19 @@ BEGIN
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended,
         NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended,
 
-        NrCarsIdling, NrCarsParkedIncorrectly, NrLGVsIdling, NrLGVsParkedIncorrectly, NrMCLsIdling, NrMCLsParkedIncorrectly,
-        NrTaxisIdling, NrTaxisParkedIncorrectly, NrOGVsIdling, NrOGVsParkedIncorrectly, NrMiniBusesIdling, NrMiniBusesParkedIncorrectly,
-        NrBusesIdling, NrBusesParkedIncorrectly,
-        NrCarsWithDisabledBadgeParkedInPandD,
+        NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting,
 
-        NrBaysSuspended
+        NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling
+
+        /***
+        ,NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
+        NrTaxisParkedIncorrectly, NrOGVsParkedIncorrectly, NrMiniBusesParkedIncorrectly,
+        NrBusesParkedIncorrectly,
+        ***/
+
+        --,NrCarsWithDisabledBadgeParkedInPandD
+
+        ,NrBaysSuspended
 
 	FROM demand."Counts" c, demand."RestrictionsInSurveys" RiS
 	WHERE c."GeometryID" = NEW."GeometryID"
@@ -220,17 +244,25 @@ BEGIN
         COALESCE(NrDocklessPCLs_Suspended::float, 0.0) * docklesspclPCU +
         ***/
 
+        COALESCE(NrCarsWaiting::float, 0.0) * carPCU +
+        COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
+        COALESCE(NrOGVsWaiting::float, 0) * ogvPCU + COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU + COALESCE(NrBusesWaiting::float, 0) * busPCU +
+        COALESCE(NrTaxisWaiting::float, 0) +
+
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
         COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
-        COALESCE(NrTaxisIdling::float, 0) +
+        COALESCE(NrTaxisIdling::float, 0)
 
+        /***
         COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
         COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
         COALESCE(NrTaxisParkedIncorrectly::float, 0)
+        ***/
         ;
 
     /***
