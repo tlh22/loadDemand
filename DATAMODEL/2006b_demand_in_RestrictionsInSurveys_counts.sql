@@ -10,7 +10,13 @@ ALTER TABLE demand."RestrictionsInSurveys"
 --    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "Capacity" double precision;
+    ADD COLUMN "SupplyCapacity" double precision;
+
+--ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+--    RENAME "Capacity" TO "CapacityAtTimeOfSurvey";
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN "CapacityAtTimeOfSurvey" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Stress" double precision;
@@ -23,9 +29,9 @@ CREATE OR REPLACE FUNCTION "demand"."update_demand_counts"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-	 vehicleLength real := 0.0;
-	 vehicleWidth real := 0.0;
-	 motorcycleWidth real := 0.0;
+	 --vehicleLength real := 0.0;
+	 --vehicleWidth real := 0.0;
+	 --motorcycleWidth real := 0.0;
 	 restrictionLength real := 0.0;
 	 carPCU real := 0.0;
 	 lgvPCU real := 0.0;
@@ -101,6 +107,7 @@ DECLARE
 
 BEGIN
 
+    /***
     select "Value" into vehicleLength
         from "mhtc_operations"."project_parameters"
         where "Field" = 'VehicleLength';
@@ -117,6 +124,7 @@ BEGIN
         RAISE EXCEPTION 'Capacity parameters not available ...';
         RETURN OLD;
     END IF;
+    ***/
 
     ---
     select "PCU" into carPCU
@@ -167,6 +175,7 @@ BEGIN
     IF carPCU IS NULL OR lgvPCU IS NULL OR mclPCU IS NULL OR ogvPCU IS NULL OR busPCU IS NULL OR
        pclPCU IS NULL OR taxiPCU IS NULL OR otherPCU IS NULL OR minibusPCU IS NULL OR docklesspclPCU IS NULL OR escooterPCU IS NULL THEN
         RAISE EXCEPTION 'PCU parameters not available ...';
+        RAISE NOTICE '--- (%); (%); (%); (%); (%); (%); (%); (%); (%); (%); (%) ', carPCU, lgvPCU, mclPCU, ogvPCU, busPCU, pclPCU, taxiPCU, otherPCU, minibusPCU, docklesspclPCU, escooterPCU;
         RETURN OLD;
     END IF;
 
@@ -317,7 +326,8 @@ BEGIN
 	END IF;
 
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
-    NEW."Capacity" = Capacity;
+    NEW."SupplyCapacity" = Supply_Capacity;
+    NEW."CapacityAtTimeOfSurvey" = Capacity;
 
     IF Capacity <= 0.0 THEN
         IF NEW."Demand" > 0.0 THEN

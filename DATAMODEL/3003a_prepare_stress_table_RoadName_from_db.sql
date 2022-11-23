@@ -30,10 +30,10 @@ AS
                 END
         END "Stress"
     FROM (
-    SELECT "SurveyID", s."RoadName", SUM(RiS."Capacity") AS "Capacity", SUM(RiS."Demand") AS "Demand"
-    FROM mhtc_operations."Supply" s, demand."RestrictionsInSurveys_Final" RiS
+    SELECT "SurveyID", s."RoadName", SUM(RiS."CapacityAtTimeOfSurvey") AS "Capacity", SUM(RiS."Demand") AS "Demand"
+    FROM mhtc_operations."Supply" s, demand."RestrictionsInSurveys" RiS
     WHERE s."GeometryID" = RiS."GeometryID"
-    AND s."RestrictionTypeID" NOT IN (117, 118)  -- Motorcycle bays
+    AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
     GROUP BY RiS."SurveyID", s."RoadName"
     ORDER BY s."RoadName", RiS."SurveyID" ) a
     ) d

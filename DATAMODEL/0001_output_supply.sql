@@ -7,10 +7,21 @@
 --
 
 SELECT
-"GeometryID", "RestrictionTypeID",
+"GeometryID",
+        CASE WHEN "RestrictionTypeID" = 225 THEN
+                 CASE
+                    WHEN "UnacceptableTypeID" IS NOT NULL THEN 220
+                    ELSE 216
+                 END
+                 WHEN "RestrictionTypeID" = 224 THEN
+                 CASE
+                    WHEN "UnacceptableTypeID" IS NOT NULL THEN 221
+                    ELSE 201
+                 END
+             ELSE "RestrictionTypeID"
+        END AS "RestrictionTypeID",
 "BayLineTypes"."Description" AS "RestrictionDescription",
 "GeomShapeID", COALESCE("RestrictionGeomShapeTypes"."Description", '') AS "Restriction Shape Description",
-
 a."RoadName", a."StartStreet" AS "RoadFrom", a."EndStreet" AS "RoadTo", a."SideOfStreet", "RC_Sections_merged"."SectionName", COALESCE("SurveyAreas"."SurveyAreaName", '')  AS "SurveyAreaName",
 
        CASE WHEN ("RestrictionTypeID" < 200 OR "RestrictionTypeID" IN (227, 228, 229, 231)) THEN COALESCE("TimePeriods1"."Description", '')
@@ -51,7 +62,7 @@ FROM
 	 LEFT JOIN "toms_lookups"."UnacceptableTypes" AS "UnacceptableTypes" ON a."UnacceptableTypeID" is not distinct from "UnacceptableTypes"."Code")
 	 LEFT JOIN "mhtc_operations"."RC_Sections_merged" AS "RC_Sections_merged" ON a."SectionID" is not distinct from "RC_Sections_merged"."gid")
 	 LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code")
-	 --WHERE a."RoadName" NOT LIKE '%Car Park%'
+
 ORDER BY "RestrictionTypeID", "GeometryID"
 
 
