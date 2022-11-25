@@ -9,8 +9,8 @@ DECLARE
     relevant_restriction_in_survey RECORD;
     clone_restriction_id uuid;
     current_done BOOLEAN := false;
-	curr_survey_id INTEGER := 101;
-	new_survey_id INTEGER := 102;
+	curr_survey_id INTEGER := 107;
+	new_survey_id INTEGER := 108;
 BEGIN
 
     FOR relevant_restriction_in_survey IN
