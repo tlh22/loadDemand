@@ -10,15 +10,16 @@ SELECT v."ID", v."SurveyID", s."SurveyDay", s."BeatStartTime" || '-' || s."BeatE
 		v."ParkingActivityTypeID", v."ParkingActivityTypes Description",
 		v."ParkingMannerTypeID", v."ParkingMannerTypes Description",
         v."Notes", "Enumerator", "DemandSurveyDateTime",
-        r."NrBaysSuspended",
         CONCAT( COALESCE("SuspensionReference" || '; ', ''), COALESCE("SuspensionReason" || '; ', ''),
-                 COALESCE("SuspensionLength" || '; ', ''), COALESCE("SuspensionNotes" || '; ', '') )
+                 COALESCE("SuspensionLength" || '; ', ''), COALESCE("SuspensionNotes" || '; ', '') ) AS "SuspensionNotes",
+        '' AS "UserType"
+
 
 FROM
 (SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM", "VRM_Orig", 
 		"InternationalCodeID", "InternationalCodes"."Description" As "Country",
 		"VehicleTypeID", "VehicleTypes"."Description" AS "VehicleType Description", "VehicleTypes"."PCU" AS "PCU",
-		"ParkingActivityTypeID", "ParkingActivityTypes"."Description" AS "ParkingActivityType Description",
+		"ParkingActivityTypeID", "ParkingActivityTypes"."Description" AS "ParkingActivityTypes Description",
 		"ParkingMannerTypeID", "ParkingMannerTypes"."Description" AS "ParkingMannerTypes Description",
        su."RestrictionTypeID",
 		"BayLineTypes"."Description" AS "RestrictionType Description",

@@ -218,9 +218,9 @@ BEGIN
         ,NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
         NrTaxisParkedIncorrectly, NrOGVsParkedIncorrectly, NrMiniBusesParkedIncorrectly,
         NrBusesParkedIncorrectly,
-        ***/
 
-        --,NrCarsWithDisabledBadgeParkedInPandD
+        ,NrCarsWithDisabledBadgeParkedInPandD
+        ***/
 
         ,NrBaysSuspended
 
@@ -261,20 +261,22 @@ BEGIN
         COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
         COALESCE(NrOGVsWaiting::float, 0) * ogvPCU + COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU + COALESCE(NrBusesWaiting::float, 0) * busPCU +
-        COALESCE(NrTaxisWaiting::float, 0) +
+        COALESCE(NrTaxisWaiting::float, 0) * carPCU +
 
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
         COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
-        COALESCE(NrTaxisIdling::float, 0)
+        COALESCE(NrTaxisIdling::float, 0) * carPCU +
 
         /***
         COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
         COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
-        COALESCE(NrTaxisParkedIncorrectly::float, 0)
+        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
+
+  		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
         ***/
         ;
 
@@ -330,6 +332,9 @@ BEGIN
 	END IF;
 
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
+    IF Capacity < 0.0 THEN
+        Capacity = 0.0;
+    END IF;
     NEW."SupplyCapacity" = Supply_Capacity;
     NEW."CapacityAtTimeOfSurvey" = Capacity;
 

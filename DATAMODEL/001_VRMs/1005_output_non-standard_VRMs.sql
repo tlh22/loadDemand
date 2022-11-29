@@ -3,8 +3,7 @@
 
 SELECT DISTINCT "VRM"
 FROM demand."VRMs"
-WHERE ("SurveyID" < 30 AND "SurveyID" > 20)
-AND "VRM" NOT IN (
+WHERE "VRM" NOT IN (
 SELECT "VRM"
 FROM demand."VRMs"
 WHERE "VRM" =

@@ -29,7 +29,7 @@ FROM
         , a."Notes", "RoadName", "SideOfStreet"
  		, "SurveyAreas"."SurveyAreaName" AS "SurveyAreaName"
 FROM
-     ((((((((("demand"."VRMs_Final" AS a
+     ((((((((("demand"."VRMs" AS a
 	 LEFT JOIN mhtc_operations."Supply" AS su ON a."GeometryID" = su."GeometryID")
      LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON su."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
      LEFT JOIN "demand_lookups"."InternationalCodes" AS "InternationalCodes" ON a."InternationalCodeID" is not distinct from "InternationalCodes"."Code")
@@ -41,7 +41,7 @@ FROM
      LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON su."SurveyAreaID" is not distinct from "SurveyAreas"."Code")
 ORDER BY "GeometryID", "VRM") As v
 	 	, "demand"."Surveys" s
-		, "demand"."RestrictionsInSurveys_Final" r
+		, "demand"."RestrictionsInSurveys" r
 WHERE v."SurveyID" = s."SurveyID"
 AND r."SurveyID" = s."SurveyID"
 AND r."GeometryID" = v."GeometryID"
