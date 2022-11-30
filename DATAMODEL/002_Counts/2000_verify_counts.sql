@@ -372,5 +372,6 @@ FROM demand."Surveys" su, demand."RestrictionsInSurveys" RiS,
  FROM mhtc_operations."Supply" s LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON s."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS d
 WHERE su."SurveyID" = RiS."SurveyID"
 AND d."GeometryID" = RiS."GeometryID"
+AND su."SurveyID" > 0
 GROUP BY su."SurveyID", "SurveyAreaName"
 ORDER BY su."SurveyID", "SurveyAreaName"
