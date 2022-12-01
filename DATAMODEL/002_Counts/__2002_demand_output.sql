@@ -38,7 +38,7 @@ a."RoadName", a."StartStreet" AS "RoadFrom", a."EndStreet" AS "RoadTo", a."SideO
        "RestrictionLength" AS "KerblineLength",
        "NrBays" AS "MarkedBays", "Capacity" AS "TheoreticalBays",
 
-       CASE WHEN "RestrictionTypeID" IN (122, 162, 107, 161, 202, 218, 220, 221, 222, 209, 210, 211, 212, 213, 214, 215) THEN 0
+       CASE WHEN "RestrictionTypeID" IN (122, 162, 107, 161, 202, 218, 220, 221, 222, 228, 209, 210, 211, 212, 213, 214, 215) THEN 0
             --WHEN "RestrictionTypeID" IN (201, 217) THEN
                 --CASE WHEN "Allowable" IS NULL THEN "Capacity"
                      --ELSE 0

@@ -21,13 +21,14 @@ AS
         d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", d."Demand"
         from
         (select ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" as "RestrictionType Description",
-        "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes", ris."Capacity", "Demand", "Stress",
+        "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes", ris."SupplyCapacity" AS "Capacity", "Demand", "Stress",
         ris."Photos_01", ris."Photos_02", ris."Photos_03"
-        from demand."RestrictionsInSurveys_Final" ris, demand."Surveys" su,
+        from demand."RestrictionsInSurveys" ris, demand."Surveys" su,
         (mhtc_operations."Supply" as a
          left join "toms_lookups"."BayLineTypes" as "BayLineTypes" on a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") as s
          where ris."SurveyID" = su."SurveyID"
          and ris."GeometryID" = s."GeometryID"
+         AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
          ) as d
 
         order by d."RestrictionTypeID", d."GeometryID", d."SurveyID") as f

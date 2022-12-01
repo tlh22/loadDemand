@@ -8,34 +8,34 @@
 
  ***/
 
-ALTER TABLE demand."VRMs_Final"
+ALTER TABLE demand."VRMs"
     ADD COLUMN "UserTypeID" INTEGER;
 
-UPDATE demand."VRMs_Final"
+UPDATE demand."VRMs"
 SET "UserTypeID" = NULL;
 
 -- Residents
-UPDATE demand."VRMs_Final" v
+UPDATE demand."VRMs" v
 SET "UserTypeID" = 1
 FROM demand."Surveys" s
 WHERE s."SurveyID" = v."SurveyID"
 AND s."BeatStartTime" = '0000';
 
-UPDATE demand."VRMs_Final"
+UPDATE demand."VRMs"
 SET "UserTypeID" = 1
 WHERE "VRM" IN (
     SELECT "VRM"
-    FROM demand."VRMs_Final"
+    FROM demand."VRMs"
     WHERE "UserTypeID" = 1
 );
 
 -- Commuter
-UPDATE demand."VRMs_Final"
+UPDATE demand."VRMs"
 SET "UserTypeID" = 2
 WHERE "UserTypeID" IS NULL
 AND "VRM" IN (
     SELECT v1."VRM"
-    FROM demand."VRMs_Final" v1, demand."VRMs_Final" v2
+    FROM demand."VRMs" v1, demand."VRMs" v2
     WHERE v1."VRM" = v2."VRM"
     AND v1."ID" < v2."ID"
     AND (

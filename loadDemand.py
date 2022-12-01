@@ -401,7 +401,8 @@ class loadDemand:
         TOMsMessageLog.logMessage("In processCounts for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Info)
 
         query = QSqlQuery(
-        "SELECT SurveyID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, DoubleParkingDetails, NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended, NrCarsIdling, NrCarsParkedIncorrectly, NrLGVsIdling, NrLGVsParkedIncorrectly, NrMCLsIdling, NrMCLsParkedIncorrectly, NrTaxisIdling, NrTaxisParkedIncorrectly, NrOGVsIdling, NrOGVsParkedIncorrectly, NrMiniBusesIdling, NrMiniBusesParkedIncorrectly, NrBusesIdling, NrBusesParkedIncorrectly, NrCarsWithDisabledBadgeParkedInPandD FROM Counts WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
+        # (for RBKC 2022) "SELECT SurveyID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, DoubleParkingDetails, NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended, NrCarsIdling, NrCarsParkedIncorrectly, NrLGVsIdling, NrLGVsParkedIncorrectly, NrMCLsIdling, NrMCLsParkedIncorrectly, NrTaxisIdling, NrTaxisParkedIncorrectly, NrOGVsIdling, NrOGVsParkedIncorrectly, NrMiniBusesIdling, NrMiniBusesParkedIncorrectly, NrBusesIdling, NrBusesParkedIncorrectly, NrCarsWithDisabledBadgeParkedInPandD FROM Counts WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
+        "SELECT SurveyID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, DoubleParkingDetails, NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended, NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting, NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling FROM Counts WHERE SurveyID = {} AND GeometryID = \'{}\'".format(currSurveyID, currGeometryID)
         , dbConn)
         TOMsMessageLog.logMessage("In processCounts {} ...".format(query.lastQuery()),
                                   level=Qgis.Info)
@@ -415,12 +416,21 @@ class loadDemand:
                                  "Unexcepted error occurred {}".format(e),
                                  "Click Cancel to exit.", QMessageBox.Cancel)
 
+        """  For RBKC 2022
         SurveyID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, \
         DoubleParkingDetails, \
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, \
         NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended, \
         NrCarsIdling, NrCarsParkedIncorrectly, NrLGVsIdling, NrLGVsParkedIncorrectly, NrMCLsIdling, NrMCLsParkedIncorrectly, NrTaxisIdling, NrTaxisParkedIncorrectly, NrOGVsIdling, NrOGVsParkedIncorrectly, NrMiniBusesIdling, NrMiniBusesParkedIncorrectly, NrBusesIdling, NrBusesParkedIncorrectly, \
         NrCarsWithDisabledBadgeParkedInPandD = range(40)
+        """
+
+        SurveyID, GeometryID, NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces, Notes, \
+        DoubleParkingDetails, \
+        NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended, \
+        NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended, \
+        NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting, \
+        NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling = range(39)
 
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 

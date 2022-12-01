@@ -26,7 +26,7 @@ WITH (
 ALTER TABLE demand."VRMs_Final"
   OWNER TO postgres;
 
-COPY demand."VRMs_Final"("SurveyID", "GeometryID", "PositionID", "VRM", "VehicleTypeID", "PermitTypeID", "Notes")
+COPY demand."VRMs_Final"("SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes")
 FROM 'C:\Users\Public\Documents\PC2209_WGR_All_VRMs_local_2.csv'
 DELIMITER ','
 CSV HEADER;
@@ -38,6 +38,13 @@ UPDATE demand."VRMs_Final"
 SET "VehicleTypeID" = 1
 WHERE "VehicleTypeID" = 0;
 
+UPDATE demand."VRMs_Final"
+SET "ParkingActivityTypeID" = 1
+WHERE "ParkingActivityTypeID" = 0;
+
+UPDATE demand."VRMs_Final"
+SET "ParkingMannerTypeID" = 1
+WHERE "ParkingMannerTypeID" = 0;
 
 /***
 
@@ -47,3 +54,13 @@ SELECT "SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "Ve
 	FROM demand."VRMs";
 
 ***/
+
+CREATE TABLE demand."VRMs_orig" AS
+TABLE demand."VRMs";
+
+DELETE FROM demand."VRMs";
+
+INSERT INTO demand."VRMs"(
+	"ID", "SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes", "VRM_Orig")
+SELECT "ID", "SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes"
+	FROM demand."VRMs_Final";
