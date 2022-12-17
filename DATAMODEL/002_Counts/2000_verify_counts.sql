@@ -111,6 +111,8 @@ DECLARE
 
 BEGIN
 
+    --RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
+
     /***
     select "Value" into vehicleLength
         from "mhtc_operations"."project_parameters"
@@ -375,3 +377,11 @@ AND d."GeometryID" = RiS."GeometryID"
 AND su."SurveyID" > 0
 GROUP BY su."SurveyID", "SurveyAreaName"
 ORDER BY su."SurveyID", "SurveyAreaName"
+
+/***
+SELECT RiS."SurveyID", SUM("Demand")
+FROM demand."RestrictionsInSurveys" RiS
+WHERE RiS."SurveyID" > 0
+GROUP BY RiS."SurveyID"
+ORDER BY RiS."SurveyID"
+***/
