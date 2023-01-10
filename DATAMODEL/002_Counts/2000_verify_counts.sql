@@ -189,44 +189,40 @@ BEGIN
         RETURN OLD;
     END IF;
 
-    SELECT "NrCars", "NrLGVs", "NrMCLs", "NrTaxis", "NrPCLs", "NrEScooters", "NrDocklessPCLs", "NrOGVs", "NrMiniBuses", "NrBuses", "NrSpaces",
-        "Notes", "DoubleParkingDetails",
-        "NrCars_Suspended", "NrLGVs_Suspended", "NrMCLs_Suspended", "NrTaxis_Suspended", "NrPCLs_Suspended", "NrEScooters_Suspended",
-        "NrDocklessPCLs_Suspended", "NrOGVs_Suspended", "NrMiniBuses_Suspended", "NrBuses_Suspended",
-
-        "NrCarsWaiting", "NrLGVsWaiting", "NrMCLsWaiting", "NrTaxisWaiting", "NrOGVsWaiting", "NrMiniBusesWaiting", "NrBusesWaiting",
-
-        "NrCarsIdling", "NrLGVsIdling", "NrMCLsIdling",
-        "NrTaxisIdling", "NrOGVsIdling", "NrMiniBusesIdling",
-        "NrBusesIdling"
-
+    SELECT c."NrCars", c."NrLGVs", c."NrMCLs", c."NrTaxis", c."NrPCLs", c."NrEScooters", c."NrDocklessPCLs", c."NrOGVs", c."NrMiniBuses", c."NrBuses", c."NrSpaces",
+        c."Notes", c."DoubleParkingDetails",
+        c."NrCars_Suspended", c."NrLGVs_Suspended", c."NrMCLs_Suspended", c."NrTaxis_Suspended", c."NrPCLs_Suspended", c."NrEScooters_Suspended",
+        c."NrDocklessPCLs_Suspended", c."NrOGVs_Suspended", c."NrMiniBuses_Suspended", c."NrBuses_Suspended",
         /***
-        ,"NrCarsParkedIncorrectly", "NrLGVsParkedIncorrectly", "NrMCLsParkedIncorrectly",
-        "NrTaxisParkedIncorrectly", "NrOGVsParkedIncorrectly", "NrMiniBusesParkedIncorrectly",
-        "NrBusesParkedIncorrectly",
+        c."NrCarsWaiting", c."NrLGVsWaiting", c."NrMCLsWaiting", c."NrTaxisWaiting", c."NrOGVsWaiting", c."NrMiniBusesWaiting", c."NrBusesWaiting",
         ***/
+        c."NrCarsIdling", c."NrLGVsIdling", c."NrMCLsIdling",
+        c."NrTaxisIdling", c."NrOGVsIdling", c."NrMiniBusesIdling",
+        c."NrBusesIdling"
 
-        --"NrCarsWithDisabledBadgeParkedInPandD",
+        , c."NrCarsParkedIncorrectly", c."NrLGVsParkedIncorrectly", c."NrMCLsParkedIncorrectly",
+        c."NrTaxisParkedIncorrectly", c."NrOGVsParkedIncorrectly", c."NrMiniBusesParkedIncorrectly",
+        c."NrBusesParkedIncorrectly",
 
-        ,"NrBaysSuspended"
+        c."NrCarsWithDisabledBadgeParkedInPandD",
+
+        "NrBaysSuspended"
 
     INTO
         NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces,
         Notes, DoubleParkingDetails,
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended,
         NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended,
-
+        /***
         NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting,
-
+        ***/
         NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling
 
-        /***
         ,NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
         NrTaxisParkedIncorrectly, NrOGVsParkedIncorrectly, NrMiniBusesParkedIncorrectly,
         NrBusesParkedIncorrectly,
 
-        ,NrCarsWithDisabledBadgeParkedInPandD
-        ***/
+        NrCarsWithDisabledBadgeParkedInPandD
 
         ,NrBaysSuspended
 

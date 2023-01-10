@@ -1,3 +1,10 @@
+
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "MCL_Notes" character varying(10000);
+
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "Supply_Notes" character varying(10000);
+
 /***
  * Output details of MCL bays with chains / broken anchors
  ***/
