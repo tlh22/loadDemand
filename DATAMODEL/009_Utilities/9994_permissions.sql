@@ -38,7 +38,8 @@ GRANT SELECT,USAGE ON ALL SEQUENCES IN SCHEMA local_authority TO toms_public, to
 GRANT USAGE ON SCHEMA local_authority TO toms_public, toms_operator, toms_admin;
 
 REVOKE ALL ON ALL TABLES IN SCHEMA mhtc_operations FROM toms_public, toms_operator, toms_admin;
-GRANT SELECT ON ALL TABLES IN SCHEMA mhtc_operations TO toms_public, toms_operator, toms_admin;
+GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA mhtc_operations TO toms_operator, toms_admin;
+GRANT SELECT ON ALL TABLES IN SCHEMA toms TO toms_public;
 GRANT SELECT,USAGE ON ALL SEQUENCES IN SCHEMA mhtc_operations TO toms_public, toms_operator, toms_admin;
 GRANT USAGE ON SCHEMA mhtc_operations TO toms_public, toms_operator, toms_admin;
 
@@ -56,5 +57,15 @@ GRANT USAGE ON SCHEMA topography TO toms_public, toms_operator, toms_admin;
 
 REVOKE ALL ON ALL TABLES IN SCHEMA toms FROM toms_public, toms_operator, toms_admin;
 GRANT SELECT ON ALL TABLES IN SCHEMA toms TO toms_public, toms_operator, toms_admin;
-GRANT SELECT,USAGE ON ALL SEQUENCES IN SCHEMA toms TO toms_public, toms_operator, toms_admin;
+GRANT SELECT, USAGE ON ALL SEQUENCES IN SCHEMA toms TO toms_public, toms_operator, toms_admin;
 GRANT USAGE ON SCHEMA toms TO toms_public, toms_operator, toms_admin;
+
+-- Demand tables
+
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE demand."RestrictionsInSurveys" TO toms_operator, toms_admin;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE demand."Counts" TO toms_operator, toms_admin;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE demand."VRMs" TO toms_operator, toms_admin;
+GRANT SELECT ON TABLE demand."Surveys" TO toms_operator, toms_admin;
+GRANT SELECT ON TABLE demand."TimePeriodsControlledDuringSurveyHours" TO toms_operator, toms_admin;
+
+GRANT CREATE ON SCHEMA local_authority TO toms_admin;
