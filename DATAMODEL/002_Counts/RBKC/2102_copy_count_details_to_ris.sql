@@ -91,6 +91,8 @@ ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN "MCL_Notes" character varying(10000);
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN "Supply_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "Parking_Notes" character varying(10000);
 
 -- Now copy
 
@@ -107,3 +109,35 @@ SET "NrCars"=c."NrCars", "NrLGVs"=c."NrLGVs", "NrMCLs"=c."NrMCLs", "NrTaxis"=c."
 FROM demand."Counts" c
 	WHERE RiS."GeometryID" = c."GeometryID"
 	AND RiS."SurveyID" = c."SurveyID";
+
+-- Waiting vehicles
+
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "NrCarsWaiting" integer;
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "NrLGVsWaiting" integer;
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "NrMCLsWaiting" integer;
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "NrTaxisWaiting" integer;
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "NrOGVsWaiting" integer;
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "NrMiniBusesWaiting" integer;
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "NrBusesWaiting" integer;
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "NrCarsWaiting" integer;
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "NrLGVsWaiting" integer;
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "NrMCLsWaiting" integer;
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "NrTaxisWaiting" integer;
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "NrOGVsWaiting" integer;
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "NrMiniBusesWaiting" integer;
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN "NrBusesWaiting" integer;
