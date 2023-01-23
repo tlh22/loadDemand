@@ -52,7 +52,7 @@ AND (v1."VRM" NOT LIKE 'NO%');
 --FROM demand."VRMs_Final" AS v1, demand."VRMs_Final" AS v2
 UPDATE demand."VRMs" AS v2
 SET "VRM" = v1."VRM"
-FROM demand."VRMs" v1
+FROM demand."VRMs" v1, mhtc_operations."Supply" s
 WHERE v1."GeometryID" = v2."GeometryID"
 AND v1."SurveyID" != v2."SurveyID"
 AND v1."VRM" != v2."VRM"
@@ -68,6 +68,8 @@ AND v1."VRM" NOT IN (
     AND v11."ID" < v12."ID"
     AND levenshtein(v11."VRM"::text, v12."VRM"::text, 10, 10, 1) <= 2
 )
+AND v2."GeometryID" = s."GeometryID"
+--AND s."CPZ" IN ('P', 'F', 'Y')
 ;
 
 -- Very occassionally there is an incorrect change, e.g., when there is already a series with the candidate

@@ -17,7 +17,7 @@ AS
     RiS."PerceivedStress"
 	FROM mhtc_operations."Supply" s, demand."RestrictionsInSurveys" RiS
 	WHERE RiS."GeometryID" = s."GeometryID"
-    AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
+    AND s."RestrictionTypeID" NOT IN (107, 116, 122, 144, 146, 147, 149, 150, 151)  -- Bays not being considered
 WITH DATA;
 
 ALTER TABLE demand."StressResults_ByGeometryID"

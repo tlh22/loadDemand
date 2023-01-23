@@ -1,5 +1,5 @@
 --
-
+"
 SELECT v."ID", v."SurveyID", s."SurveyDay", s."BeatStartTime" || '-' || s."BeatEndTime" AS "SurveyTime",
         v."GeometryID", v."RestrictionTypeID", v."RestrictionType Description",
         v."RoadName", v."SideOfStreet",
@@ -17,7 +17,7 @@ SELECT v."ID", v."SurveyID", s."SurveyDay", s."BeatStartTime" || '-' || s."BeatE
 
 
 FROM
-(SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM", "VRM_Orig", 
+(SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM", "VRM_Orig",
 		"InternationalCodeID", "InternationalCodes"."Description" As "Country",
 		"VehicleTypeID", "VehicleTypes"."Description" AS "VehicleType Description", "VehicleTypes"."PCU" AS "PCU",
 		"ParkingActivityTypeID", "ParkingActivityTypes"."Description" AS "ParkingActivityTypes Description",
@@ -27,6 +27,7 @@ FROM
         "PermitTypeID", "PermitTypes"."Description" AS "PermitType Description",
         --"UserTypes"."Description" AS "UserType Description",
         a."Notes", "RoadName", "SideOfStreet"
+        , "CPZ"
 
 FROM
      ((((((
@@ -49,5 +50,6 @@ AND r."GeometryID" = v."GeometryID"
 AND s."SurveyID" > 0
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
-ORDER BY "GeometryID", "VRM", "SurveyID"
+--AND "CPZ" IN ('P', 'F', 'Y')
+ORDER BY "GeometryID", "VRM", "SurveyID""
 

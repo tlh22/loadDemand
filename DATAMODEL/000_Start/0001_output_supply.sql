@@ -55,7 +55,9 @@ FROM
                  END
              ELSE "RestrictionTypeID"
         END AS "RestrictionTypeID_Amended", *
-        FROM mhtc_operations."Supply") AS a
+        FROM mhtc_operations."Supply"
+	 	--WHERE "CPZ" IN ('P', 'F', 'Y')
+	 ) AS a
      LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID_Amended" is not distinct from "BayLineTypes"."Code")
      LEFT JOIN "toms_lookups"."RestrictionGeomShapeTypes" AS "RestrictionGeomShapeTypes" ON a."GeomShapeID" is not distinct from "RestrictionGeomShapeTypes"."Code")
      LEFT JOIN "toms_lookups"."TimePeriods" AS "TimePeriods1" ON a."TimePeriodID" is not distinct from "TimePeriods1"."Code")

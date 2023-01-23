@@ -51,58 +51,59 @@ DECLARE
 	 NrSpaces INTEGER := 0;
      Notes VARCHAR (10000);
      SuspensionReference VARCHAR (250);
-    ReasonForSuspension VARCHAR (250);
-    DoubleParkingDetails VARCHAR (250);
-    NrCars_Suspended INTEGER := 0;
-    NrLGVs_Suspended INTEGER := 0;
-    NrMCLs_Suspended INTEGER := 0;
-    NrTaxis_Suspended INTEGER := 0;
-    NrPCLs_Suspended INTEGER := 0;
-    NrEScooters_Suspended INTEGER := 0;
-    NrDocklessPCLs_Suspended INTEGER := 0;
-    NrOGVs_Suspended INTEGER := 0;
-    NrMiniBuses_Suspended INTEGER := 0;
-    NrBuses_Suspended INTEGER := 0;
+     ReasonForSuspension VARCHAR (250);
+     DoubleParkingDetails VARCHAR (250);
+     NrCars_Suspended INTEGER := 0;
+     NrLGVs_Suspended INTEGER := 0;
+     NrMCLs_Suspended INTEGER := 0;
+     NrTaxis_Suspended INTEGER := 0;
+     NrPCLs_Suspended INTEGER := 0;
+     NrEScooters_Suspended INTEGER := 0;
+     NrDocklessPCLs_Suspended INTEGER := 0;
+     NrOGVs_Suspended INTEGER := 0;
+     NrMiniBuses_Suspended INTEGER := 0;
+     NrBuses_Suspended INTEGER := 0;
 
-    NrCarsWaiting INTEGER := 0;
-    NrLGVsWaiting INTEGER := 0;
-    NrMCLsWaiting INTEGER := 0;
-    NrTaxisWaiting INTEGER := 0;
-    NrOGVsWaiting INTEGER := 0;
-    NrMiniBusesWaiting INTEGER := 0;
-    NrBusesWaiting INTEGER := 0;
+     NrCarsWaiting INTEGER := 0;
+     NrLGVsWaiting INTEGER := 0;
+     NrMCLsWaiting INTEGER := 0;
+     NrTaxisWaiting INTEGER := 0;
+     NrOGVsWaiting INTEGER := 0;
+     NrMiniBusesWaiting INTEGER := 0;
+     NrBusesWaiting INTEGER := 0;
 
-    NrCarsIdling INTEGER := 0;
-    NrLGVsIdling INTEGER := 0;
-    NrMCLsIdling INTEGER := 0;
-    NrTaxisIdling INTEGER := 0;
-    NrOGVsIdling INTEGER := 0;
-    NrMiniBusesIdling INTEGER := 0;
-    NrBusesIdling INTEGER := 0;
+     NrCarsIdling INTEGER := 0;
+     NrLGVsIdling INTEGER := 0;
+     NrMCLsIdling INTEGER := 0;
+     NrTaxisIdling INTEGER := 0;
+     NrOGVsIdling INTEGER := 0;
+     NrMiniBusesIdling INTEGER := 0;
+     NrBusesIdling INTEGER := 0;
 
-    NrCarsParkedIncorrectly INTEGER := 0;
-    NrLGVsParkedIncorrectly INTEGER := 0;
-    NrMCLsParkedIncorrectly INTEGER := 0;
-    NrTaxisParkedIncorrectly INTEGER := 0;
-    NrOGVsParkedIncorrectly INTEGER := 0;
-    NrMiniBusesParkedIncorrectly INTEGER := 0;
-    NrBusesParkedIncorrectly INTEGER := 0;
+     NrCarsParkedIncorrectly INTEGER := 0;
+     NrLGVsParkedIncorrectly INTEGER := 0;
+     NrMCLsParkedIncorrectly INTEGER := 0;
+     NrTaxisParkedIncorrectly INTEGER := 0;
+     NrOGVsParkedIncorrectly INTEGER := 0;
+     NrMiniBusesParkedIncorrectly INTEGER := 0;
+     NrBusesParkedIncorrectly INTEGER := 0;
 
-    NrCarsWithDisabledBadgeParkedInPandD INTEGER := 0;
+     NrCarsWithDisabledBadgeParkedInPandD INTEGER := 0;
 
-    Supply_Capacity INTEGER := 0;
-    Capacity INTEGER := 0;
-    NrBays INTEGER := 0;
-	NrBaysSuspended INTEGER := 0;
-	RestrictionTypeID INTEGER;
+     Supply_Capacity INTEGER := 0;
+     Capacity INTEGER := 0;
+     NrBays INTEGER := 0;
+	 NrBaysSuspended INTEGER := 0;
+	 RestrictionTypeID INTEGER;
 
-	controlled BOOLEAN;
-	check_exists BOOLEAN;
-	check_dual_restrictions_exists BOOLEAN;
+	 controlled BOOLEAN;
+	 check_exists BOOLEAN;
+	 check_dual_restrictions_exists BOOLEAN;
 
-    primary_geometry_id VARCHAR (12);
-    secondary_geometry_id VARCHAR (12);
-    time_period_id INTEGER;
+     primary_geometry_id VARCHAR (12);
+     secondary_geometry_id VARCHAR (12);
+     time_period_id INTEGER;
+     vehicleLength real := 0.0;
 
 BEGIN
 
@@ -228,6 +229,34 @@ BEGIN
         -- vehicles in P&D bay displaying disabled badge
   		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
         ;
+
+    IF (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
+		RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR RestrictionTypeID = 169   -- PCL, e-Scooter, Dockless PCLs
+		) THEN
+
+            select "Value" into vehicleLength
+                from "mhtc_operations"."project_parameters"
+                where "Field" = 'VehicleLength';
+
+		    NEW."Demand" = COALESCE(NrCars::float, 0.0) * vehicleLength +
+                COALESCE(NrLGVs::float, 0.0) * vehicleLength +
+                COALESCE(NrOGVs::float, 0.0) * vehicleLength + COALESCE(NrMiniBuses::float, 0.0) * vehicleLength + COALESCE(NrBuses::float, 0.0) * vehicleLength +
+                COALESCE(NrTaxis::float, 0.0) * vehicleLength +
+
+                -- vehicles parked incorrectly
+                COALESCE(NrCarsParkedIncorrectly::float, 0.0) * vehicleLength +
+                COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * vehicleLength +
+                COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * vehicleLength +
+                COALESCE(NrOGVsParkedIncorrectly::float, 0) * vehicleLength + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * vehicleLength + COALESCE(NrBusesParkedIncorrectly::float, 0) * vehicleLength +
+                COALESCE(NrTaxisParkedIncorrectly::float, 0) * vehicleLength +
+
+                -- Now consider MCLs, PCLs, e-scooters - as 1.0
+                COALESCE(NrMCLs::float, 0.0) +
+                COALESCE(NrPCLs::float, 0.0) +
+                COALESCE(NrEScooters::float, 0.0) +
+                COALESCE(NrDocklessPCLs::float, 0.0);
+
+    END IF;
 
     NEW."Demand_Suspended" =
         -- include suspended vehicles

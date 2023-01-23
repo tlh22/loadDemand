@@ -31,7 +31,7 @@ Diagrams 8a and 8b.
 
  ***/
 
-UPDATE demand."VRMs"
+UPDATE demand."VRMs" AS v
 SET "VRM" =
 --SELECT "VRM",  --"VRM" SIMILAR TO '[A-Z]{2}[O][0-9]-[A-Z]{3}',
 CASE
@@ -105,6 +105,9 @@ CASE
 
 	ELSE "VRM"
 END
---FROM demand."VRMs"
---WHERE "VRM" SIMILAR TO '[A-Z]{2}[O][0-9]-[A-Z]{3}'
-WHERE
+/***
+FROM mhtc_operations."Supply" s
+WHERE v."GeometryID" = s."GeometryID"
+--AND s."CPZ" IN ('P', 'F', 'Y')
+***/
+;
