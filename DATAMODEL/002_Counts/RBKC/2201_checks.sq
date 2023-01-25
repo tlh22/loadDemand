@@ -1,0 +1,31 @@
+/***
+
+checks for typos .. and missing data
+
+***/
+
+-- typos will typically show as high stress
+
+
+-- missing data is seen in comparison to other counts of the same restriction (or as a lower total for the street)
+
+SELECT DISTINCT RiS1."GeometryID", s."RoadName", s."Description" AS "RestrictionType Description", s."Capacity" --, RiS1."SurveyID",
+FROM demand."RestrictionsInSurveys" RiS1,
+(mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") AS s
+WHERE RiS1."GeometryID" = s."GeometryID"
+AND s."RestrictionTypeID" IN (101)
+AND EXISTS (SELECT 1
+                FROM demand."RestrictionsInSurveys" RiS2
+                WHERE RiS1."GeometryID" = RiS2."GeometryID"
+                AND RiS1."SurveyID" != RiS2."SurveyID"
+				AND RiS1."CapacityAtTimeOfSurvey" > 5
+				AND RiS2."CapacityAtTimeOfSurvey" > 5
+				AND RiS1."SurveyID" > 0
+				AND RiS2."SurveyID" > 0
+				AND RiS1."Demand" = 0
+				AND RiS1."NrCars" IS NULL
+				AND RiS1."NrSpaces" IS NULL
+                AND RiS2."Demand" > 0)
+
+ORDER BY s."RoadName", s."Capacity", RiS1."GeometryID"
