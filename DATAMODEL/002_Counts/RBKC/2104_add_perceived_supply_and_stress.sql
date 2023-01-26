@@ -104,6 +104,8 @@ DECLARE
      secondary_geometry_id VARCHAR (12);
      time_period_id INTEGER;
      vehicleLength real := 0.0;
+     demand_ratio real = 0.0;
+     perceived_capacity_difference_ratio real := 0.0;
 
 BEGIN
 
@@ -213,7 +215,8 @@ BEGIN
     NEW."Demand" = COALESCE(NrCars::float, 0.0) * carPCU +
         COALESCE(NrLGVs::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs::float, 0.0) * mclPCU +
-        COALESCE(NrOGVs::float, 0.0) * ogvPCU + COALESCE(NrMiniBuses::float, 0.0) * minibusPCU + COALESCE(NrBuses::float, 0.0) * busPCU +
+        COALESCE(NrOGVs::float, 0.0) * ogvPCU + COALESCE(NrMiniBuses::float, 0.0) * minibusPCU +
+        COALESCE(NrBuses::float, 0.0) * busPCU +
         COALESCE(NrTaxis::float, 0.0) * taxiPCU +
         COALESCE(NrPCLs::float, 0.0) * pclPCU +
         COALESCE(NrEScooters::float, 0.0) * escooterPCU +
@@ -223,7 +226,9 @@ BEGIN
         COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
+        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU +
+        OALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU +
+        COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
         COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
 
         -- vehicles in P&D bay displaying disabled badge
@@ -263,7 +268,9 @@ BEGIN
         COALESCE(NrCars_Suspended::float, 0.0) * carPCU +
         COALESCE(NrLGVs_Suspended::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs_Suspended::float, 0.0) * mclPCU +
-        COALESCE(NrOGVs_Suspended::float, 0) * ogvPCU + COALESCE(NrMiniBuses_Suspended::float, 0) * minibusPCU + COALESCE(NrBuses_Suspended::float, 0) * busPCU +
+        COALESCE(NrOGVs_Suspended::float, 0) * ogvPCU +
+        COALESCE(NrMiniBuses_Suspended::float, 0) * minibusPCU +
+        COALESCE(NrBuses_Suspended::float, 0) * busPCU +
         COALESCE(NrTaxis_Suspended::float, 0) +
         COALESCE(NrPCLs_Suspended::float, 0.0) * pclPCU +
         COALESCE(NrEScooters_Suspended::float, 0.0) * escooterPCU +
@@ -274,7 +281,9 @@ BEGIN
         COALESCE(NrCarsWaiting::float, 0.0) * carPCU +
         COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsWaiting::float, 0) * ogvPCU + COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU + COALESCE(NrBusesWaiting::float, 0) * busPCU +
+        COALESCE(NrOGVsWaiting::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU +
+        COALESCE(NrBusesWaiting::float, 0) * busPCU +
         COALESCE(NrTaxisWaiting::float, 0) * carPCU;
 
     NEW."Demand_Idling" =
@@ -282,7 +291,9 @@ BEGIN
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
+        COALESCE(NrOGVsIdling::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU +
+        COALESCE(NrBusesIdling::float, 0) * busPCU +
         COALESCE(NrTaxisIdling::float, 0) * carPCU;
 
     /* What to do about suspensions */
@@ -397,47 +408,34 @@ BEGIN
 
     -- Perceived supply / stress
 
-    IF NrBays < 0 THEN  -- No marked bays
+    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
+    NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+
+    IF NEW."CapacityAtTimeOfSurvey" > 0 AND NrBays < 0 THEN  -- Only consider unmarked bays
+
+        demand_ratio = NEW."Demand" / NEW."CapacityAtTimeOfSurvey";
 
         IF NrSpaces IS NOT NULL THEN
-            NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand" + NrSpaces;
-            NEW."PerceivedAvailableSpaces" = NrSpaces;
-            IF NEW."PerceivedCapacityAtTimeOfSurvey" > NEW."CapacityAtTimeOfSurvey" THEN
-                NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-                NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+
+            IF (NEW."CapacityAtTimeOfSurvey" <= 4 AND demand_ratio > 0.5) OR
+               (NEW."CapacityAtTimeOfSurvey" > 4 AND demand_ratio > 0.75) THEN
+
+                NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand" + NrSpaces;
+                NEW."PerceivedAvailableSpaces" = NrSpaces;
+                IF NEW."PerceivedCapacityAtTimeOfSurvey" > NEW."CapacityAtTimeOfSurvey" THEN
+                    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
+                    NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+                END IF;
+
             END IF;
 
         ELSE   -- No NrSpaces provided ...
 
-            IF Capacity <= 4 THEN
+            IF (NEW."CapacityAtTimeOfSurvey" <= 4 AND demand_ratio > 0.5) OR
+               (NEW."CapacityAtTimeOfSurvey" > 4 AND demand_ratio > 0.75) THEN
 
-				IF NEW."CapacityAtTimeOfSurvey" > 0 THEN
-					IF NEW."Demand" / NEW."CapacityAtTimeOfSurvey" > 0.5 THEN
-						NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand";
-						NEW."PerceivedAvailableSpaces" = 0;
-					ELSE
-						NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-						NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
-					END IF;
-				ELSE
-					NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-					NEW."PerceivedAvailableSpaces" = 0;
-				END IF;
-
-            ELSE
-
-				IF NEW."CapacityAtTimeOfSurvey" > 0 THEN
-					IF NEW."Demand" / NEW."CapacityAtTimeOfSurvey" > 0.75 THEN
-						NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand";
-						NEW."PerceivedAvailableSpaces" = 0;
-					ELSE
-						NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-						NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
-					END IF;
-				ELSE
-					NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-					NEW."PerceivedAvailableSpaces" = 0;
-				END IF;
+                    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand";
+                    NEW."PerceivedAvailableSpaces" = 0;
 
             END IF;
 
