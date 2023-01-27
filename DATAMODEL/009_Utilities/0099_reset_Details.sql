@@ -170,15 +170,26 @@ BEGIN
             -- Now reset Counts
 
             UPDATE demand."Counts"
-                --SET "NrCars"=NULL, "NrLGVs"=NULL, "NrMCLs"=NULL, "NrTaxis"=NULL, "NrPCLs"=NULL, "NrEScooters"=NULL, "NrDocklessPCLs"=NULL, "NrOGVs"=NULL, "NrMiniBuses"=NULL, "NrBuses"=NULL, "NrSpaces"=NULL, "Notes"=NULL, "DoubleParkingDetails"=NULL, "NrCars_Suspended"=NULL, "NrLGVs_Suspended"=NULL, "NrMCLs_Suspended"=NULL, "NrTaxis_Suspended"=NULL, "NrPCLs_Suspended"=NULL, "NrEScooters_Suspended"=NULL, "NrDocklessPCLs_Suspended"=NULL, "NrOGVs_Suspended"=NULL, "NrMiniBuses_Suspended"=NULL, "NrBuses_Suspended"=NULL
-"NrCars"=NULL, "NrLGVs"=NULL, "NrMCLs"=NULL, "NrTaxis"=NULL, "NrPCLs"=NULL, "NrEScooters"=NULL,
-"NrDocklessPCLs"=NULL, "NrOGVs"=NULL, "NrMiniBuses"=NULL, "NrBuses"=NULL, "NrSpaces"=NULL, "Notes"=NULL, "DoubleParkingDetails"=NULL,
-"NrCars_Suspended"=NULL, "NrLGVs_Suspended"=NULL, "NrMCLs_Suspended"=NULL, "NrTaxis_Suspended"=NULL, "NrPCLs_Suspended"=NULL,
-"NrEScooters_Suspended"=NULL, "NrDocklessPCLs_Suspended"=NULL, "NrOGVs_Suspended"=NULL, "NrMiniBuses_Suspended"=NULL,
-"NrBuses_Suspended"=NULL, "NrCarsIdling"=NULL, "NrCarsParkedIncorrectly"=NULL, "NrLGVsIdling"=NULL, "NrLGVsParkedIncorrectly"=NULL,
-"NrMCLsIdling"=NULL, "NrMCLsParkedIncorrectly"=NULL, "NrTaxisIdling"=NULL, "NrTaxisParkedIncorrectly"=NULL, "NrOGVsIdling"=NULL,
-"NrOGVsParkedIncorrectly"=NULL, "NrMiniBusesIdling"=NULL, "NrMiniBusesParkedIncorrectly"=NULL, "NrBusesIdling"=NULL,
-"NrBusesParkedIncorrectly"=NULL, "NrCarsWithDisabledBadgeParkedInPandD"=NULL
+                SET
+                "NrCars"=NULL, "NrLGVs"=NULL, "NrMCLs"=NULL, "NrTaxis"=NULL, "NrPCLs"=NULL, "NrEScooters"=NULL,
+                "NrDocklessPCLs"=NULL, "NrOGVs"=NULL, "NrMiniBuses"=NULL, "NrBuses"=NULL, "NrSpaces"=NULL, "Notes"=NULL,
+
+                "DoubleParkingDetails"=NULL,
+
+                "NrCars_Suspended"=NULL, "NrLGVs_Suspended"=NULL, "NrMCLs_Suspended"=NULL, "NrTaxis_Suspended"=NULL, "NrPCLs_Suspended"=NULL,
+                "NrEScooters_Suspended"=NULL, "NrDocklessPCLs_Suspended"=NULL, "NrOGVs_Suspended"=NULL, "NrMiniBuses_Suspended"=NULL,
+                "NrBuses_Suspended"=NULL,
+
+                "NrCarsWaiting"=NULL, "NrLGVsWaiting"=NULL, "NrMCLsWaiting"=NULL, "NrTaxisWaiting"=NULL, "NrOGVsWaiting"=NULL,
+                "NrMiniBusesWaiting"=NULL, "NrBusesWaiting"=NULL,
+
+                "NrCarsIdling"=NULL, "NrLGVsIdling"=NULL, "NrMCLsIdling"=NULL, "NrTaxisIdling"=NULL, "NrOGVsIdling"=NULL,
+                "NrMiniBusesIdling"=NULL, "NrBusesIdling"=NULL,
+
+                "NrCarsParkedIncorrectly"=NULL, "NrLGVsParkedIncorrectly"=NULL, "NrMCLsParkedIncorrectly"=NULL,
+                "NrOGVsParkedIncorrectly"=NULL, "NrMiniBusesParkedIncorrectly"=NULL, "NrBusesParkedIncorrectly"=NULL
+                --, "NrCarsWithDisabledBadgeParkedInPandD"=NULL
+
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = curr_survey_id;
 
