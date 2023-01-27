@@ -7,7 +7,6 @@ All demand details are held on RiS
 -- Ensure that details are updated
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
-
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", item_refs, d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
 d."SupplyCapacity", d."CapacityAtTimeOfSurvey",
 d."Demand", d."Stress",
