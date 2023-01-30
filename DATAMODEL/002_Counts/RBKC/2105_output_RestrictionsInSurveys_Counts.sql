@@ -5,6 +5,9 @@ All demand details are held on RiS
 */
 
 -- Ensure that details are updated
+UPDATE "mhtc_operations"."Supply"
+SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
+
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", item_refs, d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
