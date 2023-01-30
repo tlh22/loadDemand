@@ -227,7 +227,7 @@ BEGIN
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
         COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU +
-        OALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU +
+        COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU +
         COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
         COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
 
@@ -344,59 +344,55 @@ BEGIN
     ) ;
 
     IF check_dual_restrictions_exists THEN
-        -- check for primary
+        -- check for secondary
 
-        SELECT d."GeometryID", "LinkedTo", COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
-        INTO secondary_geometry_id, primary_geometry_id, time_period_id
-        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
-        WHERE s."GeometryID" = d."GeometryID"
-        AND d."LinkedTo" = NEW."GeometryID";
-
-        IF primary_geometry_id IS NOT NULL THEN
-
-            -- restriction is "primary". Need to check whether or not the linked restriction is active
-            RAISE NOTICE '*****--- % Primary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
-
-            SELECT "Controlled"
-            INTO controlled
-            FROM demand."TimePeriodsControlledDuringSurveyHours" t
-            WHERE t."TimePeriodID" = time_period_id
-            AND t."SurveyID" = NEW."SurveyID";
-
-            -- TODO: Deal with multiple secondary bays ...
-
-            IF controlled THEN
-                RAISE NOTICE '*****--- Primary restriction. Setting capacity set to 0 ...';
-                Supply_Capacity = 0.0;
-            END IF;
-
-        END IF;
-
-        -- Now check for secondary
-
-        SELECT d."GeometryID", "LinkedTo", COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
-        INTO secondary_geometry_id, primary_geometry_id, time_period_id
-        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
-        WHERE s."GeometryID" = d."GeometryID"
-        AND d."GeometryID" = NEW."GeometryID";
+        SELECT d."GeometryID", COALESCE(s."TimePeriodID", s."NoWaitingTimeID") AS "ControlledTimePeriodID", t."Controlled"
+        INTO secondary_geometry_id, time_period_id, controlled
+        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d, demand."TimePeriodsControlledDuringSurveyHours" t
+        WHERE d."GeometryID" = NEW."GeometryID"
+        AND s."GeometryID" = d."GeometryID"
+        AND COALESCE(s."TimePeriodID", s."NoWaitingTimeID") = t."TimePeriodID"
+        AND t."SurveyID" = NEW."SurveyID";
 
         IF secondary_geometry_id IS NOT NULL THEN
 
-            -- restriction is "secondary". Need to check whether or not it is active
+            -- restriction is "secondary". Need to check whether or not the linked restriction is active
             RAISE NOTICE '*****--- % Secondary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
 
-            SELECT "Controlled"
-            INTO controlled
-            FROM demand."TimePeriodsControlledDuringSurveyHours" t
-            WHERE t."TimePeriodID" = time_period_id
-            AND t."SurveyID" = NEW."SurveyID";
-
-            IF NOT controlled OR controlled IS NULL THEN
-                RAISE NOTICE '*****--- Secondary restriction. Setting capacity set to 0 ...';
+            IF controlled THEN
+                IF RestrictionTypeID > 200 THEN
+                    RAISE NOTICE '*****--- Secondary restriction controlled and is line. Setting capacity set to 0 ...';
+                    Supply_Capacity = 0.0;
+                END IF;
+            ELSE
+                RAISE NOTICE '*****--- Secondary restriction is not active. Setting capacity set to 0 ...';
                 Supply_Capacity = 0.0;
             END IF;
 
         END IF;
+
+        -- Now check for Primary
+
+        SELECT d."GeometryID", COALESCE(s."TimePeriodID", s."NoWaitingTimeID") AS "ControlledTimePeriodID", t."Controlled"
+        INTO secondary_geometry_id, time_period_id, controlled
+        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d, demand."TimePeriodsControlledDuringSurveyHours" t
+        WHERE d."LinkedTo" = NEW."GeometryID"
+        AND s."GeometryID" = d."GeometryID"
+        AND COALESCE(s."TimePeriodID", s."NoWaitingTimeID") = t."TimePeriodID"
+        AND t."SurveyID" = NEW."SurveyID";
+
+        IF secondary_geometry_id IS NOT NULL THEN
+
+            -- restriction is "primary". Need to check whether or not the secondary is active
+            RAISE NOTICE '*****--- % Primary restriction. Checking details for secondary restriction time period % ...', secondary_geometry_id, time_period_id;
+
+            IF controlled THEN
+                RAISE NOTICE '*****--- Secondary restriction is active. Setting capacity set to 0 ...';
+                Supply_Capacity = 0.0;
+            END IF;
+
+        END IF;
+
     END IF;
 
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
@@ -411,7 +407,10 @@ BEGIN
     NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
     NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
 
-    IF NEW."CapacityAtTimeOfSurvey" > 0 AND NrBays < 0 THEN  -- Only consider unmarked bays
+    IF NEW."CapacityAtTimeOfSurvey" > 0 AND NrBays < 0
+    AND NOT (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
+		RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR RestrictionTypeID = 169)   -- PCL, e-Scooter, Dockless PCLs
+    THEN  -- Only consider unmarked bays
 
         demand_ratio = NEW."Demand" / NEW."CapacityAtTimeOfSurvey";
 

@@ -9,6 +9,8 @@ AS
         row_number() OVER (PARTITION BY true::boolean) AS sid,
     r."roadname1_name" AS "RoadName", r.geom,
     d."SurveyID", d."Capacity", d."CapacityAtTimeOfSurvey", d."Demand", d."Stress" AS "Stress",
+    d."Residents Bay Capacity", d."Residents Bay CapacityAtTimeOfSurvey", d."Residents Bay Demand", d."Residents Bay Stress",
+    d."PayByPhone Bay Capacity", d."PayByPhone Bay CapacityAtTimeOfSurvey", d."PayByPhone Bay Demand", d."PayByPhone Bay Stress",
     e."Capacity" AS "Capacity_2018", e."CapacityAtTimeOfSurvey" AS "CapacityAtTimeOfSurvey_2018", e."Demand" AS "Demand_2018", e."Stress" AS "Stress_2018"
 	FROM highways_network."roadlink" r,
 	(
@@ -29,10 +31,52 @@ AS
                             ELSE -1.0
                         END
                 END
-        END "Stress"
+        END "Stress",
+        "Residents Bay Capacity", "Residents Bay CapacityAtTimeOfSurvey", "Residents Bay Demand",
+        CASE
+            WHEN "Residents Bay CapacityAtTimeOfSurvey" = 0 THEN
+                CASE
+                    WHEN "Residents Bay Demand" > 0.0 THEN 1.0
+                    ELSE -1.0
+                END
+            ELSE
+                CASE
+                    WHEN "Residents Bay CapacityAtTimeOfSurvey"::float > 0.0 THEN
+                        "Residents Bay Demand" / ("Residents Bay CapacityAtTimeOfSurvey"::float)
+                    ELSE
+                        CASE
+                            WHEN "Residents Bay Demand" > 0.0 THEN 1.0
+                            ELSE -1.0
+                        END
+                END
+        END "Residents Bay Stress",
+        "PayByPhone Bay Capacity", "PayByPhone Bay CapacityAtTimeOfSurvey", "PayByPhone Bay Demand",
+        CASE
+            WHEN "PayByPhone Bay CapacityAtTimeOfSurvey" = 0 THEN
+                CASE
+                    WHEN "PayByPhone Bay Demand" > 0.0 THEN 1.0
+                    ELSE -1.0
+                END
+            ELSE
+                CASE
+                    WHEN "PayByPhone Bay CapacityAtTimeOfSurvey"::float > 0.0 THEN
+                        "PayByPhone Bay Demand" / ("PayByPhone Bay CapacityAtTimeOfSurvey"::float)
+                    ELSE
+                        CASE
+                            WHEN "PayByPhone Bay Demand" > 0.0 THEN 1.0
+                            ELSE -1.0
+                        END
+                END
+        END "PayByPhone Bay Stress"
     FROM (
     SELECT "SurveyID", s."RoadName", SUM(s."Capacity") AS "Capacity", SUM(RiS."CapacityAtTimeOfSurvey") AS "CapacityAtTimeOfSurvey",
-	SUM(RiS."Demand") AS "Demand"
+	SUM(RiS."Demand") AS "Demand",
+	SUM (CASE WHEN "RestrictionTypeID" != 101 THEN 0 ELSE s."Capacity" END) AS "Residents Bay Capacity",
+	SUM (CASE WHEN "RestrictionTypeID" != 101 THEN 0 ELSE RiS."CapacityAtTimeOfSurvey" END) AS "Residents Bay CapacityAtTimeOfSurvey",
+	SUM (CASE WHEN "RestrictionTypeID" != 101 THEN 0 ELSE RiS."Demand" END) AS "Residents Bay Demand",
+	SUM (CASE WHEN "RestrictionTypeID" != 103 THEN 0 ELSE s."Capacity" END) AS "PayByPhone Bay Capacity",
+	SUM (CASE WHEN "RestrictionTypeID" != 103 THEN 0 ELSE RiS."CapacityAtTimeOfSurvey" END) AS "PayByPhone Bay CapacityAtTimeOfSurvey",
+	SUM (CASE WHEN "RestrictionTypeID" != 103 THEN 0 ELSE RiS."Demand" END) AS "PayByPhone Bay Demand"
     FROM demand."RestrictionsInSurveys" RiS, mhtc_operations."Supply" s
     WHERE s."GeometryID" = RiS."GeometryID"
     AND s."RestrictionTypeID" NOT IN (107, 116, 117, 118, 119, 122, 144, 146, 147, 149, 150, 151, 168, 169)  -- MCL, PCL, Scooters, etc
