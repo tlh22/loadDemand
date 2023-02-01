@@ -343,9 +343,12 @@ BEGIN
         tablename  = 'DualRestrictions'
     ) ;
 
+
     IF check_dual_restrictions_exists THEN
         -- check for secondary
-
+        
+		secondary_geometry_id = NULL;
+		
         SELECT d."GeometryID", COALESCE(s."TimePeriodID", s."NoWaitingTimeID") AS "ControlledTimePeriodID", t."Controlled"
         INTO secondary_geometry_id, time_period_id, controlled
         FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d, demand."TimePeriodsControlledDuringSurveyHours" t

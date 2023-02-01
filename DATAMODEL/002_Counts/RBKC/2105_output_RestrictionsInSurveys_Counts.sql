@@ -33,9 +33,9 @@ d."PerceivedAvailableSpaces",
     d."Notes", d."DoubleParkingDetails", "MCL_Notes",
     --d."CPZ",
     d."WardName", d."ParkingTariffZoneName", d."HospitalZonesBlueBadgeHoldersName",
-    d."DemandSurveyDateTime",
-    --d."Enumerator", d."Done",
-    --d."Photos_01", d."Photos_02", d."Photos_03",  d."SurveyAreaName"
+    d."DemandSurveyDateTime"
+    --, d."Enumerator", d."Done"
+    --, d."Photos_01", d."Photos_02", d."Photos_03",  d."SurveyAreaName"
     --, d."SupplyGeom" as geom
 
 FROM
