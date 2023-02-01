@@ -24,7 +24,7 @@ FROM "demand"."Surveys" s LEFT JOIN
  ) AS p ON p."SurveyID" = s."SurveyID"
 WHERE s."SurveyID" > 0
 GROUP BY s."SurveyID", p."SurveyAreaName"
-ORDER BY s."SurveyID", p."SurveyAreaName"
+ORDER BY p."SurveyAreaName", s."SurveyID"
 
 -- including road, GeometryID
 

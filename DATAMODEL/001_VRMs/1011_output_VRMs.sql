@@ -1,5 +1,5 @@
 --
-"
+
 SELECT v."ID", v."SurveyID", s."SurveyDay", s."BeatStartTime" || '-' || s."BeatEndTime" AS "SurveyTime",
         v."GeometryID", v."RestrictionTypeID", v."RestrictionType Description",
         v."RoadName", v."SideOfStreet",
@@ -28,12 +28,13 @@ FROM
         --"UserTypes"."Description" AS "UserType Description",
         a."Notes", "RoadName", "SideOfStreet"
         , "CPZ"
+        , "SurveyAreaName"
 
 FROM
      ((((((
      --(
      (demand."VRMs" AS a
-	 LEFT JOIN mhtc_operations."Supply" AS su ON a."GeometryID" = su."GeometryID")
+	 LEFT JOIN (mhtc_operations."Supply" sp LEFT JOIN mhtc_operations."SurveyAreas" sa ON sp."SurveyAreaID" = sa."Code") AS su ON a."GeometryID" = su."GeometryID")
      LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON su."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
      LEFT JOIN "demand_lookups"."InternationalCodes" AS "InternationalCodes" ON a."InternationalCodeID" is not distinct from "InternationalCodes"."Code")
      LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code")
@@ -51,5 +52,11 @@ AND s."SurveyID" > 0
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 --AND "CPZ" IN ('P', 'F', 'Y')
-ORDER BY "GeometryID", "VRM", "SurveyID""
+AND (v."SurveyAreaName" LIKE 'L%' OR
+     v."SurveyAreaName" LIKE 'E-0%' OR
+     v."SurveyAreaName" LIKE 'P%' OR
+     v."SurveyAreaName" LIKE 'T%' OR
+     v."SurveyAreaName" LIKE 'V%'
+     )
+ORDER BY "GeometryID", "VRM", "SurveyID"
 

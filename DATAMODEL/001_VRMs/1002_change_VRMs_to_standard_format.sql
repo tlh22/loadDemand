@@ -111,3 +111,12 @@ WHERE v."GeometryID" = s."GeometryID"
 --AND s."CPZ" IN ('P', 'F', 'Y')
 ***/
 ;
+
+FROM 
+(SELECT s."GeometryID", sa."SurveyAreaName"
+ FROM mhtc_operations."Supply" s, mhtc_operations."SurveyAreas" sa
+ WHERE s."SurveyAreaID" = sa."Code") AS p
+WHERE v."GeometryID" = p."GeometryID"
+--AND s."CPZ" IN ('P', 'F', 'Y')
+--AND p."SurveyAreaName" IN ('L', 'P', 'T', 'V')
+AND p."SurveyAreaName" LIKE 'E-0%';
