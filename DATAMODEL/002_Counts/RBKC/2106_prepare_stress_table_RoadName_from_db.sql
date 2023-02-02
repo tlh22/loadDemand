@@ -8,14 +8,14 @@ AS
     SELECT
         row_number() OVER (PARTITION BY true::boolean) AS sid,
     r."roadname1_name" AS "RoadName", r.geom,
-    d."SurveyID", d."Capacity", d."CapacityAtTimeOfSurvey", d."Demand", d."Stress" AS "Stress",
+    d."SurveyID", d."BeatTitle", d."Capacity", d."CapacityAtTimeOfSurvey", d."Demand", d."Stress" AS "Stress",
     d."Residents Bay Capacity", d."Residents Bay CapacityAtTimeOfSurvey", d."Residents Bay Demand", d."Residents Bay Stress",
     d."Residents Bay PerceivedCapacityAtTimeOfSurvey", d."Residents Bay PerceivedStress",
     d."PayByPhone Bay Capacity", d."PayByPhone Bay CapacityAtTimeOfSurvey", d."PayByPhone Bay Demand", d."PayByPhone Bay Stress",
     e."Capacity" AS "Capacity_2018", e."CapacityAtTimeOfSurvey" AS "CapacityAtTimeOfSurvey_2018", e."Demand" AS "Demand_2018", e."Stress" AS "Stress_2018"
 	FROM highways_network."roadlink" r,
 	(
-	SELECT "SurveyID", "RoadName", "Capacity", "CapacityAtTimeOfSurvey", "Demand",
+	SELECT a."SurveyID", su."BeatTitle", "RoadName", "Capacity", "CapacityAtTimeOfSurvey", "Demand",
         CASE
             WHEN "CapacityAtTimeOfSurvey" = 0 THEN
                 CASE
@@ -107,7 +107,8 @@ AS
     AND s."RestrictionTypeID" NOT IN (107, 116, 117, 118, 119, 122, 144, 146, 147, 149, 150, 151, 168, 169)  -- MCL, PCL, Scooters, etc
     AND RiS."SurveyID" > 0
     GROUP BY RiS."SurveyID", s."RoadName"
-    ORDER BY s."RoadName", RiS."SurveyID" ) a
+    ORDER BY s."RoadName", RiS."SurveyID" ) a, demand."Surveys" su
+	WHERE a."SurveyID" = su."SurveyID"
     ) d,
     	(
 	SELECT "SurveyID", "RoadName", "Capacity", "CapacityAtTimeOfSurvey", "Demand",
@@ -153,6 +154,7 @@ CREATE UNIQUE INDEX "idx_StressResults_ByRoadName_sid"
 REFRESH MATERIALIZED VIEW demand."StressResults_ByRoadName";
 
 -- Output
-SELECT DISTINCT "RoadName", "SurveyID", "Capacity", "CapacityAtTimeOfSurvey", "Demand", "Stress", "Capacity_2018", "CapacityAtTimeOfSurvey_2018", "Demand_2018", "Stress_2018"
+SELECT DISTINCT "RoadName", "SurveyID", "BeatTitle", "Capacity" AS "Capacity_2022", "CapacityAtTimeOfSurvey" AS "CapacityAtTimeOfSurvey_2022", 
+	"Demand" AS "Demand_2022", "Stress" AS "Occupancy_2022", "Capacity_2018", "CapacityAtTimeOfSurvey_2018", "Demand_2018", "Occupancy_2018"
 	FROM demand."StressResults_ByRoadName"
 	ORDER BY "RoadName", "SurveyID";

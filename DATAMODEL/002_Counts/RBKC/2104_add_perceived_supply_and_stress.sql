@@ -410,7 +410,7 @@ BEGIN
     NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
     NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
 
-    IF NEW."CapacityAtTimeOfSurvey" > 0 AND NrBays < 0
+    IF NEW."CapacityAtTimeOfSurvey" > 0 AND NrBays < 0 AND RestrictionTypeID < 200
     AND NOT (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
 		RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR RestrictionTypeID = 169)   -- PCL, e-Scooter, Dockless PCLs
     THEN  -- Only consider unmarked bays

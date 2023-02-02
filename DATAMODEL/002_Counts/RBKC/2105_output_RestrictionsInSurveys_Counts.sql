@@ -12,8 +12,8 @@ UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", item_refs, d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
 d."SupplyCapacity", d."CapacityAtTimeOfSurvey",
-d."Demand", d."Stress",
-d."PerceivedCapacityAtTimeOfSurvey", d."PerceivedStress",
+d."Demand", d."Stress" AS "Occupancy",
+d."PerceivedCapacityAtTimeOfSurvey", d."PerceivedStress" AS "PerceivedOccupancy",
 d."Demand_Waiting", d."Demand_Idling", d."Demand_Suspended",
 d."PerceivedAvailableSpaces",
 
