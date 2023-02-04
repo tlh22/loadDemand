@@ -3,7 +3,8 @@ Main steps:
 1. Check that everything is loaded correctly
 2. Copy photos over
 3. Check suspensions (from notes)
-4. Check supply (from notes)
+4. Check supply (from notes) - also check VRMs for things like SY, SYL, DK, BINS, etc
+5. Set up SYL control times
 6. Process
     - Check VRMs (or count values)
     - Calculate demand/stress

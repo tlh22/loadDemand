@@ -155,6 +155,6 @@ REFRESH MATERIALIZED VIEW demand."StressResults_ByRoadName";
 
 -- Output
 SELECT DISTINCT "RoadName", "SurveyID", "BeatTitle", "Capacity" AS "Capacity_2022", "CapacityAtTimeOfSurvey" AS "CapacityAtTimeOfSurvey_2022", 
-	"Demand" AS "Demand_2022", "Stress" AS "Occupancy_2022", "Capacity_2018", "CapacityAtTimeOfSurvey_2018", "Demand_2018", "Occupancy_2018"
+	"Demand" AS "Demand_2022", "Stress" AS "Occupancy_2022", "Capacity_2018", "CapacityAtTimeOfSurvey_2018", "Demand_2018", "Stress_2018" AS "Occupancy_2018"
 	FROM demand."StressResults_ByRoadName"
 	ORDER BY "RoadName", "SurveyID";
