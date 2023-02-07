@@ -1,15 +1,15 @@
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "Demand" double precision;
+    ADD COLUMN IF NOT EXISTS "Demand" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "SupplyCapacity" double precision;
+    ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "CapacityAtTimeOfSurvey" double precision;
+    ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "Stress" double precision;
+    ADD COLUMN IF NOT EXISTS "Stress" double precision;
 
 
 -- set up trigger for demand and stress

@@ -94,23 +94,23 @@ BEGIN
         INTO current_done
         FROM "demand"."RestrictionsInSurveys"
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-        AND "SurveyID" = curr_survey_id;
+        AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
         IF current_done IS true THEN
 
-            RAISE NOTICE '*****--- Clearing % from (%) ', relevant_restriction_in_survey."GeometryID", curr_survey_id;
+            RAISE NOTICE '*****--- Clearing % from (%) ', relevant_restriction_in_survey."GeometryID", relevant_restriction_in_survey."SurveyID";
 
             UPDATE "demand"."RestrictionsInSurveys"
             SET "DemandSurveyDateTime" = NULL, "Enumerator" = NULL, "Done" = NULL, "SuspensionReference" = NULL, "SuspensionReason" = NULL,
             "SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-            AND "SurveyID" = curr_survey_id;
+            AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
             -- Now remove VRMs
 
             DELETE FROM "demand"."VRMs"
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-            AND "SurveyID" = curr_survey_id;
+            AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
         END IF;
 
@@ -155,17 +155,17 @@ BEGIN
         INTO current_done
         FROM "demand"."RestrictionsInSurveys"
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-        AND "SurveyID" = curr_survey_id;
+        AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
         IF current_done IS true THEN
 
-            RAISE NOTICE '*****--- Clearing % from (%) ', relevant_restriction_in_survey."GeometryID", curr_survey_id;
+            RAISE NOTICE '*****--- Clearing % from (%) ', relevant_restriction_in_survey."GeometryID", relevant_restriction_in_survey."SurveyID";
 
             UPDATE "demand"."RestrictionsInSurveys"
             SET "DemandSurveyDateTime" = NULL, "Enumerator" = NULL, "Done" = NULL, "SuspensionReference" = NULL, "SuspensionReason" = NULL,
             "SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-            AND "SurveyID" = curr_survey_id;
+            AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
             -- Now reset Counts
 
@@ -191,7 +191,7 @@ BEGIN
                 --, "NrCarsWithDisabledBadgeParkedInPandD"=NULL
 
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-            AND "SurveyID" = curr_survey_id;
+            AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
         END IF;
 

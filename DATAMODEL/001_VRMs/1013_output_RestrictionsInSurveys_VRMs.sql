@@ -4,11 +4,19 @@ Need to change for each CPZ - and ensure correct Supply details
 
 */
 
+-- Ensure that details are updated
+UPDATE "mhtc_operations"."Supply"
+SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
+
+UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+
 SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", d."SideOfStreet",
+d."CPZ",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
 d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", v."Demand", d."SurveyAreaName"
 FROM
-(SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", s."RoadName", s."SideOfStreet", s."SurveyAreaName",
+(SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
+ s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
 ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity"
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
@@ -29,7 +37,6 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
 WHERE d."SurveyID" > 0
 AND d."Done" IS true
 ORDER BY d."SurveyID", d."GeometryID";
-
 
 -- check total count for each pass
 

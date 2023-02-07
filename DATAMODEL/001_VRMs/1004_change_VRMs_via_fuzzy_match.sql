@@ -52,7 +52,7 @@ AND (v1."VRM" NOT LIKE 'NO%');
 --FROM demand."VRMs_Final" AS v1, demand."VRMs_Final" AS v2
 UPDATE demand."VRMs" AS v2
 SET "VRM" = v1."VRM"
-FROM demand."VRMs" v1
+FROM demand."VRMs" v1, mhtc_operations."Supply" s
 WHERE v1."GeometryID" = v2."GeometryID"
 AND v1."SurveyID" != v2."SurveyID"
 AND v1."VRM" != v2."VRM"
@@ -68,6 +68,8 @@ AND v1."VRM" NOT IN (
     AND v11."ID" < v12."ID"
     AND levenshtein(v11."VRM"::text, v12."VRM"::text, 10, 10, 1) <= 2
 )
+AND v2."GeometryID" = s."GeometryID"
+--AND s."CPZ" IN ('P', 'F', 'Y')
 ;
 
 -- Very occassionally there is an incorrect change, e.g., when there is already a series with the candidate
@@ -82,26 +84,61 @@ WHERE "VRM" <> "VRM_Orig";
 
 /*
  *  Differences in front part of reg plate
- *
+ */
 
-SELECT DISTINCT (v1."VRM"),  v2."VRM", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
+
+SELECT DISTINCT (v1."VRM") AS "First",  v2."VRM" AS "Second", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
 FROM demand."VRMs" v1, demand."VRMs" v2
 WHERE v1."ID" > v2."ID"
 AND v1."GeometryID" = v2."GeometryID"
 AND substring(v1."VRM", '.+-(.+)') = substring(v2."VRM", '.+-(.+)')
 AND substring(v1."VRM", '(.+)-.+') != substring(v2."VRM", '(.+)-.+')
-ORDER BY v1."VRM"
 
- *
- * Differences in rear part
- *
+ /*
+  * Differences in rear part
+  */
 
-SELECT DISTINCT (v1."VRM"),  v2."VRM", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
+UNION
+
+SELECT DISTINCT (v1."VRM") AS "First",  v2."VRM" AS "Second", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
 FROM demand."VRMs" v1, demand."VRMs" v2
 WHERE v1."ID" > v2."ID"
 AND v1."GeometryID" = v2."GeometryID"
 AND substring(v1."VRM", '.+-(.+)') != substring(v2."VRM", '.+-(.+)')
 AND substring(v1."VRM", '(.+)-.+') = substring(v2."VRM", '(.+)-.+')
-ORDER BY v1."VRM"
 
-*/
+ORDER BY "First"
+
+
+/**/
+
+
+UPDATE demand."VRMs" AS v2
+SET "VRM" = v1."VRM"
+FROM demand."VRMs" v1, (SELECT s."GeometryID", sa."SurveyAreaName"
+ FROM mhtc_operations."Supply" s, mhtc_operations."SurveyAreas" sa
+ WHERE s."SurveyAreaID" = sa."Code") AS p
+WHERE v1."GeometryID" = v2."GeometryID"
+AND v1."SurveyID" != v2."SurveyID"
+AND v1."VRM" != v2."VRM"
+AND v1."ID" > v2."ID"
+AND levenshtein(v1."VRM"::text, v2."VRM"::text, 10, 10, 1) <= 2
+AND v1."SurveyID" / 100 = v2."SurveyID" / 100   -- need to ensure that v1 and v2 have the same "SurveyDay"
+AND v1."VRM" NOT IN (
+    SELECT DISTINCT v11."VRM"
+    FROM demand."VRMs" v11, demand."VRMs" v12
+    WHERE v11."GeometryID" = v12."GeometryID"
+    AND v11."SurveyID" = v12."SurveyID"
+    AND v11."VRM" != v12."VRM"
+    AND v11."ID" < v12."ID"
+    AND levenshtein(v11."VRM"::text, v12."VRM"::text, 10, 10, 1) <= 2
+)
+AND v2."GeometryID" = p."GeometryID"
+AND (p."SurveyAreaName" LIKE 'L%' OR
+     p."SurveyAreaName" LIKE 'E-0%' OR
+     p."SurveyAreaName" LIKE 'P%' OR
+     p."SurveyAreaName" LIKE 'T%' OR
+     p."SurveyAreaName" LIKE 'V%'
+     )
+;
+;

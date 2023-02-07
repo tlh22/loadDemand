@@ -1,23 +1,9 @@
-/**
-Check the count collected within each pass
-**/
-
-/***
- *  Initially created for Camden - sections
- ***/
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand" double precision;
---ALTER TABLE demand."RestrictionsInSurveys"
---    ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
---ALTER TABLE demand."RestrictionsInSurveys"
---    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
-
---ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
---    RENAME "Capacity" TO "CapacityAtTimeOfSurvey";
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
@@ -25,7 +11,14 @@ ALTER TABLE demand."RestrictionsInSurveys"
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Stress" double precision;
 
--- Step 2: calculate demand values using trigger
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Suspended" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Waiting" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Idling" double precision;
 
 -- set up trigger for demand and stress
 
@@ -117,7 +110,6 @@ DECLARE
 BEGIN
 
     RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
-    
     /***
     select "Value" into vehicleLength
         from "mhtc_operations"."project_parameters"
@@ -190,22 +182,22 @@ BEGIN
         RETURN OLD;
     END IF;
 
-    SELECT c."NrCars", c."NrLGVs", c."NrMCLs", c."NrTaxis", c."NrPCLs", c."NrEScooters", c."NrDocklessPCLs", c."NrOGVs", c."NrMiniBuses", c."NrBuses", c."NrSpaces",
-        c."Notes", c."DoubleParkingDetails",
-        c."NrCars_Suspended", c."NrLGVs_Suspended", c."NrMCLs_Suspended", c."NrTaxis_Suspended", c."NrPCLs_Suspended", c."NrEScooters_Suspended",
-        c."NrDocklessPCLs_Suspended", c."NrOGVs_Suspended", c."NrMiniBuses_Suspended", c."NrBuses_Suspended",
-        /***
-        c."NrCarsWaiting", c."NrLGVsWaiting", c."NrMCLsWaiting", c."NrTaxisWaiting", c."NrOGVsWaiting", c."NrMiniBusesWaiting", c."NrBusesWaiting",
-        ***/
-        c."NrCarsIdling", c."NrLGVsIdling", c."NrMCLsIdling",
-        c."NrTaxisIdling", c."NrOGVsIdling", c."NrMiniBusesIdling",
-        c."NrBusesIdling"
+    SELECT RiS."NrCars", RiS."NrLGVs", RiS."NrMCLs", RiS."NrTaxis", RiS."NrPCLs", RiS."NrEScooters", RiS."NrDocklessPCLs", RiS."NrOGVs", RiS."NrMiniBuses", RiS."NrBuses", RiS."NrSpaces",
+        RiS."Notes", RiS."DoubleParkingDetails",
+        RiS."NrCars_Suspended", RiS."NrLGVs_Suspended", RiS."NrMCLs_Suspended", RiS."NrTaxis_Suspended", RiS."NrPCLs_Suspended", RiS."NrEScooters_Suspended",
+        RiS."NrDocklessPCLs_Suspended", RiS."NrOGVs_Suspended", RiS."NrMiniBuses_Suspended", RiS."NrBuses_Suspended",
 
-        , c."NrCarsParkedIncorrectly", c."NrLGVsParkedIncorrectly", c."NrMCLsParkedIncorrectly",
-        c."NrTaxisParkedIncorrectly", c."NrOGVsParkedIncorrectly", c."NrMiniBusesParkedIncorrectly",
-        c."NrBusesParkedIncorrectly",
+        RiS."NrCarsWaiting", RiS."NrLGVsWaiting", RiS."NrMCLsWaiting", RiS."NrTaxisWaiting", RiS."NrOGVsWaiting", RiS."NrMiniBusesWaiting", RiS."NrBusesWaiting",
 
-        c."NrCarsWithDisabledBadgeParkedInPandD",
+        RiS."NrCarsIdling", RiS."NrLGVsIdling", RiS."NrMCLsIdling",
+        RiS."NrTaxisIdling", RiS."NrOGVsIdling", RiS."NrMiniBusesIdling",
+        RiS."NrBusesIdling"
+
+        , RiS."NrCarsParkedIncorrectly", RiS."NrLGVsParkedIncorrectly", RiS."NrMCLsParkedIncorrectly",
+        RiS."NrTaxisParkedIncorrectly", RiS."NrOGVsParkedIncorrectly", RiS."NrMiniBusesParkedIncorrectly",
+        RiS."NrBusesParkedIncorrectly",
+
+        RiS."NrCarsWithDisabledBadgeParkedInPandD",
 
         "NrBaysSuspended"
 
@@ -214,9 +206,9 @@ BEGIN
         Notes, DoubleParkingDetails,
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended,
         NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended,
-        /***
+
         NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting,
-        ***/
+
         NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling
 
         ,NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
@@ -227,11 +219,10 @@ BEGIN
 
         ,NrBaysSuspended
 
-	FROM demand."Counts" c, demand."RestrictionsInSurveys" RiS
-	WHERE c."GeometryID" = NEW."GeometryID"
-	AND c."SurveyID" = NEW."SurveyID"
-	AND c."GeometryID" = RiS."GeometryID"
-	AND c."SurveyID" = RiS."SurveyID";
+	FROM demand."RestrictionsInSurveys" RiS
+	WHERE RiS."GeometryID" = NEW."GeometryID"
+	AND RiS."SurveyID" = NEW."SurveyID"
+    ;
 
     -- From Camden where determining capacity from sections
 	SELECT "Capacity", "RestrictionTypeID"   -- what happens if field does not exist?
@@ -248,7 +239,18 @@ BEGIN
         COALESCE(NrEScooters::float, 0.0) * escooterPCU +
         COALESCE(NrDocklessPCLs::float, 0.0) * docklesspclPCU +
 
-        /***
+        -- vehicles parked incorrectly
+        COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
+        COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
+        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
+        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
+
+        -- vehicles in P&D bay displaying disabled badge
+  		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
+        ;
+
+    NEW."Demand_Suspended" =
         -- include suspended vehicles
         COALESCE(NrCars_Suspended::float, 0.0) * carPCU +
         COALESCE(NrLGVs_Suspended::float, 0.0) * lgvPCU +
@@ -257,45 +259,23 @@ BEGIN
         COALESCE(NrTaxis_Suspended::float, 0) +
         COALESCE(NrPCLs_Suspended::float, 0.0) * pclPCU +
         COALESCE(NrEScooters_Suspended::float, 0.0) * escooterPCU +
-        COALESCE(NrDocklessPCLs_Suspended::float, 0.0) * docklesspclPCU +
-        ***/
+        COALESCE(NrDocklessPCLs_Suspended::float, 0.0) * docklesspclPCU;
 
+    NEW."Demand_Waiting" =
+        -- vehicles waiting
         COALESCE(NrCarsWaiting::float, 0.0) * carPCU +
         COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
         COALESCE(NrOGVsWaiting::float, 0) * ogvPCU + COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU + COALESCE(NrBusesWaiting::float, 0) * busPCU +
-        COALESCE(NrTaxisWaiting::float, 0) * carPCU +
+        COALESCE(NrTaxisWaiting::float, 0) * carPCU;
 
+    NEW."Demand_Idling" =
+        -- vehicles idling
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
         COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
-        COALESCE(NrTaxisIdling::float, 0) * carPCU
-
-        /***
-        COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
-        COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
-        COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
-        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
-
-  		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
-        ***/
-        ;
-
-    /***
-    NEW."Demand_Standard" = COALESCE(NrCars::float, 0.0) +
-        COALESCE(NrLGVs::float, 0.0) +
-        COALESCE(NrMCLs::float, 0.0)*0.33 +
-        (COALESCE(NrOGVs::float, 0.0) + COALESCE(NrMiniBuses::float, 0.0) + COALESCE(NrBuses::float, 0.0))*1.5 +
-        COALESCE(NrTaxis::float, 0.0);
-
-    NEW."DemandInSuspendedAreas" = COALESCE(NrCars_Suspended::float, 0.0) +
-        COALESCE(NrLGVs_Suspended::float, 0.0) +
-        COALESCE(NrMCLs_Suspended::float, 0.0)*0.33 +
-        (COALESCE(NrOGVs_Suspended::float, 0) + COALESCE(NrMiniBuses_Suspended::float, 0) + COALESCE(NrBuses_Suspended::float, 0))*1.5 +
-        COALESCE(NrTaxis_Suspended::float, 0);
-    ***/
+        COALESCE(NrTaxisIdling::float, 0) * carPCU;
 
     /* What to do about suspensions */
 
@@ -431,24 +411,3 @@ CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."Restrictions
 
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
-
--- Check details
-
-
-SELECT su."SurveyID", "SurveyAreaName", SUM("Demand")
-FROM demand."Surveys" su, demand."RestrictionsInSurveys" RiS,
-(SELECT s."GeometryID", "SurveyAreas"."SurveyAreaName"
- FROM mhtc_operations."Supply" s LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON s."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS d
-WHERE su."SurveyID" = RiS."SurveyID"
-AND d."GeometryID" = RiS."GeometryID"
-AND su."SurveyID" > 0
-GROUP BY su."SurveyID", "SurveyAreaName"
-ORDER BY su."SurveyID", "SurveyAreaName"
-
-/***
-SELECT RiS."SurveyID", SUM("Demand")
-FROM demand."RestrictionsInSurveys" RiS
-WHERE RiS."SurveyID" > 0
-GROUP BY RiS."SurveyID"
-ORDER BY RiS."SurveyID"
-***/
