@@ -7,23 +7,23 @@ Check the count collected within each pass
  ***/
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "Demand" double precision;
+    ADD COLUMN IF NOT EXISTS "Demand" double precision;
 --ALTER TABLE demand."RestrictionsInSurveys"
 --    ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
 --ALTER TABLE demand."RestrictionsInSurveys"
 --    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "SupplyCapacity" double precision;
+    ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
 
 --ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
 --    RENAME "Capacity" TO "CapacityAtTimeOfSurvey";
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "CapacityAtTimeOfSurvey" double precision;
+    ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN "Stress" double precision;
+    ADD COLUMN IF NOT EXISTS "Stress" double precision;
 
 -- Step 2: calculate demand values using trigger
 
@@ -117,6 +117,7 @@ DECLARE
 BEGIN
 
     RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
+    
     /***
     select "Value" into vehicleLength
         from "mhtc_operations"."project_parameters"
@@ -447,3 +448,11 @@ AND d."GeometryID" = RiS."GeometryID"
 AND su."SurveyID" > 0
 GROUP BY su."SurveyID", "SurveyAreaName"
 ORDER BY su."SurveyID", "SurveyAreaName"
+
+/***
+SELECT RiS."SurveyID", SUM("Demand")
+FROM demand."RestrictionsInSurveys" RiS
+WHERE RiS."SurveyID" > 0
+GROUP BY RiS."SurveyID"
+ORDER BY RiS."SurveyID"
+***/
