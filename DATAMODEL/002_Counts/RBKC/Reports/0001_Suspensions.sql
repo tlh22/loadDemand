@@ -29,11 +29,13 @@ ORDER BY su."SurveyID"
 
 -- Details
 
-SELECT ris."GeometryID", s."RoadName", s."Description" AS "RestrictionType Description",
+SELECT ris."GeometryID", ris."SurveyID", su."BeatTitle", s."RoadName", s."Description" AS "RestrictionType Description",
 	   ris."SuspensionReference", ris."SuspensionReason", ris."SuspensionLength", ris."NrBaysSuspended", ris."SuspensionNotes"
 FROM demand."RestrictionsInSurveys" ris, ( mhtc_operations."Supply" AS a
- LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") s
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") s, 
+ demand."Surveys" su
 WHERE ris."GeometryID" = s."GeometryID"
 AND COALESCE("NrBaysSuspended", 0) > 0
 AND s."RestrictionTypeID" < 200
+AND ris."SurveyID" = su."SurveyID"
 ORDER BY s."RoadName", ris."NrBaysSuspended"

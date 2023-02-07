@@ -84,29 +84,33 @@ WHERE "VRM" <> "VRM_Orig";
 
 /*
  *  Differences in front part of reg plate
- *
+ */
 
-SELECT DISTINCT (v1."VRM"),  v2."VRM", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
+
+SELECT DISTINCT (v1."VRM") AS "First",  v2."VRM" AS "Second", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
 FROM demand."VRMs" v1, demand."VRMs" v2
 WHERE v1."ID" > v2."ID"
 AND v1."GeometryID" = v2."GeometryID"
 AND substring(v1."VRM", '.+-(.+)') = substring(v2."VRM", '.+-(.+)')
 AND substring(v1."VRM", '(.+)-.+') != substring(v2."VRM", '(.+)-.+')
-ORDER BY v1."VRM"
 
- *
- * Differences in rear part
- *
+ /*
+  * Differences in rear part
+  */
 
-SELECT DISTINCT (v1."VRM"),  v2."VRM", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
+UNION
+
+SELECT DISTINCT (v1."VRM") AS "First",  v2."VRM" AS "Second", substring(v1."VRM", '(.+)-(.+)'), substring(v1."VRM", '.+-(.+)'), substring(v2."VRM", '(.+)-(.+)'), substring(v2."VRM", '.+-(.+)')
 FROM demand."VRMs" v1, demand."VRMs" v2
 WHERE v1."ID" > v2."ID"
 AND v1."GeometryID" = v2."GeometryID"
 AND substring(v1."VRM", '.+-(.+)') != substring(v2."VRM", '.+-(.+)')
 AND substring(v1."VRM", '(.+)-.+') = substring(v2."VRM", '(.+)-.+')
-ORDER BY v1."VRM"
 
-*/
+ORDER BY "First"
+
+
+/**/
 
 
 UPDATE demand."VRMs" AS v2
