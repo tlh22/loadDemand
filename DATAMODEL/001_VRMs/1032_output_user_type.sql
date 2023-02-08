@@ -35,7 +35,7 @@ ORDER BY d."SurveyID", d."GeometryID";
 -- VRMs
 
 SELECT v."ID", v."SurveyID", s."SurveyDay", CONCAT(s."BeatStartTime", '-', "BeatEndTime") As "SurveyTime",
-        v."RoadName", v."RestrictionType Description", v."SideOfStreet",
+        v."CPZ", v."RoadName", v."RestrictionType Description", v."SideOfStreet",
 		v."GeometryID", v."VRM", 
 		v."InternationalCodeID", v."Country",
 		v."VehicleTypeID", v."VehicleType Description",
@@ -51,7 +51,7 @@ FROM
        su."RestrictionTypeID",
 		"BayLineTypes"."Description" AS "RestrictionType Description",
         "PermitTypeID", "PermitTypes"."Description" AS "PermitType Description",
-        a."Notes", su."RoadName", su."SideOfStreet", "UserTypes"."Description" AS "UserType Description", "VehicleTypes"."PCU"
+        a."Notes", su."CPZ", su."RoadName", su."SideOfStreet", "UserTypes"."Description" AS "UserType Description", "VehicleTypes"."PCU"
 
 FROM
      ((((((demand."VRMs" AS a
