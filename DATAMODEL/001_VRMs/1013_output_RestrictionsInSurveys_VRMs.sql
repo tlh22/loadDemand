@@ -11,14 +11,14 @@ SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", d."SideOfStreet",
-d."CPZ",
+d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", v."Demand", d."SurveyAreaName"
+d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", d."SurveyAreaName"
 FROM
 (SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
  s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
-ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity"
+ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand"
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
 ((mhtc_operations."Supply" AS a
  LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
@@ -29,13 +29,8 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
  --AND substring(su."BeatTitle" from '\((.+)\)') LIKE '7S%'
  ) as d
 
- LEFT JOIN  (SELECT "SurveyID", "GeometryID", SUM("PCU") AS "Demand"
-   FROM demand."VRMs" a, "demand_lookups"."VehicleTypes" b
-   WHERE a."VehicleTypeID" = b."Code"
-   GROUP BY "SurveyID", "GeometryID"
-  ) AS v ON d."SurveyID" = v."SurveyID" AND d."GeometryID" = v."GeometryID"
 WHERE d."SurveyID" > 0
-AND d."Done" IS true
+--AND d."Done" IS true
 ORDER BY d."SurveyID", d."GeometryID";
 
 -- check total count for each pass
