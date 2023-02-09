@@ -14,7 +14,7 @@ ALTER TABLE demand."RestrictionsInSurveys"
 
 -- set up trigger for demand and stress
 
-CREATE OR REPLACE FUNCTION "demand"."update_demand_counts"() RETURNS "trigger"
+CREATE OR REPLACE FUNCTION "demand"."update_demand_vrms"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
@@ -42,7 +42,9 @@ BEGIN
     AND "SurveyID" = NEW."SurveyID";
 
     -- Demand from VRMs
-    SELECT SUM("PCU")
+    demand = 0.0;
+    
+    SELECT COALESCE(SUM("PCU"), 0.0)
     INTO demand
     FROM demand."VRMs" a, "demand_lookups"."VehicleTypes" b
     WHERE a."VehicleTypeID" = b."Code"
@@ -93,6 +95,8 @@ BEGIN
 
 	END IF;
 
+	-- TODO: dual restrictions ...
+	
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
     IF Capacity < 0.0 THEN
         Capacity = 0.0;
@@ -100,14 +104,14 @@ BEGIN
     NEW."SupplyCapacity" = Supply_Capacity;
     NEW."CapacityAtTimeOfSurvey" = Capacity;
 
-    IF Capacity <= 0.0 THEN
+    IF NEW."CapacityAtTimeOfSurvey" <= 0.0 THEN
         IF NEW."Demand" > 0.0 THEN
             NEW."Stress" = 1.0;
         ELSE
             NEW."Stress" = 0.0;
         END IF;
     ELSE
-        NEW."Stress" = NEW."Demand"::float / Capacity::float;
+        NEW."Stress" = NEW."Demand"::float / NEW."CapacityAtTimeOfSurvey"::float;
     END IF;
 
 	RETURN NEW;
@@ -118,7 +122,7 @@ $$;
 -- create trigger
 
 DROP TRIGGER IF EXISTS update_demand ON demand."RestrictionsInSurveys";
-CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
+CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_vrms"();
 
 -- trigger trigger
 
