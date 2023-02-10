@@ -94,6 +94,13 @@ ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN "Parking_Notes" character varying(10000);
 
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "MCL_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "Supply_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "Parking_Notes" character varying(10000);
+    
 -- Now copy
 
 UPDATE demand."RestrictionsInSurveys" AS RiS
