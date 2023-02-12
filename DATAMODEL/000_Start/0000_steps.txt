@@ -2,13 +2,14 @@ Main steps:
 
 1. Check that everything is loaded correctly
 2. Copy photos over
-3. Check suspensions (from notes)
-4. Check supply (from notes) - also check VRMs for things like SY, SYL, DK, BINS, etc
-5. Set up SYL control times
-6. Process
+3. Check dates of surveys (think RBKC) 
+4. Check suspensions (from notes)
+5. Check supply (from notes) - also check VRMs for things like SY, SYL, DK, BINS, etc
+6. Set up SYL control times
+7. Process
     - Check VRMs (or count values)
     - Calculate demand/stress
-7. Output
+8. Output
 
 
 

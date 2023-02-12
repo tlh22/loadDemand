@@ -94,6 +94,47 @@ ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN "Parking_Notes" character varying(10000);
 
+-- Add relevant calculated fields
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "PerceivedAvailableSpaces" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "PerceivedCapacityAtTimeOfSurvey" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "PerceivedStress" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Stress" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Suspended" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Waiting" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Idling" double precision;
+
+-- And now for Counts
+    
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "MCL_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "Supply_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."Counts"
+    ADD COLUMN "Parking_Notes" character varying(10000);
+    
 -- Now copy
 
 UPDATE demand."RestrictionsInSurveys" AS RiS
