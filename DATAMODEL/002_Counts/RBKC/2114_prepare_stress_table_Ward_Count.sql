@@ -104,7 +104,7 @@ AS
 	SUM (CASE WHEN "RestrictionTypeID" != 103 THEN 0 ELSE RiS."Demand" END) AS "PayByPhone Bay Demand"
     FROM demand."RestrictionsInSurveys" RiS, mhtc_operations."Supply" s
     WHERE s."GeometryID" = RiS."GeometryID"
-    AND s."RestrictionTypeID" NOT IN (107, 116, 117, 118, 119, 122, 144, 146, 147, 149, 150, 151, 168, 169)  -- MCL, PCL, Scooters, etc
+    AND s."RestrictionTypeID" NOT IN (107, 116, 117, 118, 119, 122, 144, 146, 147, 149, 150, 151, 168, 169, 201, 221, 217, 222)  -- MCL, PCL, Scooters, etc
     AND RiS."SurveyID" > 0
     GROUP BY RiS."SurveyID", s."WardID"
     ORDER BY s."WardID", RiS."SurveyID" ) a, demand."Surveys" su
