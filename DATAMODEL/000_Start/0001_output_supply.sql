@@ -1,8 +1,8 @@
 
 -- Make sure capacities are updated
 
---UPDATE "mhtc_operations"."Supply"
---SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
+UPDATE "mhtc_operations"."Supply"
+SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 
 --
 
@@ -22,7 +22,8 @@ SELECT
         END AS "RestrictionTypeID",
 "BayLineTypes"."Description" AS "RestrictionDescription",
 "GeomShapeID", COALESCE("RestrictionGeomShapeTypes"."Description", '') AS "Restriction Shape Description",
-a."RoadName", a."StartStreet" AS "RoadFrom", a."EndStreet" AS "RoadTo", a."SideOfStreet", "RC_Sections_merged"."SectionName", COALESCE("SurveyAreas"."SurveyAreaName", '')  AS "SurveyAreaName",
+a."RoadName", a."StartStreet" AS "RoadFrom", a."EndStreet" AS "RoadTo", a."SideOfStreet", "RC_Sections_merged"."SectionName", 
+COALESCE("SurveyAreas"."SurveyAreaName", '')  AS "SurveyAreaName",
 
        CASE WHEN ("RestrictionTypeID" < 200 OR "RestrictionTypeID" IN (227, 228, 229, 231)) THEN COALESCE("TimePeriods1"."Description", '')
             ELSE COALESCE("TimePeriods2"."Description", '')
