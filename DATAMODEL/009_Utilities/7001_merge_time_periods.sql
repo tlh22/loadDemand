@@ -225,3 +225,15 @@ ALTER TABLE IF EXISTS demand."VRMs_orig"
     RENAME TO "VRMs";
 
 ***/
+
+UPDATE demand."VRMs"
+SET "SurveyID" = 101
+WHERE "SurveyID" IN (201, 301, 401);
+
+UPDATE demand."VRMs"
+SET "SurveyID" = 102
+WHERE "SurveyID" IN (202, 302, 402);
+
+UPDATE demand."VRMs"
+SET "SurveyID" = 103
+WHERE "SurveyID" IN (203, 303, 403);
