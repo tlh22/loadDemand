@@ -226,6 +226,7 @@ ALTER TABLE IF EXISTS demand."VRMs_orig"
 
 ***/
 
+-- For Islington
 UPDATE demand."VRMs"
 SET "SurveyID" = 101
 WHERE "SurveyID" IN (201, 301, 401);
@@ -237,3 +238,39 @@ WHERE "SurveyID" IN (202, 302, 402);
 UPDATE demand."VRMs"
 SET "SurveyID" = 103
 WHERE "SurveyID" IN (203, 303, 403);
+
+UPDATE demand."RestrictionsInSurveys" ris1
+	SET "DemandSurveyDateTime"=ris2."DemandSurveyDateTime", "Enumerator"=ris2."Enumerator", "Done"=ris2."Done", 
+	    "SuspensionReference"=ris2."SuspensionReference", "SuspensionReason"=ris2."SuspensionReason", "SuspensionLength"=ris2."SuspensionLength", 
+	    "NrBaysSuspended"=ris2."NrBaysSuspended", "SuspensionNotes"=ris2."SuspensionNotes", 
+	    "Photos_01"=ris2."Photos_01", "Photos_02"=ris2."Photos_02", "Photos_03"=ris2."Photos_03", "CaptureSource"=ris2."CaptureSource"
+	FROM demand."RestrictionsInSurveys" ris2
+	WHERE ris1."SurveyID" = 101
+	AND ris2."SurveyID" IN (201, 301, 401)
+	AND ris1."GeometryID" = ris2."GeometryID"
+	AND ris2."Done" IS true
+	AND ris1."Enumerator" IS NULL;
+
+UPDATE demand."RestrictionsInSurveys" ris1
+	SET "DemandSurveyDateTime"=ris2."DemandSurveyDateTime", "Enumerator"=ris2."Enumerator", "Done"=ris2."Done", 
+	    "SuspensionReference"=ris2."SuspensionReference", "SuspensionReason"=ris2."SuspensionReason", "SuspensionLength"=ris2."SuspensionLength", 
+	    "NrBaysSuspended"=ris2."NrBaysSuspended", "SuspensionNotes"=ris2."SuspensionNotes", 
+	    "Photos_01"=ris2."Photos_01", "Photos_02"=ris2."Photos_02", "Photos_03"=ris2."Photos_03", "CaptureSource"=ris2."CaptureSource"
+	FROM demand."RestrictionsInSurveys" ris2
+	WHERE ris1."SurveyID" = 102
+	AND ris2."SurveyID" IN (202, 302, 402)
+	AND ris1."GeometryID" = ris2."GeometryID"
+	AND ris2."Done" IS true
+	AND ris1."Enumerator" IS NULL;
+
+UPDATE demand."RestrictionsInSurveys" ris1
+	SET "DemandSurveyDateTime"=ris2."DemandSurveyDateTime", "Enumerator"=ris2."Enumerator", "Done"=ris2."Done", 
+	    "SuspensionReference"=ris2."SuspensionReference", "SuspensionReason"=ris2."SuspensionReason", "SuspensionLength"=ris2."SuspensionLength", 
+	    "NrBaysSuspended"=ris2."NrBaysSuspended", "SuspensionNotes"=ris2."SuspensionNotes", 
+	    "Photos_01"=ris2."Photos_01", "Photos_02"=ris2."Photos_02", "Photos_03"=ris2."Photos_03", "CaptureSource"=ris2."CaptureSource"
+	FROM demand."RestrictionsInSurveys" ris2
+	WHERE ris1."SurveyID" = 103
+	AND ris2."SurveyID" IN (203, 303, 403)
+	AND ris1."GeometryID" = ris2."GeometryID"
+	AND ris2."Done" IS true
+	AND ris1."Enumerator" IS NULL;
