@@ -10,10 +10,13 @@ SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
-SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", d."SideOfStreet",
-d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand",
+SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
+d."RoadName", d."SideOfStreet",
+d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", --d."SupplyCapacity_55m", d."CapacityAtTimeOfSurvey_55m", 
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", d."SurveyAreaName"
+d."Photos_01", d."Photos_02", d."Photos_03", 
+--d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
+d."SurveyAreaName"
 FROM
 (SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
  s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",

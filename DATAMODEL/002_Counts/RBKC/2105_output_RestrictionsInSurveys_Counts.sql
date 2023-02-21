@@ -12,11 +12,6 @@ UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", item_refs, d."RestrictionTypeID", d."RestrictionType Description", 
 
-CASE WHEN d."RestrictionTypeID" = 101 THEN 'Residents'' bays'
-     WHEN d."RestrictionTypeID" = 103 THEN 'Pay-by-Phone bays'
-     ELSE 'Other bays'
-END AS "Restriction Group",
-
 d."UnacceptableType Description", d."RestrictionLength", d."RoadName",
 d."SupplyCapacity", d."CapacityAtTimeOfSurvey",
 d."Demand", d."Stress" AS "Occupancy",
