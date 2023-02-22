@@ -6,7 +6,8 @@ WHERE "Stress" > 1
 AND "Demand" > "CapacityAtTimeOfSurvey" + 5;
 
 
-SELECT curr."Enumerator", curr."SurveyID", curr."GeometryID", curr."SupplyCapacity", curr."CapacityAtTimeOfSurvey", curr."Demand", before."Demand", after."Demand"
+SELECT curr."Enumerator", curr."SurveyID", curr."GeometryID", curr."SupplyCapacity", curr."CapacityAtTimeOfSurvey", curr."Demand" As "Demand - Current", 
+before."Demand" As "Demand - Before", after."Demand" As "Demand - After"
 FROM demand."RestrictionsInSurveys" curr, demand."RestrictionsInSurveys" before, demand."RestrictionsInSurveys" after
 WHERE curr."GeometryID" = before."GeometryID"
 AND before."GeometryID" = after."GeometryID"

@@ -20,6 +20,9 @@ ALTER TABLE demand."RestrictionsInSurveys"
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand_Idling" double precision;
 
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_ParkedIncorrectly" double precision;
+
 -- set up trigger for demand and stress
 
 CREATE OR REPLACE FUNCTION "demand"."update_demand_counts"() RETURNS "trigger"
@@ -277,6 +280,16 @@ BEGIN
         COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
         COALESCE(NrTaxisIdling::float, 0) * carPCU;
 
+    NEW."Demand_ParkedIncorrectly" =
+        -- vehicles parked incorrectly
+        COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
+        COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
+        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU +
+        COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
+        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU;
+        
     /* What to do about suspensions */
 
 	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs

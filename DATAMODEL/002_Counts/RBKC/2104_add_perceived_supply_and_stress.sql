@@ -296,6 +296,16 @@ BEGIN
         COALESCE(NrBusesIdling::float, 0) * busPCU +
         COALESCE(NrTaxisIdling::float, 0) * carPCU;
 
+    NEW."Demand_ParkedIncorrectly" =
+        -- vehicles parked incorrectly
+        COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
+        COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
+        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU +
+        COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
+        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU;
+        
     /* What to do about suspensions */
 
 	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs

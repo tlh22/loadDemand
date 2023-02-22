@@ -11,11 +11,12 @@ SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", item_refs, d."RestrictionTypeID", d."RestrictionType Description", 
+
 d."UnacceptableType Description", d."RestrictionLength", d."RoadName",
 d."SupplyCapacity", d."CapacityAtTimeOfSurvey",
 d."Demand", d."Stress" AS "Occupancy",
 d."PerceivedCapacityAtTimeOfSurvey", d."PerceivedStress" AS "PerceivedOccupancy",
-d."Demand_Waiting", d."Demand_Idling", d."Demand_Suspended",
+d."Demand_Waiting", d."Demand_Idling", d."Demand_Suspended", d."Demand_ParkedIncorrectly",
 d."PerceivedAvailableSpaces",
 
     d."NrCars", d."NrLGVs", d."NrMCLs", d."NrTaxis", d."NrPCLs", d."NrEScooters", d."NrDocklessPCLs", d."NrOGVs", d."NrMiniBuses", d."NrBuses", d."NrSpaces",
