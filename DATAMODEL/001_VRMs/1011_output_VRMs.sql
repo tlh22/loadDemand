@@ -2,6 +2,7 @@
 
 SELECT v."ID", v."SurveyID", s."SurveyDay", s."BeatStartTime" || '-' || s."BeatEndTime" AS "SurveyTime",
         v."GeometryID", v."RestrictionTypeID", v."RestrictionType Description",
+        v."CPZ",
         v."RoadName", v."SideOfStreet",
 		v."PositionID", v."VRM", v."VRM_Orig",
 		v."InternationalCodeID", v."Country",
