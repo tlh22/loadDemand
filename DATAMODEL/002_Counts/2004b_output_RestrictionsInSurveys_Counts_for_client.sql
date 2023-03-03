@@ -1,0 +1,56 @@
+/*
+
+    ** Ensure that SurveyAreas table is created (even if not populated) 
+*/
+
+-- rename beats - will need to be specific to a report
+
+UPDATE demand."Surveys"
+SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || 'Overnight'
+WHERE MOD("SurveyID"-1, 100) = 0
+AND "SurveyID" > 0;
+
+UPDATE demand."Surveys"
+--SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || "SurveyDay" || '_' || "BeatStartTime" || '_' || "BeatEndTime"
+SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || "BeatStartTime" || '-' || "BeatEndTime"
+WHERE MOD("SurveyID"-1, 100) > 0
+AND "SurveyID" > 0;
+
+--
+
+SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
+d."UnacceptableType Description", 
+d."RestrictionLength", d."RoadName", d."CPZ",
+d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", d."Stress" AS "Occupancy", d."DemandSurveyDateTime",
+d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
+d."Notes", COALESCE("SurveyAreaName", '') AS "SurveyAreaName"
+
+FROM
+(SELECT ris.*,
+ su."BeatTitle", s."RestrictionTypeID", s."RestrictionLength", s."RestrictionType Description", 
+ s."UnacceptableType Description", s."RoadName", s."CPZ",
+ "SurveyAreaName", 
+ s."SupplyGeom"
+
+FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, 
+(
+SELECT a."GeometryID", a."RestrictionTypeID", a."RestrictionLength", 
+"UnacceptableTypes"."Description" AS "UnacceptableType Description", 
+"BayLineTypes"."Description" AS "RestrictionType Description",
+a."RoadName", a."SideOfStreet", a."CPZ", "SurveyAreas"."SurveyAreaName", 
+ a.geom AS "SupplyGeom"
+ FROM
+(((  mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
+ LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code")
+ LEFT JOIN "toms_lookups"."UnacceptableTypes" AS "UnacceptableTypes" ON a."UnacceptableTypeID" is not distinct from "UnacceptableTypes"."Code")
+ ) AS s
+ WHERE ris."SurveyID" = su."SurveyID"
+ AND ris."GeometryID" = s."GeometryID"
+ AND su."SurveyID" > 0
+ --AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
+
+ ) as d
+ORDER BY d."RestrictionTypeID", d."GeometryID", d."SurveyID";
+
+
