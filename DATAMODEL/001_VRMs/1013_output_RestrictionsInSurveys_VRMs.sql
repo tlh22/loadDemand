@@ -22,6 +22,7 @@ FROM
  s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
 ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand"
+-- , ris."SupplyCapacity_55m", ris."CapacityAtTimeOfSurvey_55m"
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
 ((mhtc_operations."Supply" AS a
  LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
