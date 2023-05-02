@@ -1,5 +1,5 @@
 -- create view with to show stress
-
+/***
 drop materialized view IF EXISTS demand."Demand_view_to_show_parking_locations" CASCADE;
 
 create MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations"
@@ -34,6 +34,41 @@ AS
         order by d."RestrictionTypeID", d."GeometryID", d."SurveyID") as f
 
 	WHERE f."GeometryID" = s."GeometryID"
+
+with DATA;
+
+alter table demand."Demand_view_to_show_parking_locations"
+    OWNER TO postgres;
+
+create UNIQUE INDEX "idx_Demand_view_to_show_parking_locations_id"
+    ON demand."Demand_view_to_show_parking_locations" USING btree
+    (id)
+    TABLESPACE pg_default;
+
+REFRESH MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations";
+***/
+
+--
+-- Active suspensions
+
+drop materialized view IF EXISTS demand."Demand_view_to_show_parking_locations" CASCADE;
+
+create MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations"
+TABLESPACE pg_default
+AS
+
+    select row_number() over (partition by true::boolean) as id,
+    "SurveyID", "GeometryID", geom, "RestrictionTypeID", "GeomShapeID", "AzimuthToRoadCentreLine", "BayOrientation",
+    case when "Demand" > "NrBays" then "Demand"
+         else "NrBays"
+    end as "NrBays",
+    "Capacity", "Demand"
+
+    from demand."Supply_for_viewing_parking_locations" s
+
+         WHERE "RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
+
+        order by "RestrictionTypeID", "GeometryID", "SurveyID"
 
 with DATA;
 
