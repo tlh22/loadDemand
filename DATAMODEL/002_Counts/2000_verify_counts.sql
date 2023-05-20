@@ -219,7 +219,7 @@ BEGIN
 
         COALESCE(c."NrCarsWithDisabledBadgeParkedInPandD", 0),
 
-        COALESCE(c."NrBaysSuspended", 0)
+        COALESCE(RiS."NrBaysSuspended", 0)
 
     INTO
         NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces,
@@ -283,8 +283,8 @@ BEGIN
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
         COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
         COALESCE(NrTaxisIdling::float, 0) * carPCU
+		+
 
-        /***
         COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
@@ -292,7 +292,7 @@ BEGIN
         COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
 
   		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
-        ***/
+
         ;
 
     /***
@@ -315,7 +315,8 @@ BEGIN
 	
 	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs
 		RestrictionTypeID = 217 OR RestrictionTypeID = 222 OR RestrictionTypeID = 226 OR   -- SRLs
-		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220      -- Unmarked within PPZ
+		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220 OR   -- Unmarked within PPZ
+		RestrictionTypeID = 203 OR RestrictionTypeID = 207 OR RestrictionTypeID = 208      -- ZigZags
 		) THEN
 
         -- Need to check whether or not effected by control hours

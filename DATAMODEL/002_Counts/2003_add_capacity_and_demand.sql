@@ -230,6 +230,21 @@ BEGIN
 	FROM mhtc_operations."Supply"
 	WHERE "GeometryID" = NEW."GeometryID";
 
+	-- Check PCU value for MCL/PCL bays
+	IF (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
+		RestrictionTypeID = 116 OR RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR 
+		RestrictionTypeID = 169       -- PCLs
+		) THEN
+		RAISE NOTICE '--- MCL/PCL bay - changing PCU values FROM %; %; %; % ', mclPCU, pclPCU, docklesspclPCU, escooterPCU;
+		mclPCU := 1.0;
+		pclPCU := 1.0;
+		docklesspclPCU := 1.0;
+		escooterPCU := 1.0;
+		RAISE NOTICE '--- MCL/PCL bay - changing PCU values TO %; %; %; % ', mclPCU, pclPCU, docklesspclPCU, escooterPCU;
+	END IF;
+	
+	-- Now calculate values ...
+	
     NEW."Demand" = COALESCE(NrCars::float, 0.0) * carPCU +
         COALESCE(NrLGVs::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs::float, 0.0) * mclPCU +
