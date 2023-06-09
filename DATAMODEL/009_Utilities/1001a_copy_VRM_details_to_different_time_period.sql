@@ -9,14 +9,17 @@ DECLARE
     relevant_restriction_in_survey RECORD;
     clone_restriction_id uuid;
     current_done BOOLEAN := false;
-	curr_survey_id INTEGER := 209;
-	new_survey_id INTEGER := 109;
-	car_park TEXT := 'Well Street Car Park';
+	curr_survey_id INTEGER := 308;
+	new_survey_id INTEGER := 703;
+	car_park TEXT := 'Charlotte Street Car Park';
+	enumn TEXT;
 BEGIN
 
 
     FOR relevant_restriction_in_survey IN
-        SELECT DISTINCT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03", RiS."DemandSurveyDateTime"
+        SELECT DISTINCT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", 
+		RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03", 
+		RiS."DemandSurveyDateTime", RiS."CaptureSource"
             FROM "demand"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r --, mhtc_operations."SurveyAreas" a
         WHERE RiS."GeometryID" = r."GeometryID"
         --AND r."SurveyAreaID" = a."Code"
@@ -27,33 +30,34 @@ BEGIN
 		--AND RiS."DemandSurveyDateTime" < '2022-06-29'::date
     LOOP
 
-        RAISE NOTICE '*****--- Processing % moving from (%)', relevant_restriction_in_survey."GeometryID", curr_survey_id, new_survey_id;
+        RAISE NOTICE '*****--- Processing % moving from (%) to (%)', relevant_restriction_in_survey."GeometryID", curr_survey_id, new_survey_id;
 
         -- check to see if the restriction already has a value
         SELECT "Done"
         INTO current_done
-        FROM "demand_WGR"."RestrictionsInSurveys"
+        FROM "demand"."RestrictionsInSurveys"
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
         AND "SurveyID" = new_survey_id;
 
         IF current_done IS false or current_done IS NULL THEN
 
-            UPDATE "demand."RestrictionsInSurveys"
+			UPDATE demand."RestrictionsInSurveys"
                 SET "DemandSurveyDateTime"=relevant_restriction_in_survey."DemandSurveyDateTime", "Enumerator"=relevant_restriction_in_survey."Enumerator", "Done"=relevant_restriction_in_survey."Done", "SuspensionReference"=relevant_restriction_in_survey."SuspensionReference",
                 "SuspensionReason"=relevant_restriction_in_survey."SuspensionReason", "SuspensionLength"=relevant_restriction_in_survey."SuspensionLength", "NrBaysSuspended"=relevant_restriction_in_survey."NrBaysSuspended", "SuspensionNotes"=relevant_restriction_in_survey."SuspensionNotes",
-                "Photos_01"=relevant_restriction_in_survey."Photos_01", "Photos_02"=relevant_restriction_in_survey."Photos_02", "Photos_03"=relevant_restriction_in_survey."Photos_03", "CaptureSource"=relevant_restriction_in_survey."CaptureSource"
+                "Photos_01"=relevant_restriction_in_survey."Photos_01", "Photos_02"=relevant_restriction_in_survey."Photos_02", "Photos_03"=relevant_restriction_in_survey."Photos_03", 
+				"CaptureSource"=relevant_restriction_in_survey."CaptureSource"
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = new_survey_id;
 
             -- Now add VRMs
 
             INSERT INTO "demand"."VRMs"(
-            "SurveyID", "SectionID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes")
-            SELECT new_survey_id, "SectionID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes"
+            "SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes")
+            SELECT new_survey_id, "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes"
                 FROM "demand"."VRMs"
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = curr_survey_id;
-
+			
             -- Now tidy up ...
 
             UPDATE "demand"."RestrictionsInSurveys"
