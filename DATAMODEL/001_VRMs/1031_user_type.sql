@@ -9,7 +9,7 @@
  ***/
 
 ALTER TABLE demand."VRMs"
-    ADD COLUMN "UserTypeID" INTEGER;
+    ADD COLUMN IF NOT EXISTS "UserTypeID" INTEGER;
 
 UPDATE demand."VRMs"
 SET "UserTypeID" = NULL;
@@ -46,7 +46,7 @@ AND "VRM" IN (
 );
 
 -- Visitor
-UPDATE demand."VRMs_Final"
+UPDATE demand."VRMs"
 SET "UserTypeID" = 3
 WHERE "UserTypeID" IS NULL;
 
@@ -364,3 +364,12 @@ FROM mhtc_operations."Supply" su LEFT JOIN "mhtc_operations"."SurveyAreas" AS "S
 WHERE "UserTypeID" IS NULL
 AND v_f."GeometryID" = su."GeometryID"
 AND "SurveyAreaName" LIKE 'Romsey East%';
+
+
+---
+-- final output
+
+SELECT "ID", "SurveyID", v."GeometryID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", v."Notes", "UserTypeID", "isLast", "isFirst", orphan
+	FROM demand."VRMs" v, mhtc_operations."Supply" s
+	WHERE v."GeometryID" = s."GeometryID"
+	AND s."RoadName" LIKE '%Car Park%'

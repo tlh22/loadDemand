@@ -102,7 +102,8 @@ BEGIN
 
             UPDATE "demand"."RestrictionsInSurveys"
             SET "DemandSurveyDateTime" = NULL, "Enumerator" = NULL, "Done" = NULL, "SuspensionReference" = NULL, "SuspensionReason" = NULL,
-            "SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL
+            "SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL,
+			"CaptureSource" = NULL
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 

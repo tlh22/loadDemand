@@ -373,3 +373,54 @@ BEGIN
 
 END;
 $do$;
+
+-- COUNTS - Moving whole survey
+
+-- for Counts (need to break into individual loops)
+DO
+$do$
+DECLARE
+    relevant_restriction_in_survey RECORD;
+    clone_restriction_id uuid;
+    current_done BOOLEAN := false;
+	incorrect_survey_id INTEGER := 309;
+	correct_survey_id INTEGER := 209;
+BEGIN
+
+	-- ** Assume that there is no data in correct survey id
+	
+	-- Move data from incorrect survey to interim survey id
+
+        RAISE NOTICE '*****--- 1. Changing survey ID for (%) to %', incorrect_survey_id, incorrect_survey_id + 1000;
+        UPDATE "demand"."RestrictionsInSurveys"
+            SET "SurveyID" = incorrect_survey_id + 1000
+        WHERE "SurveyID" = incorrect_survey_id;
+
+        UPDATE demand."Counts" AS c
+            SET "SurveyID" = incorrect_survey_id + 1000
+        WHERE "SurveyID" = incorrect_survey_id;
+
+	-- move "blank" correct survey details to incorrect
+
+        RAISE NOTICE '*****--- 2. Changing survey ID for (%) to % ', correct_survey_id, incorrect_survey_id;
+        UPDATE "demand"."RestrictionsInSurveys"
+            SET "SurveyID" = incorrect_survey_id
+        WHERE "SurveyID" = correct_survey_id;
+
+        UPDATE demand."Counts" AS c
+            SET "SurveyID" = incorrect_survey_id
+        WHERE "SurveyID" = correct_survey_id;
+
+	-- Move from interim to correct survey id
+
+        RAISE NOTICE '*****--- 3. Changing survey ID for (%) to % ', incorrect_survey_id + 1000, correct_survey_id;
+        UPDATE "demand"."RestrictionsInSurveys"
+            SET "SurveyID" = correct_survey_id
+        WHERE "SurveyID" = incorrect_survey_id + 1000;
+
+        UPDATE demand."Counts" AS c
+            SET "SurveyID" = correct_survey_id
+        WHERE "SurveyID" = incorrect_survey_id + 1000;
+
+END;
+$do$;

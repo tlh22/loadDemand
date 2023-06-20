@@ -68,7 +68,7 @@ BEGIN
 	INSERT INTO demand."Supply_for_viewing_parking_locations"(
 		"SurveyID", "GeometryID", "RestrictionLength", "RestrictionTypeID", "GeomShapeID", 
 		"AzimuthToRoadCentreLine", "BayOrientation", "NrBays", "Capacity", "Demand", geom)
-	
+
 	SELECT y."SurveyID", y."GeometryID", "RestrictionLength", y."RestrictionTypeID", y."GeomShapeID", 
 		y."AzimuthToRoadCentreLine", "BayOrientation",  
 		     CASE WHEN "NrBays" = -1 THEN 
@@ -94,6 +94,7 @@ BEGIN
 	    AND ris."GeometryID" = s."GeometryID"
 	 	AND su."SurveyID" > 0) y LEFT JOIN "demand"."ActiveSuspensions" AS a ON y."SurveyID" = a."SurveyID" AND y."GeometryID" = a."GeometryID"
 		;
+
 		
     -- Now consider the details in ActiveSuspensions
     
@@ -157,21 +158,23 @@ BEGIN
 			FROM demand."Supply_for_viewing_parking_locations"
 			WHERE gid = row2.gid;
 
-			TODO: Need to check that new_capacity is less than restriction_capacity
+			--TODO: Need to check that new_capacity is less than restriction_capacity
 			
 	    	-- Now deal with demand
 	    	
-	    	IF restriction_capacity > 0 THEN
+	    	/***
+			IF restriction_capacity > 0 THEN
 	    		new_demand = demand * (new_capacity::real/restriction_capacity::real);
 	    	ELSE
 	    		new_demand = 0;
 	    	END IF;
+			***/
 	    		    		
 	    	RAISE NOTICE '***** SurveyID: %, GeometryID: % gid: % - total: % , Capacity: % -- Demand %; new: %', 
 	    		row1."SurveyID", row1."GeometryID", row2.gid, new_capacity, restriction_capacity, demand, new_demand;
    	
 	    	UPDATE demand."Supply_for_viewing_parking_locations"
-			SET "Demand" = new_demand, "NrBays" = new_capacity
+			SET "NrBays" = new_capacity
 			WHERE gid = row2.gid;
 			
     	END LOOP;  

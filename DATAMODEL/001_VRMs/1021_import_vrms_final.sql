@@ -28,7 +28,7 @@ ALTER TABLE demand."VRMs_Final"
   OWNER TO postgres;
 
 COPY demand."VRMs_Final"("SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes", "VRM_Orig")
-FROM 'C:\Users\Public\Documents\PC2209_VRMs_Export.csv'
+FROM 'C:\Users\Public\Documents\SYS2302_Stranraer_VRMs_Export.csv'
 DELIMITER ','
 CSV HEADER;
 
