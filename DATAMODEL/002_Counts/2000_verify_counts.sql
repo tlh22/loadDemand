@@ -190,42 +190,54 @@ BEGIN
         RETURN OLD;
     END IF;
 
-    SELECT c."NrCars", c."NrLGVs", c."NrMCLs", c."NrTaxis", c."NrPCLs", c."NrEScooters", c."NrDocklessPCLs", c."NrOGVs", c."NrMiniBuses", c."NrBuses", c."NrSpaces",
-        c."Notes", c."DoubleParkingDetails",
-        c."NrCars_Suspended", c."NrLGVs_Suspended", c."NrMCLs_Suspended", c."NrTaxis_Suspended", c."NrPCLs_Suspended", c."NrEScooters_Suspended",
-        c."NrDocklessPCLs_Suspended", c."NrOGVs_Suspended", c."NrMiniBuses_Suspended", c."NrBuses_Suspended",
-        /***
-        c."NrCarsWaiting", c."NrLGVsWaiting", c."NrMCLsWaiting", c."NrTaxisWaiting", c."NrOGVsWaiting", c."NrMiniBusesWaiting", c."NrBusesWaiting",
-        ***/
-        c."NrCarsIdling", c."NrLGVsIdling", c."NrMCLsIdling",
-        c."NrTaxisIdling", c."NrOGVsIdling", c."NrMiniBusesIdling",
-        c."NrBusesIdling"
 
-        , c."NrCarsParkedIncorrectly", c."NrLGVsParkedIncorrectly", c."NrMCLsParkedIncorrectly",
-        c."NrTaxisParkedIncorrectly", c."NrOGVsParkedIncorrectly", c."NrMiniBusesParkedIncorrectly",
-        c."NrBusesParkedIncorrectly",
+	RAISE NOTICE '*****--- Getting demand details ...';
+	
+    SELECT COALESCE(c."NrCars", 0), COALESCE(c."NrLGVs", 0), COALESCE(c."NrMCLs", 0), COALESCE(c."NrTaxis", 0), 
+	    COALESCE(c."NrPCLs", 0), COALESCE(c."NrEScooters", 0), COALESCE(c."NrDocklessPCLs", 0), 
+	    COALESCE(c."NrOGVs", 0), COALESCE(c."NrMiniBuses", 0), COALESCE(c."NrBuses", 0), 
+	    COALESCE(c."NrSpaces", 0),
+	    
+        -- c."Notes", c."DoubleParkingDetails",
+        
+        COALESCE(c."NrCars_Suspended", 0), COALESCE(c."NrLGVs_Suspended", 0), COALESCE(c."NrMCLs_Suspended", 0),
+        COALESCE(c."NrTaxis_Suspended", 0), COALESCE(c."NrPCLs_Suspended", 0), COALESCE(c."NrEScooters_Suspended", 0),
+        COALESCE(c."NrDocklessPCLs_Suspended", 0), COALESCE(c."NrOGVs_Suspended", 0), 
+        COALESCE(c."NrMiniBuses_Suspended", 0), COALESCE(c."NrBuses_Suspended", 0),
 
-        c."NrCarsWithDisabledBadgeParkedInPandD",
+        COALESCE(c."NrCarsWaiting", 0), COALESCE(c."NrLGVsWaiting", 0), COALESCE(c."NrMCLsWaiting", 0), 
+        COALESCE(c."NrTaxisWaiting", 0), COALESCE(c."NrOGVsWaiting"), COALESCE(c."NrMiniBusesWaiting", 0), 
+        COALESCE(c."NrBusesWaiting", 0),
 
-        "NrBaysSuspended"
+        COALESCE(c."NrCarsIdling", 0), COALESCE(c."NrLGVsIdling", 0), COALESCE(c."NrMCLsIdling", 0),
+        COALESCE(c."NrTaxisIdling", 0), COALESCE(c."NrOGVsIdling", 0), COALESCE(c."NrMiniBusesIdling", 0),
+        COALESCE(c."NrBusesIdling", 0),
+
+        COALESCE(c."NrCarsParkedIncorrectly", 0), COALESCE(c."NrLGVsParkedIncorrectly", 0), COALESCE(c."NrMCLsParkedIncorrectly", 0),
+        COALESCE(c."NrTaxisParkedIncorrectly", 0), COALESCE(c."NrOGVsParkedIncorrectly", 0), COALESCE(c."NrMiniBusesParkedIncorrectly", 0),
+        COALESCE(c."NrBusesParkedIncorrectly", 0),
+
+        COALESCE(c."NrCarsWithDisabledBadgeParkedInPandD", 0),
+
+        COALESCE(c."NrBaysSuspended", 0)
 
     INTO
         NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces,
-        Notes, DoubleParkingDetails,
+        --Notes, DoubleParkingDetails,
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended,
         NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended,
-        /***
-        NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting,
-        ***/
-        NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling
 
-        ,NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
+        NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting,
+
+        NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling,
+
+        NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
         NrTaxisParkedIncorrectly, NrOGVsParkedIncorrectly, NrMiniBusesParkedIncorrectly,
         NrBusesParkedIncorrectly,
 
-        NrCarsWithDisabledBadgeParkedInPandD
+        NrCarsWithDisabledBadgeParkedInPandD,
 
-        ,NrBaysSuspended
+        NrBaysSuspended
 
 	FROM demand."Counts" c, demand."RestrictionsInSurveys" RiS
 	WHERE c."GeometryID" = NEW."GeometryID"
@@ -299,6 +311,8 @@ BEGIN
 
     /* What to do about suspensions */
 
+	RAISE NOTICE '*****--- Checking SYLs ...';
+	
 	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs
 		RestrictionTypeID = 217 OR RestrictionTypeID = 222 OR RestrictionTypeID = 226 OR   -- SRLs
 		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220      -- Unmarked within PPZ
@@ -336,6 +350,8 @@ BEGIN
 
 	-- Now consider dual restrictions
 
+	RAISE NOTICE '*****--- Checking dual restrictions ...';
+	
     SELECT EXISTS INTO check_dual_restrictions_exists (
     SELECT FROM
         pg_tables
@@ -400,6 +416,9 @@ BEGIN
         END IF;
     END IF;
 
+
+	RAISE NOTICE '*****--- Finalising ...';
+	
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
     IF Capacity < 0.0 THEN
         Capacity = 0.0;

@@ -33,7 +33,8 @@ CREATE INDEX "sidx_Supply_for_viewing_parking_locations_geom"
 -- populate
 
 INSERT INTO demand."Supply_for_viewing_parking_locations"(
-	"GeometryID", geom, "RestrictionLength", "RestrictionTypeID", "GeomShapeID", "AzimuthToRoadCentreLine", "BayOrientation", "NrBays", "Capacity")
+	"GeometryID", geom, "RestrictionLength", "RestrictionTypeID", "GeomShapeID", 
+	"AzimuthToRoadCentreLine", "BayOrientation", "NrBays", "Capacity")
 SELECT "GeometryID", geom, "RestrictionLength", "RestrictionTypeID",
         CASE WHEN "GeomShapeID" < 10 THEN "GeomShapeID" + 20
              WHEN "GeomShapeID" >= 10 AND "GeomShapeID" < 20 THEN 21
@@ -48,4 +49,4 @@ SELECT "GeometryID", geom, "RestrictionLength", "RestrictionTypeID",
          END AS "NrBays", "Capacity"  -- increase the NrBays value to deal with over parked areas
 
 	FROM mhtc_operations."Supply";
-
+	
