@@ -2,10 +2,10 @@
  * Capacity and Stress in RiS
  ***/
 
-ALTER TABLE demand."RestrictionsInSurveys_Final"
+ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Capacity" INTEGER;
 
-UPDATE demand."RestrictionsInSurveys_Final" RiS
+UPDATE demand."RestrictionsInSurveys" RiS
 SET "Capacity" =
      CASE WHEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0)) > 0 THEN (s."Capacity" - COALESCE(RiS."NrBaysSuspended", 0))
          ELSE 0
@@ -15,10 +15,10 @@ WHERE RiS."GeometryID" = s."GeometryID";
 
 -- Demand
 
-ALTER TABLE demand."RestrictionsInSurveys_Final"
+ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Demand" FLOAT;
 
-UPDATE demand."RestrictionsInSurveys_Final" RiS
+UPDATE demand."RestrictionsInSurveys" RiS
 SET "Demand" = v."Demand"
 FROM
 (SELECT a."SurveyID", a."GeometryID", SUM("VehicleTypes"."PCU") AS "Demand"
@@ -31,10 +31,10 @@ AND RiS."SurveyID" = v."SurveyID";
 
 -- Stress
 
-ALTER TABLE demand."RestrictionsInSurveys_Final"
+ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN "Stress" FLOAT;
 
-UPDATE demand."RestrictionsInSurveys_Final" RiS
+UPDATE demand."RestrictionsInSurveys" RiS
 SET "Stress" =
     CASE
         WHEN "Capacity" = 0 THEN

@@ -9,7 +9,7 @@
  ***/
 
 ALTER TABLE demand."VRMs"
-    ADD COLUMN "UserTypeID" INTEGER;
+    ADD COLUMN IF NOT EXISTS "UserTypeID" INTEGER;
 
 UPDATE demand."VRMs"
 SET "UserTypeID" = NULL;
@@ -46,7 +46,7 @@ AND "VRM" IN (
 );
 
 -- Visitor
-UPDATE demand."VRMs_Final"
+UPDATE demand."VRMs"
 SET "UserTypeID" = 3
 WHERE "UserTypeID" IS NULL;
 

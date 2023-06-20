@@ -1,4 +1,4 @@
--- Find obvious errors
+	-- Find obvious errors
 
 SELECT "Enumerator", "SurveyID", "GeometryID", "SupplyCapacity", "CapacityAtTimeOfSurvey", "Demand"
 FROM demand."RestrictionsInSurveys"

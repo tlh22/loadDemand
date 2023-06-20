@@ -10,8 +10,8 @@ DECLARE
     clone_restriction_id uuid;
     current_done BOOLEAN := false;
 	curr_survey_id INTEGER := 1001;
-	curr_GeometryID VARCHAR := 'S_008571';
-	new_GeometryID VARCHAR := 'S_008302';
+	curr_GeometryID VARCHAR := 'S_001099';
+	new_GeometryID VARCHAR := 'S_001100';
 BEGIN
 
 
@@ -20,11 +20,11 @@ BEGIN
             FROM "demand"."RestrictionsInSurveys" RiS
         WHERE RiS."GeometryID" = curr_GeometryID
         AND RiS."Done" IS true
-        AND RiS."SurveyID" = curr_survey_id
+        --AND RiS."SurveyID" = curr_survey_id
 
     LOOP
 
-        RAISE NOTICE '*****--- Processing % moving to (%) for [%]', curr_GeometryID, new_GeometryID, curr_survey_id;
+        RAISE NOTICE '*****--- Processing % moving to (%) for [%]', curr_GeometryID, new_GeometryID, RiS."SurveyID";
 
 
             UPDATE "demand"."RestrictionsInSurveys"

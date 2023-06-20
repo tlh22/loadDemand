@@ -47,7 +47,7 @@ BEGIN
     SELECT COALESCE(SUM("PCU"), 0.0)
     INTO demand
     FROM demand."VRMs" a, "demand_lookups"."VehicleTypes" b
-    WHERE a."VehicleTypeID" = b."Code"
+    WHERE COALESCE(a."VehicleTypeID", 0) = b."Code"
     AND a."GeometryID" = NEW."GeometryID"
     AND a."SurveyID" = NEW."SurveyID";
 
