@@ -7,14 +7,14 @@ TABLESPACE pg_default
 AS
 
     select row_number() over (partition by true::boolean) as id,
-    s."GeometryID", s.geom, s."RestrictionTypeID", s."GeomShapeID", s."AzimuthToRoadCentreLine", s."BayOrientation",
-    case when f."Demand" > s."NrBays" then f."Demand"
-         else s."NrBays"
+    sv."GeometryID", sv.geom, sv."RestrictionTypeID", sv."GeomShapeID", sv."AzimuthToRoadCentreLine", sv."BayOrientation",
+    case when f."Demand" > sv."NrBays" then f."Demand"
+         else sv."NrBays"
     end as "NrBays",
     f."Capacity",
     f."SurveyID", f."Demand" as "Demand"
 
-    from demand."Supply_for_viewing_parking_locations" s,
+    from demand."Supply_for_viewing_parking_locations" sv,
 
         (select d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description",
         d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
@@ -28,12 +28,13 @@ AS
          left join "toms_lookups"."BayLineTypes" as "BayLineTypes" on a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") as s
          where ris."SurveyID" = su."SurveyID"
          and ris."GeometryID" = s."GeometryID"
-         AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
-         ) as d
+         AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169, 130, 165, 166)  -- MCL, PCL, Scooters, etc (and private areas)
+ 		 AND s."RoadName" != 'Spurgeon''s College Car Park'
+			 ) as d
 
         order by d."RestrictionTypeID", d."GeometryID", d."SurveyID") as f
 
-	WHERE f."GeometryID" = s."GeometryID"
+	WHERE f."GeometryID" = sv."GeometryID"
 
 with DATA;
 
@@ -81,4 +82,3 @@ create UNIQUE INDEX "idx_Demand_view_to_show_parking_locations_id"
     TABLESPACE pg_default;
 
 REFRESH MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations";
-
