@@ -13,12 +13,20 @@ d."DemandSurveyDateTime", d."Enumerator", d."Done", d."Notes",
 d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
 d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", d."Stress", 
 COALESCE("SurveyAreaName", '') AS "SurveyAreaName", 
-d."CPZ"
+d."CPZ" 
+--,d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", d."PerceivedStress",
+--    d."NrCars", d."NrLGVs", d."NrMCLs", d."NrTaxis", d."NrPCLs", d."NrEScooters", d."NrDocklessPCLs", 
+--    d."NrOGVs", d."NrMiniBuses", d."NrBuses", d."NrSpaces", d."Notes"
+
 
 FROM
 (SELECT ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", s."RoadName", s."CPZ",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
-ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand", ris."Stress", "SurveyAreaName", c."Notes"
+ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand", ris."Stress", "SurveyAreaName", c."Notes",
+--, ris."PerceivedAvailableSpaces", ris."PerceivedCapacityAtTimeOfSurvey", ris."PerceivedStress",
+--     ris."NrCars", ris."NrLGVs", ris."NrMCLs", ris."NrTaxis", ris."NrPCLs", ris."NrEScooters", ris."NrDocklessPCLs", 
+--     ris."NrOGVs", ris."NrMiniBuses", ris."NrBuses", ris."NrSpaces", ris."Notes"
+
 
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, demand."Counts" c,
 (( --(
