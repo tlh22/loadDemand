@@ -62,7 +62,8 @@ BEGIN
     -- Consider controls
 	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs
 		RestrictionTypeID = 217 OR RestrictionTypeID = 222 OR RestrictionTypeID = 226 OR   -- SRLs
-		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220      -- Unmarked within PPZ
+		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220 OR   -- Unmarked within PPZ
+		RestrictionTypeID = 203 OR RestrictionTypeID = 206 OR RestrictionTypeID = 207 OR RestrictionTypeID = 208     -- SKC
 		) THEN
 
         -- Need to check whether or not effected by control hours

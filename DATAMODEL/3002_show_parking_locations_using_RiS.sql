@@ -1,5 +1,5 @@
 -- create view with to show stress
-/***
+
 drop materialized view IF EXISTS demand."Demand_view_to_show_parking_locations" CASCADE;
 
 create MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations"
@@ -47,11 +47,11 @@ create UNIQUE INDEX "idx_Demand_view_to_show_parking_locations_id"
     TABLESPACE pg_default;
 
 REFRESH MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations";
-***/
+
 
 --
 -- Active suspensions
-
+/***
 drop materialized view IF EXISTS demand."Demand_view_to_show_parking_locations" CASCADE;
 
 create MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations"
@@ -82,3 +82,4 @@ create UNIQUE INDEX "idx_Demand_view_to_show_parking_locations_id"
     TABLESPACE pg_default;
 
 REFRESH MATERIALIZED VIEW demand."Demand_view_to_show_parking_locations";
+***/
