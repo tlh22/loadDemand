@@ -39,13 +39,21 @@ BEGIN
             "Photos_01"=NULL, "Photos_02"=NULL, "Photos_03"=NULL, "CaptureSource" = NULL
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = curr_survey_id;
-
+		
+			IF NOT FOUND THEN
+				RAISE EXCEPTION 'RiS records not found';
+			END IF;
+			
             -- Now remove VRMs
 
             DELETE FROM "demand"."VRMs"
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = curr_survey_id;
 	
+			IF NOT FOUND THEN
+				RAISE EXCEPTION 'VRM records not found';
+			END IF;
+
     END LOOP;
 
 END;

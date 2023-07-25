@@ -366,6 +366,46 @@ AND v_f."GeometryID" = su."GeometryID"
 AND "SurveyAreaName" LIKE 'Romsey East%';
 
 
+--
+
+UPDATE demand."VRMs" v
+SET "UserTypeID" = 2
+FROM (
+SELECT "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", first, last, last-first+1 As span
+FROM (
+SELECT
+        first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID" As first, MIN(last."SurveyID") OVER (PARTITION BY last."SurveyID") As last
+FROM
+    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
+    FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
+    WHERE v."isFirst" = true
+    AND v."GeometryID" = su."GeometryID"
+    AND v."SurveyID" = s."SurveyID") AS first,
+    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
+    FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
+    WHERE v."isLast" = true
+    AND v."GeometryID" = su."GeometryID"
+    AND v."SurveyID" = s."SurveyID") AS last
+WHERE first."VRM" = last."VRM"
+AND first."RoadName" = last."RoadName"
+AND first."SurveyDay" = last."SurveyDay"
+AND first."SurveyID" < last."SurveyID"
+--AND first."VRM" IN ('PX16-XCD', 'CA64-RDS')
+) As y
+UNION
+SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."SurveyDay", v."SurveyID" As first, v."SurveyID" AS last, 1 AS span
+    FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
+    WHERE v."orphan" = true
+    AND v."GeometryID" = su."GeometryID"
+    AND v."SurveyID" = s."SurveyID"
+	) p
+	
+WHERE p."VRM" = v."VRM"
+AND v."UserTypeID" IS NULL
+AND p.span > 2
+
+
+
 ---
 -- final output
 

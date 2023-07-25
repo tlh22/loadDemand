@@ -120,7 +120,7 @@ ORDER BY s."GeometryID";
 
 /***
 For RBKC
-***/
+
 
 SELECT
 a."GeometryID", a."RestrictionTypeID",
@@ -178,3 +178,4 @@ FROM
 	 --AND "RestrictionTypeID" < 200
 	 --AND
 ORDER BY "RestrictionTypeID", "GeometryID"
+***/

@@ -16,12 +16,13 @@ AND v1."GeometryID" = v2."GeometryID"
 AND v1."GeometryID" = su."GeometryID"
 AND substring(v1."VRM", '.+-(.+)') = substring(v2."VRM", '.+-(.+)')
 AND substring(v1."VRM", '(.+)-.+') != substring(v2."VRM", '(.+)-.+')
-AND (su."SurveyAreaName" LIKE 'L%' OR
-     su."SurveyAreaName" LIKE 'E-0%' OR
-     su."SurveyAreaName" LIKE 'P%' OR
-     su."SurveyAreaName" LIKE 'T%' OR
-     su."SurveyAreaName" LIKE 'V%'
-     )
+--AND (su."SurveyAreaName" LIKE 'L%' OR
+--     su."SurveyAreaName" LIKE 'E-0%' OR
+--     su."SurveyAreaName" LIKE 'P%' OR
+--     su."SurveyAreaName" LIKE 'T%' OR
+--     su."SurveyAreaName" LIKE 'V%'
+--     )
+AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park' )
  /*
   * Differences in rear part
   */
@@ -36,19 +37,20 @@ AND v1."GeometryID" = v2."GeometryID"
 AND v1."GeometryID" = su."GeometryID"
 AND substring(v1."VRM", '.+-(.+)') != substring(v2."VRM", '.+-(.+)')
 AND substring(v1."VRM", '(.+)-.+') = substring(v2."VRM", '(.+)-.+')
-AND (su."SurveyAreaName" LIKE 'L%' OR
-     su."SurveyAreaName" LIKE 'E-0%' OR
-     su."SurveyAreaName" LIKE 'P%' OR
-     su."SurveyAreaName" LIKE 'T%' OR
-     su."SurveyAreaName" LIKE 'V%'
-     )
+--AND (su."SurveyAreaName" LIKE 'L%' OR
+--     su."SurveyAreaName" LIKE 'E-0%' OR
+--     su."SurveyAreaName" LIKE 'P%' OR
+--     su."SurveyAreaName" LIKE 'T%' OR
+--     su."SurveyAreaName" LIKE 'V%'
+--     )
+AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park' )
 	 
 ORDER BY "First"
 
 
 /**/
 
-
+/***
 UPDATE demand."VRMs" AS v2
 SET "VRM" = v1."VRM"
 FROM demand."VRMs" v1, (SELECT s."GeometryID", sa."SurveyAreaName"
@@ -70,11 +72,12 @@ AND v1."VRM" NOT IN (
     AND levenshtein(v11."VRM"::text, v12."VRM"::text, 10, 10, 1) <= 2
 )
 AND v2."GeometryID" = p."GeometryID"
-AND (p."SurveyAreaName" LIKE 'L%' OR
-     p."SurveyAreaName" LIKE 'E-0%' OR
-     p."SurveyAreaName" LIKE 'P%' OR
-     p."SurveyAreaName" LIKE 'T%' OR
-     p."SurveyAreaName" LIKE 'V%'
-     )
+--AND (su."SurveyAreaName" LIKE 'L%' OR
+--     su."SurveyAreaName" LIKE 'E-0%' OR
+--     su."SurveyAreaName" LIKE 'P%' OR
+--     su."SurveyAreaName" LIKE 'T%' OR
+--     su."SurveyAreaName" LIKE 'V%'
+--     )
 ;
 ;
+***/

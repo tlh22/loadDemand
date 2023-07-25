@@ -1,5 +1,5 @@
 --
-
+/***
 SELECT v."ID", v."SurveyID", s."SurveyDay", s."BeatStartTime" || '-' || s."BeatEndTime" AS "SurveyTime",
         v."GeometryID", v."RestrictionTypeID", v."RestrictionType Description",
         v."CPZ",
@@ -53,14 +53,14 @@ AND s."SurveyID" > 0
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 --AND "CPZ" IN ('P', 'F', 'Y')
-AND (v."SurveyAreaName" LIKE 'L%' OR
-     v."SurveyAreaName" LIKE 'E-0%' OR
-     v."SurveyAreaName" LIKE 'P%' OR
-     v."SurveyAreaName" LIKE 'T%' OR
-     v."SurveyAreaName" LIKE 'V%'
-     )
+--AND (v."SurveyAreaName" LIKE 'L%' OR
+--     v."SurveyAreaName" LIKE 'E-0%' OR
+--     v."SurveyAreaName" LIKE 'P%' OR
+--     v."SurveyAreaName" LIKE 'T%' OR
+--     v."SurveyAreaName" LIKE 'V%'
+--     )
 ORDER BY "GeometryID", "VRM", "SurveyID"
-
+***/
 
 --  Join with Supply to ensure only current supply used ...
 
@@ -141,10 +141,10 @@ AND s."SurveyID" > 0
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 --AND "CPZ" IN ('P', 'F', 'Y')
-AND (v."SurveyAreaName" LIKE 'L%' OR
-     v."SurveyAreaName" LIKE 'E-0%' OR
-     v."SurveyAreaName" LIKE 'P%' OR
-     v."SurveyAreaName" LIKE 'T%' OR
-     v."SurveyAreaName" LIKE 'V%'
-     )
+--AND (v."SurveyAreaName" LIKE 'L%' OR
+--     v."SurveyAreaName" LIKE 'E-0%' OR
+--     v."SurveyAreaName" LIKE 'P%' OR
+--     v."SurveyAreaName" LIKE 'T%' OR
+--     v."SurveyAreaName" LIKE 'V%'
+--     )
 ORDER BY "GeometryID", "VRM", "SurveyID"

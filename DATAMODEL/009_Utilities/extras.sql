@@ -16,9 +16,13 @@ ALTER TABLE "demand"."MissingVRMs"
 -- LOAD!!!
 
 COPY demand."MissingVRMs"("VRM", "RoadName", "SurveyID")
-FROM 'C:\Users\Public\Documents\SYS2302_Extra1.csv'
+FROM 'C:\Users\Public\Documents\Dumfries_Extras3.csv'
 DELIMITER ','
 CSV HEADER;
+
+-- Set up unique index on VRMs
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_vrm ON demand."VRMs" ("SurveyID", "GeometryID", "PositionID", "VRM");
 
 -- for VRMs
 DO
@@ -57,6 +61,8 @@ BEGIN
 		
 		IF NOT FOUND THEN
 
+			RAISE NOTICE '*****--- % details NOT FOUND on survey id (%). Checking on % ... ', missing_VRM_in_survey."VRM", missing_VRM_in_survey."SurveyID"+1, missing_VRM_in_survey."SurveyID"-1;
+			
 			SELECT "SurveyID", "GeometryID", "PositionID", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes"
 			INTO surveyid, geometryid, positionid, internationalcodeid, vehicletypeid, permittypeid,parkingactivitytypeid, parkingmannertypeid, notes
 			FROM demand."VRMs"
@@ -64,23 +70,40 @@ BEGIN
 			AND "SurveyID" = missing_VRM_in_survey."SurveyID" - 1;
 		
 			IF NOT FOUND THEN
-				RAISE NOTICE '*****--- % details NOT FOUND on survey id (%) ', missing_VRM_in_survey."VRM", missing_VRM_in_survey."SurveyID";
+			
+				RAISE NOTICE '*****--- % details NOT FOUND on survey id (%). Checking elsewhere ... ', missing_VRM_in_survey."VRM", missing_VRM_in_survey."SurveyID"-1;
 
 				SELECT "SurveyID", "GeometryID", "PositionID", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes"
 				INTO surveyid, geometryid, positionid, internationalcodeid, vehicletypeid, permittypeid,parkingactivitytypeid, parkingmannertypeid, notes
 				FROM demand."VRMs"
-				WHERE "VRM" = missing_VRM_in_survey."VRM"
-				;
+				WHERE "VRM" = missing_VRM_in_survey."VRM";
 			
+				IF NOT FOUND THEN
+					RAISE NOTICE '*****--- % details NOT FOUND !!! ', missing_VRM_in_survey."VRM";
+					CONTINUE;
+				END IF;
+				
 			END IF;
+			
         END IF;
 
-		INSERT INTO demand."VRMs"(
-			"SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes")
-			VALUES (missing_VRM_in_survey."SurveyID", geometryid, positionid, missing_VRM_in_survey."VRM", internationalcodeid, vehicletypeid, permittypeid,parkingactivitytypeid, parkingmannertypeid, notes);
-
+		BEGIN
+		
+			INSERT INTO demand."VRMs"(
+				"SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes")
+				VALUES (missing_VRM_in_survey."SurveyID", geometryid, positionid, missing_VRM_in_survey."VRM", internationalcodeid, vehicletypeid, permittypeid,parkingactivitytypeid, parkingmannertypeid, notes);
+		
+		EXCEPTION WHEN OTHERS THEN
+			RAISE NOTICE 'Error occurred: %', sqlstate;
+		END;
+		
     END LOOP;
 
 END;
 $do$;
 
+-- Update vehicle type / pcu
+
+UPDATE demand."VRMs"
+SET "VehicleTypeID" = 1
+WHERE "VehicleTypeID" IS NULL;

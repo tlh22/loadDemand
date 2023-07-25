@@ -39,7 +39,7 @@ ORDER BY d."SurveyID", d."GeometryID";
 
 -- check total count for each pass
 
-
+/***
 SELECT d."SurveyID", d."BeatTitle", SUM(d."NrBaysSuspended") AS "NrBaysSuspended", SUM(d."Capacity") AS "Capacity", SUM(v."Demand") As "Demand"
 FROM
 (SELECT ris."SurveyID", su."BeatTitle", s."GeometryID", ris."NrBaysSuspended", s."Capacity"
@@ -63,5 +63,5 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, mhtc_operations."S
 WHERE d."SurveyID" > 0
 GROUP BY d."SurveyID", d."BeatTitle"
 ORDER BY d."SurveyID";
-
+***/
 

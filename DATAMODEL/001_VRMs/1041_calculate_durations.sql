@@ -59,8 +59,8 @@ SET "isLast" = (lead <> t."SurveyID" + 1 or lead is null),
 FROM
     (
         SELECT v."ID", v."VRM", v."SurveyID", su."RoadName",
-               lead(v."SurveyID", 1) over( partition by "VRM", "SurveyDay" order by v."SurveyID", su."RoadName", v."VRM"),
-               lag(v."SurveyID", 1) over(partition by "VRM", "SurveyDay" order by v."SurveyID", su."RoadName", v."VRM")
+               lead(v."SurveyID", 1) over( partition by "VRM", "RoadName", "SurveyDay" order by v."SurveyID", su."RoadName", v."VRM"),
+               lag(v."SurveyID", 1) over(partition by "VRM", "RoadName", "SurveyDay" order by v."SurveyID", su."RoadName", v."VRM")
         FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
         WHERE s."SurveyID" = v."SurveyID"
 		AND v."GeometryID" = su."GeometryID"

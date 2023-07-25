@@ -6,7 +6,7 @@ fields added to VRMs
 Final query amended ...
 
 ***/
-
+/***
 -- Basic approach
 SELECT
         "VRM",
@@ -64,11 +64,11 @@ SET "isLast" = true
 WHERE "SurveyID" IN (108, 208, 308, 408)
 AND "isLast" = false
 -- ??    "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
-
+***/
 -- ?? do we need to open at start of day??
 
 -- Select ...
-
+/***
 select
     "VRM", "SurveyID", "GeometryID",
     first,
@@ -156,38 +156,48 @@ demand."Surveys" su LEFT JOIN
 
 ) y ON su."SurveyID" = y."SurveyID"
 ;
-
+***/
 
 --- ******* OK now ...
 
-SELECT "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", first, last, last-first+1 As span
+SELECT DISTINCT ON ("VRM", "GeometryID", "SurveyDay", first) "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", first, last, last-first+1 As span --, "UserTypeID"
 FROM (
 SELECT
-        first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID" As first, MIN(last."SurveyID") OVER (PARTITION BY last."SurveyID") As last
+        first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID" As first, MIN(last."SurveyID") OVER (PARTITION BY last."SurveyID") As last--, first."UserTypeID"
 FROM
-    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
+    (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay", v."UserTypeID"
     FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
     WHERE v."isFirst" = true
+		AND v."orphan" IS NOT true
     AND v."GeometryID" = su."GeometryID"
-    AND v."SurveyID" = s."SurveyID") AS first,
+    AND v."SurveyID" = s."SurveyID"
+	AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park')
+	) AS first,
     (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
     FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
     WHERE v."isLast" = true
+		AND v."orphan" IS NOT true
     AND v."GeometryID" = su."GeometryID"
-    AND v."SurveyID" = s."SurveyID") AS last
+    AND v."SurveyID" = s."SurveyID"
+	AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park')
+	) AS last
 WHERE first."VRM" = last."VRM"
 AND first."RoadName" = last."RoadName"
-AND first."SurveyDay" = last."SurveyDay"
+--AND first."SurveyDay" = last."SurveyDay"
 AND first."SurveyID" < last."SurveyID"
 --AND first."VRM" IN ('PX16-XCD', 'CA64-RDS')
 ) As y
+GROUP BY first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID"
+
 UNION
-SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."SurveyDay", v."SurveyID" As first, v."SurveyID" AS last, 1 AS span
+SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."SurveyDay", v."SurveyID" As first, v."SurveyID" AS last, 1 AS span--, v."UserTypeID"
     FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
     WHERE v."orphan" = true
     AND v."GeometryID" = su."GeometryID"
-    AND v."SurveyID" = s."SurveyID";
+    AND v."SurveyID" = s."SurveyID"
+	AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park');
 
+ORDER BY "VRM", "GeometryID", "SurveyDay", first
 
 -- Check
 SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", su."RestrictionTypeID", v."VRM", "isFirst", "isLast", "orphan"
@@ -351,4 +361,14 @@ WHERE "GeometryID" IN (
 SELECT "GeometryID"
 FROM mhtc_operations."Supply"
 WHERE "RoadName" NOT LIKE '%Car Park%')
-ORDER BY "SurveyID", "VRM"
+ORDER BY "SurveyID", "VRM";
+
+-- Output for data model
+
+SELECT v."ID", v."SurveyID", v."GeometryID", v."VRM", v."InternationalCodeID", v."VehicleTypeID", v."PermitTypeID", v."ParkingActivityTypeID", 
+       v."ParkingMannerTypeID", v."Notes", v."UserTypeID", "isLast", "isFirst", orphan, su."RoadName"
+FROM mhtc_operations."Supply" su, ((demand."VRMs" AS v
+      LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON v."VehicleTypeID" is not distinct from "VehicleTypes"."Code")
+      LEFT JOIN "demand_lookups"."UserTypes" AS "UserTypes" ON v."UserTypeID" is not distinct from "UserTypes"."Code")
+WHERE v."GeometryID" = su."GeometryID"
+ORDER BY "SurveyID", "VRM";
