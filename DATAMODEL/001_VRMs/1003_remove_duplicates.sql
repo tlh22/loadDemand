@@ -21,7 +21,7 @@ AND v1."GeometryID" = s."GeometryID"
 --AND s."CPZ" IN ('P', 'F', 'Y')
 ;
 
-
+/***
 DELETE FROM demand."VRMs" AS v1
  USING demand."VRMs" v2,(SELECT s."GeometryID", sa."SurveyAreaName"
  FROM mhtc_operations."Supply" s, mhtc_operations."SurveyAreas" sa
@@ -38,6 +38,7 @@ AND (p."SurveyAreaName" LIKE 'L%' OR
      p."SurveyAreaName" LIKE 'V%'
      )
 ;
+***/
 
 -- Remove blanks
 
@@ -52,7 +53,7 @@ AND v."GeometryID" = s."GeometryID"
 --AND s."CPZ" IN ('P', 'F', 'Y')
 ;
 
-
+/***
 DELETE FROM demand."VRMs" AS v
 USING 
 (SELECT s."GeometryID", sa."SurveyAreaName"
@@ -71,3 +72,4 @@ AND (p."SurveyAreaName" LIKE 'L%' OR
      p."SurveyAreaName" LIKE 'V%'
      )
 ;
+***/
