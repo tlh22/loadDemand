@@ -157,7 +157,7 @@ BEGIN
 
         IF current_done IS true THEN
 
-            RAISE NOTICE '*****--- Clearing % from (%) ', relevant_restriction_in_survey."GeometryID", curr_survey_id;
+            RAISE NOTICE '*****--- Clearing % from (%) ', relevant_restriction_in_survey."GeometryID", relevant_restriction_in_survey."SurveyID";
 
             UPDATE "demand"."RestrictionsInSurveys"
             SET "DemandSurveyDateTime" = NULL, "Enumerator" = NULL, "Done" = NULL, "SuspensionReference" = NULL, "SuspensionReason" = NULL,

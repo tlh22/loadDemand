@@ -102,12 +102,37 @@ DECLARE
 	controlled BOOLEAN;
 	check_exists BOOLEAN;
 	check_dual_restrictions_exists BOOLEAN;
+	
+	count_survey BOOLEAN;
 
     primary_geometry_id VARCHAR (12);
     secondary_geometry_id VARCHAR (12);
     time_period_id INTEGER;
 
 BEGIN
+
+	-- Check that we are dealing with Counts
+	SELECT EXISTS INTO check_exists (
+	SELECT FROM
+		pg_tables
+	WHERE
+		schemaname = 'demand' AND
+		tablename  = 'Surveys_Counts'
+	) ;
+
+	IF check_exists THEN
+
+		SELECT EXISTS
+		(SELECT 1
+		FROM demand."Surveys_Counts" sv
+		WHERE sv."SurveyID" = NEW."SurveyID")
+		INTO count_survey;
+		
+		IF count_survey IS FALSE OR count_survey IS NULL THEN
+			RETURN NEW;
+		END IF;
+
+	END IF;
 
     RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
     /***

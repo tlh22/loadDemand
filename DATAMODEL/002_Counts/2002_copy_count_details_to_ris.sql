@@ -1,139 +1,139 @@
 -- set up fields in RiS
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrCars" integer;
+    ADD COLUMN IF NOT EXISTS "NrCars" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrLGVs" integer;
+    ADD COLUMN IF NOT EXISTS "NrLGVs" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMCLs" integer;
+    ADD COLUMN IF NOT EXISTS "NrMCLs" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrTaxis" integer;
+    ADD COLUMN IF NOT EXISTS "NrTaxis" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrPCLs" integer;
+    ADD COLUMN IF NOT EXISTS "NrPCLs" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrEScooters" integer;
+    ADD COLUMN IF NOT EXISTS "NrEScooters" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrDocklessPCLs" integer;
+    ADD COLUMN IF NOT EXISTS "NrDocklessPCLs" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrOGVs" integer;
+    ADD COLUMN IF NOT EXISTS "NrOGVs" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMiniBuses" integer;
+    ADD COLUMN IF NOT EXISTS "NrMiniBuses" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrBuses" integer;
+    ADD COLUMN IF NOT EXISTS "NrBuses" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrSpaces" integer;
+    ADD COLUMN IF NOT EXISTS "NrSpaces" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "Notes" character varying(10000);
+    ADD COLUMN IF NOT EXISTS "Notes" character varying(10000);
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "DoubleParkingDetails" character varying;
+    ADD COLUMN IF NOT EXISTS "DoubleParkingDetails" character varying;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrCars_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrCars_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrLGVs_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrLGVs_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMCLs_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrMCLs_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrTaxis_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrTaxis_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrPCLs_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrPCLs_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrEScooters_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrEScooters_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrDocklessPCLs_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrDocklessPCLs_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrOGVs_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrOGVs_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMiniBuses_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrMiniBuses_Suspended" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrBuses_Suspended" integer;
+    ADD COLUMN IF NOT EXISTS "NrBuses_Suspended" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrCarsIdling" integer;
+    ADD COLUMN IF NOT EXISTS "NrCarsIdling" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrCarsParkedIncorrectly" integer;
+    ADD COLUMN IF NOT EXISTS "NrCarsParkedIncorrectly" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrLGVsIdling" integer;
+    ADD COLUMN IF NOT EXISTS "NrLGVsIdling" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrLGVsParkedIncorrectly" integer;
+    ADD COLUMN IF NOT EXISTS "NrLGVsParkedIncorrectly" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMCLsIdling" integer;
+    ADD COLUMN IF NOT EXISTS "NrMCLsIdling" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMCLsParkedIncorrectly" integer;
+    ADD COLUMN IF NOT EXISTS "NrMCLsParkedIncorrectly" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrTaxisIdling" integer;
+    ADD COLUMN IF NOT EXISTS "NrTaxisIdling" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrTaxisParkedIncorrectly" integer;
+    ADD COLUMN IF NOT EXISTS "NrTaxisParkedIncorrectly" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrOGVsIdling" integer;
+    ADD COLUMN IF NOT EXISTS "NrOGVsIdling" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrOGVsParkedIncorrectly" integer;
+    ADD COLUMN IF NOT EXISTS "NrOGVsParkedIncorrectly" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMiniBusesIdling" integer;
+    ADD COLUMN IF NOT EXISTS "NrMiniBusesIdling" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrMiniBusesParkedIncorrectly" integer;
+    ADD COLUMN IF NOT EXISTS "NrMiniBusesParkedIncorrectly" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrBusesIdling" integer;
+    ADD COLUMN IF NOT EXISTS "NrBusesIdling" integer;
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrBusesParkedIncorrectly" integer;
+    ADD COLUMN IF NOT EXISTS "NrBusesParkedIncorrectly" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "NrCarsWithDisabledBadgeParkedInPandD" integer;
+    ADD COLUMN IF NOT EXISTS "NrCarsWithDisabledBadgeParkedInPandD" integer;
 
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "MCL_Notes" character varying(10000);
+    ADD COLUMN IF NOT EXISTS "MCL_Notes" character varying(10000);
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "Supply_Notes" character varying(10000);
+    ADD COLUMN IF NOT EXISTS "Supply_Notes" character varying(10000);
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
-    ADD COLUMN "Parking_Notes" character varying(10000);
+    ADD COLUMN IF NOT EXISTS "Parking_Notes" character varying(10000);
 
 -- Add relevant calculated fields
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "PerceivedAvailableSpaces" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "PerceivedCapacityAtTimeOfSurvey" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "PerceivedStress" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Stress" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand_Suspended" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand_Waiting" double precision;
 
-ALTER TABLE demand."RestrictionsInSurveys"
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand_Idling" double precision;
 
 -- And now for Counts
     
 ALTER TABLE IF EXISTS demand."Counts"
-    ADD COLUMN "MCL_Notes" character varying(10000);
+    ADD COLUMN IF NOT EXISTS "MCL_Notes" character varying(10000);
 ALTER TABLE IF EXISTS demand."Counts"
-    ADD COLUMN "Supply_Notes" character varying(10000);
+    ADD COLUMN IF NOT EXISTS "Supply_Notes" character varying(10000);
 ALTER TABLE IF EXISTS demand."Counts"
-    ADD COLUMN "Parking_Notes" character varying(10000);
+    ADD COLUMN IF NOT EXISTS "Parking_Notes" character varying(10000);
     
 -- Now copy
 
