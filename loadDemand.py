@@ -345,7 +345,7 @@ class loadDemand:
             #localTransactionGroup.rollback()
 
     def processVRMs(self, dbConn, vrmsLayer, currSurveyID, currGeometryID):
-        TOMsMessageLog.logMessage("In processVRMs for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Info)
+        TOMsMessageLog.logMessage("In processVRMs for {}, {} ...".format(currSurveyID, currGeometryID), level=Qgis.Warning)
 
         # select all VRMs for this survey/GeometryID and add to layer
 
@@ -359,7 +359,7 @@ class loadDemand:
         #SurveyID, BeatTitle = range(2)  # ?? see https://realpython.com/python-pyqt-database/#executing-dynamic-queries-string-formatting
 
         while query.next():
-            TOMsMessageLog.logMessage("Considering VRMs: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Info)
+            TOMsMessageLog.logMessage("Considering VRMs: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
 
             thisRecord = query.record()
             fields = vrmsLayer.dataProvider().fields()
@@ -374,8 +374,8 @@ class loadDemand:
 
                         idxVRMsField = vrmsLayer.fields().indexFromName(thisRecord.fieldName(fieldIdx))
                         vrmsFieldType = vrmsLayer.fields().at(idxVRMsField).typeName()
-                        #TOMsMessageLog.logMessage("In processVRMs: Adding field {} of type {}: {}".format(
-                        #    thisRecord.fieldName(fieldIdx), vrmsFieldType, fieldValue), level=Qgis.Warning)
+                        TOMsMessageLog.logMessage("In processVRMs: Adding field {} of type {}: {}".format(
+                            thisRecord.fieldName(fieldIdx), vrmsFieldType, fieldValue), level=Qgis.Warning)
                         newRow[idxVRMsField] = self.convertType(vrmsFieldType, fieldValue)
 
                     except IndexError:
@@ -393,8 +393,13 @@ class loadDemand:
                                                        "Click Cancel to exit.", QMessageBox.Cancel)
                         return False
 
-            vrmsLayer.addFeature(newRow)
-
+            try:
+                vrmsLayer.addFeature(newRow)
+            except Exception as e:
+                TOMsMessageLog.logMessage("In processVRMs. Error occurred updating field {} in {}".format(thisRecord.fieldName(fieldIdx), str(currGeometryID)), level=Qgis.Warning)
+                QMessageBox.critical(None, "processVRMs", "Unexcepted error occurred {}".format(e), "Click Cancel to exit.", QMessageBox.Cancel)
+                return False
+                
         return True
 
     def processCounts(self, dbConn, countsLayer, currSurveyID, currGeometryID):

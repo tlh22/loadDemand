@@ -20,7 +20,7 @@ BEGIN
     FOR relevant_restriction_in_survey IN
 
         SELECT DISTINCT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03", RiS."CaptureSource"
-            FROM "demand"."RestrictionsInSurveys" RiS --, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
+            FROM "demand"."RestrictionsInSurveys2" RiS --, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
         WHERE RiS."Done" IS true
 		--AND RiS."GeometryID" = r."GeometryID"
         --AND r."SurveyAreaID" = a."Code"
@@ -53,6 +53,10 @@ BEGIN
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = new_survey_id;
 
+			IF NOT FOUND THEN
+				RAISE EXCEPTION 'RiS records not found';
+			END IF;
+			
             -- Now add VRMs
 
             INSERT INTO "demand"."VRMs"(
