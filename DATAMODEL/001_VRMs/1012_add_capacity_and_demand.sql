@@ -30,9 +30,40 @@ DECLARE
 	RestrictionTypeID INTEGER;
 
 	controlled BOOLEAN;
+	vrm_survey BOOLEAN;
 	check_exists BOOLEAN;
+	
+	check_dual_restrictions_exists BOOLEAN;
+
+    primary_geometry_id VARCHAR (12);
+    secondary_geometry_id VARCHAR (12);
+    time_period_id INTEGER;
 
 BEGIN
+
+	-- Check that we are dealing with VRMs
+	SELECT EXISTS INTO check_exists (
+	SELECT FROM
+		pg_tables
+	WHERE
+		schemaname = 'demand' AND
+		tablename  = 'Surveys_VRMs'
+	) ;
+
+	IF check_exists THEN
+
+		SELECT EXISTS
+		(SELECT 1
+		FROM demand."Surveys_VRMs" sv
+		WHERE sv."SurveyID" = NEW."SurveyID")
+		INTO vrm_survey;
+		
+		IF vrm_survey IS FALSE OR vrm_survey IS NULL THEN
+			RETURN NEW;
+		END IF;
+
+	END IF;
+
 
     -- NrBaysSuspended
     SELECT "NrBaysSuspended"
@@ -95,7 +126,71 @@ BEGIN
 
 	END IF;
 
-	-- TODO: dual restrictions ...
+	-- Now consider dual restrictions
+
+    SELECT EXISTS INTO check_dual_restrictions_exists (
+    SELECT FROM
+        pg_tables
+    WHERE
+        schemaname = 'mhtc_operations' AND
+        tablename  = 'DualRestrictions'
+    ) ;
+
+    IF check_dual_restrictions_exists THEN
+        -- check for primary
+
+        SELECT d."GeometryID", "LinkedTo", COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
+        INTO secondary_geometry_id, primary_geometry_id, time_period_id
+        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
+        WHERE s."GeometryID" = d."GeometryID"
+        AND d."LinkedTo" = NEW."GeometryID";
+
+        IF primary_geometry_id IS NOT NULL THEN
+
+            -- restriction is "primary". Need to check whether or not the linked restriction is active
+            RAISE NOTICE '*****--- % Primary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
+
+            SELECT "Controlled"
+            INTO controlled
+            FROM demand."TimePeriodsControlledDuringSurveyHours" t
+            WHERE t."TimePeriodID" = time_period_id
+            AND t."SurveyID" = NEW."SurveyID";
+
+            -- TODO: Deal with multiple secondary bays ...
+
+            IF controlled THEN
+                RAISE NOTICE '*****--- Primary restriction. Setting capacity set to 0 ...';
+                Supply_Capacity = 0.0;
+            END IF;
+
+        END IF;
+
+        -- Now check for secondary
+
+        SELECT d."GeometryID", "LinkedTo", COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
+        INTO secondary_geometry_id, primary_geometry_id, time_period_id
+        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
+        WHERE s."GeometryID" = d."GeometryID"
+        AND d."GeometryID" = NEW."GeometryID";
+
+        IF secondary_geometry_id IS NOT NULL THEN
+
+            -- restriction is "secondary". Need to check whether or not it is active
+            RAISE NOTICE '*****--- % Secondary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
+
+            SELECT "Controlled"
+            INTO controlled
+            FROM demand."TimePeriodsControlledDuringSurveyHours" t
+            WHERE t."TimePeriodID" = time_period_id
+            AND t."SurveyID" = NEW."SurveyID";
+
+            IF NOT controlled OR controlled IS NULL THEN
+                RAISE NOTICE '*****--- Secondary restriction. Setting capacity set to 0 ...';
+                Supply_Capacity = 0.0;
+            END IF;
+
+        END IF;
+    END IF;
 	
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
     IF Capacity < 0.0 THEN
