@@ -8,3 +8,8 @@ UPDATE demand."VRMs"
 SET "PermitTypeID" = 9
 WHERE "PermitTypeID" = 0 OR "PermitTypeID" IS NULL;
 
+--
+UPDATE demand."VRMs"
+SET "VehicleTypeID" = 1  -- Car
+WHERE "VehicleTypeID" = 0;
+
