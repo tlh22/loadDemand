@@ -5,6 +5,11 @@ Need to change for each CPZ - and ensure correct Supply details
     ** Ensure that SurveyAreas table is created (even if not populated) 
 */
 
+-- trigger trigger
+
+UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+
+
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."Notes",
 -- regexp_replace(v."Notes", '(.*?)(?<=<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">)(.*?)(?=<\/p>)', '\2', 'g')  AS "Notes",

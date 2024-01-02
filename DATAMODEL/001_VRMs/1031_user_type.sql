@@ -110,7 +110,7 @@ $do$;
 
 SELECT v."ID", v."SurveyID", s."SurveyDay", CONCAT(s."BeatStartTime", '-', "BeatEndTime") As "SurveyTime",
         v."RoadName", v."RestrictionType Description", v."SideOfStreet",
-		v."GeometryID", v."VRM", 
+		v."GeometryID", v."AnonomisedVRM", 
 		v."InternationalCodeID", v."Country",
 		v."VehicleTypeID", v."VehicleType Description",
         v."PCU",
@@ -119,7 +119,7 @@ SELECT v."ID", v."SurveyID", s."SurveyDay", CONCAT(s."BeatStartTime", '-', "Beat
         v."Notes"
 
 FROM
-(SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM",
+(SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "AnonomisedVRM",
 "InternationalCodeID", "InternationalCodes"."Description" As "Country",
 "VehicleTypeID", "VehicleTypes"."Description" AS "VehicleType Description",
        su."RestrictionTypeID",
@@ -143,7 +143,7 @@ AND r."SurveyID" = s."SurveyID"
 AND r."GeometryID" = v."GeometryID"
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
-ORDER BY "GeometryID", "VRM", "SurveyID";
+ORDER BY "GeometryID", "AnonomisedVRM", "SurveyID";
 
 --- Where a resident is a vehicle seen in the first and last beats
 

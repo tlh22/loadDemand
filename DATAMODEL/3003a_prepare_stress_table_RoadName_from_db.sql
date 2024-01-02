@@ -1,51 +1,13 @@
--- Now prepare stress
+-- ** Remove "dots", i.e., zero length leaders
+ALTER TABLE mhtc_operations."Supply" DISABLE TRIGGER insert_mngmt;
 
-DROP MATERIALIZED VIEW IF EXISTS demand."StressResults";
+UPDATE mhtc_operations."Supply"
+SET label_ldr = NULL
+WHERE ST_Length(label_ldr) < 0.001;
 
-CREATE MATERIALIZED VIEW demand."StressResults"
-TABLESPACE pg_default
-AS
-    SELECT
-        row_number() OVER (PARTITION BY true::boolean) AS sid,
-    s."name1" AS "RoadName", s.geom,
-    d."SurveyID", d."Capacity", d."Demand", d."Stress" AS "Stress"
-	FROM highways_network."roadlink" s,
-	(
-	SELECT "SurveyID", "RoadName", "Capacity", "Demand",
-        CASE
-            WHEN "Capacity" = 0 THEN
-                CASE
-                    WHEN "Demand" > 0.0 THEN 1.0
-                    ELSE -1.0
-                END
-            ELSE
-                CASE
-                    WHEN "Capacity"::float > 0.0 THEN
-                        "Demand" / ("Capacity"::float)
-                    ELSE
-                        CASE
-                            WHEN "Demand" > 0.0 THEN 1.0
-                            ELSE -1.0
-                        END
-                END
-        END "Stress"
-    FROM (
-    SELECT "SurveyID", s."RoadName", SUM(RiS."CapacityAtTimeOfSurvey") AS "Capacity", SUM(RiS."Demand") AS "Demand"
-    FROM mhtc_operations."Supply" s, demand."RestrictionsInSurveys" RiS
-    WHERE s."GeometryID" = RiS."GeometryID"
-    AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
-    GROUP BY RiS."SurveyID", s."RoadName"
-    ORDER BY s."RoadName", RiS."SurveyID" ) a
-    ) d
-	WHERE s."name1" = d."RoadName"
-WITH DATA;
+UPDATE mhtc_operations."Supply"
+SET label_loading_ldr = NULL
+WHERE ST_Length(label_ldr) < 0.001;
 
-ALTER TABLE demand."StressResults"
-    OWNER TO postgres;
-
-CREATE UNIQUE INDEX "idx_StressResults_sid"
-    ON demand."StressResults" USING btree
-    (sid)
-    TABLESPACE pg_default;
-
-REFRESH MATERIALIZED VIEW demand."StressResults";
+-- Enable trigger
+ALTER TABLE mhtc_operations."Supply" ENABLE TRIGGER insert_mngmt;

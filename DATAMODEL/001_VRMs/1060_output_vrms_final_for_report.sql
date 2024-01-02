@@ -1,10 +1,11 @@
 
 
 SELECT v."ID", v."SurveyID", s."SurveyDay" AS "Survey Day", s."BeatStartTime" || '-' || s."BeatEndTime" AS "Survey Time"
+		, LPAD(v."SurveyID"::text, 3, '0') || ' - ' || to_char("SurveyDate", 'Dy') || ' - ' || "BeatStartTime" || ' - ' || "BeatEndTime" AS "BeatTitle"
         , v."GeometryID", v."Restriction Type"
         , v."RoadName" AS "Road Name", v."SideOfStreet" AS "Side of Street"
 		, v."SurveyAreaName"
-		, v."VRM"
+		, v."AnonomisedVRM"
 		, "Country"
 		, v."Vehicle Type", v."PCU"
         , v."Permit Type"
@@ -17,7 +18,7 @@ SELECT v."ID", v."SurveyID", s."SurveyDay" AS "Survey Day", s."BeatStartTime" ||
         --         COALESCE("SuspensionLength" || '; ', ''), COALESCE("SuspensionNotes" || '; ', '') ) AS "Suspension Notes"
 
 FROM
-(SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM",
+(SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "AnonomisedVRM",
 "VehicleTypeID", "VehicleTypes"."Description" AS "Vehicle Type", "VehicleTypes"."PCU" AS "PCU",
        su."RestrictionTypeID",
 		"BayLineTypes"."Description" AS "Restriction Type"
@@ -48,4 +49,4 @@ AND r."GeometryID" = v."GeometryID"
 AND s."SurveyID" > 0
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
-ORDER BY "GeometryID", "VRM", "SurveyID"
+ORDER BY "GeometryID", "AnonomisedVRM", "SurveyID"

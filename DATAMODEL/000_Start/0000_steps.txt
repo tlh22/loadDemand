@@ -4,7 +4,7 @@ Main steps:
 2. Copy photos over
 3. Check dates of surveys (think RBKC) 
 4. Check suspensions (from notes)
-5. Check supply (from notes) - also check VRMs for things like SY, SYL, DK, BINS, etc
+5. Check supply (from notes) - also check VRMs for things like SY, SYL, DK, BINS, CONES, SKIP, etc
 6. Set up SYL control times
 7. Process
     - Check VRMs (or count values)
