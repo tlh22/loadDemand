@@ -17,22 +17,31 @@ SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || "BeatStartTime" || 
 WHERE MOD("SurveyID"-1, 100) > 0
 AND "SurveyID" > 0;
 
+
+UPDATE demand."Surveys"
+--SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || "SurveyDay" || '_' || "BeatStartTime" || '_' || "BeatEndTime"
+SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || LEFT("SurveyDay", 3) || ' - ' || "BeatStartTime" || '-' || "BeatEndTime"
+WHERE "SurveyID" > 0;
+
 -- trigger trigger
 
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 --
 
-SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
+SELECT d."SurveyID", d."BeatTitle", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
 d."UnacceptableType Description", 
 d."RestrictionLength", d."RoadName", d."CPZ",
-d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", d."Stress" AS "Occupancy", d."DemandSurveyDateTime",
-d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Notes", COALESCE("SurveyAreaName", '') AS "SurveyAreaName"
+d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand"
+--, d."Stress" AS "Occupancy"-
+--, d."DemandSurveyDateTime"
+--,d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
+--d."Notes"
+--, COALESCE("SurveyAreaName", '') AS "SurveyAreaName"
 
 FROM
 (SELECT ris.*,
- su."BeatTitle", s."RestrictionTypeID", s."RestrictionLength", s."RestrictionType Description", 
+ su."BeatTitle", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", s."RestrictionTypeID", s."RestrictionLength", s."RestrictionType Description", 
  s."UnacceptableType Description", s."RoadName", s."CPZ",
  "SurveyAreaName", 
  s."SupplyGeom"
