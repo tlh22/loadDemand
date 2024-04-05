@@ -10,15 +10,15 @@ SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
-SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
+SELECT d."SurveyID", LPAD(d."SurveyID"::text, 3, '0') || ' - ' || to_char(d."SurveyDate", 'Dy') || ' - ' || d."BeatStartTime" || ' - ' || d."BeatEndTime" AS "BeatTitle",
+d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
 d."RoadName", d."SideOfStreet",
-d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", --d."SupplyCapacity_55m", d."CapacityAtTimeOfSurvey_55m", 
-d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", 
---d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
+d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
+d."DemandSurveyDateTime", 
+d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
 d."SurveyAreaName"
 FROM
-(SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
+(SELECT ris."SurveyID", su."SurveyDate", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
  s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
 ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand"

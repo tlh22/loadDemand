@@ -5,14 +5,19 @@ Need to change for each CPZ - and ensure correct Supply details
     ** Ensure that SurveyAreas table is created (even if not populated) 
 */
 
+-- trigger trigger
+
+UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+
+
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."Notes",
 -- regexp_replace(v."Notes", '(.*?)(?<=<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">)(.*?)(?=<\/p>)', '\2', 'g')  AS "Notes",
 d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", d."Stress", 
+d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", ROUND(d."Stress"::numeric, 2) AS "Stress",
 COALESCE("SurveyAreaName", '') AS "SurveyAreaName", 
 d."CPZ"
-, d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", d."PerceivedStress" 
+, d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", ROUND(d."PerceivedStress"::numeric, 2) AS "PerceivedStress"
 --    d."NrCars", d."NrLGVs", d."NrMCLs", d."NrTaxis", d."NrPCLs", d."NrEScooters", d."NrDocklessPCLs", 
 --    d."NrOGVs", d."NrMiniBuses", d."NrBuses", d."NrSpaces", d."Notes"
 

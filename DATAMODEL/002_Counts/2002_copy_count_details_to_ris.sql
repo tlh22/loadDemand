@@ -126,6 +126,9 @@ ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
 ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand_Idling" double precision;
 
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_ParkedIncorrectly" double precision;
+	
 -- And now for Counts
     
 ALTER TABLE IF EXISTS demand."Counts"

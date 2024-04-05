@@ -18,6 +18,7 @@ AND v1."GeometryID" = v2."GeometryID"
 AND v1."SurveyID" = v2."SurveyID"
 AND v1."ID" < v2."ID"
 AND v1."GeometryID" = s."GeometryID"
+AND v1."VRM" NOT IN ('COVE-RED', 'DK-', 'SYL-', 'SKIP-', 'TRAI-LER')
 --AND s."CPZ" IN ('P', 'F', 'Y')
 ;
 

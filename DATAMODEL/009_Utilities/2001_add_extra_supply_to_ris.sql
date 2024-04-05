@@ -16,10 +16,17 @@ SELECT "SurveyID", "GeometryID"
 FROM mhtc_operations."Supply" r, demand."Surveys"
 WHERE "GeometryID" NOT IN
 (SELECT "GeometryID"
-FROM demand."Counts")
+FROM demand."Counts");
+
+-- Update geom
+						   
+UPDATE demand."RestrictionsInSurveys" AS RiS
+SET geom = s.geom
+FROM mhtc_operations."Supply" s
+WHERE RiS."GeometryID" = s."GeometryID";
 
 -- remove RiS entries for which there is no supply ...
 
 DELETE FROM demand."RestrictionsInSurveys"
 WHERE "GeometryID" NOT IN (SELECT "GeometryID"
-					       FROM mhtc_operations."Supply")
+					       FROM mhtc_operations."Supply");

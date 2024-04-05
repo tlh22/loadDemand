@@ -123,44 +123,61 @@ DECLARE
     relevant_restriction_in_survey RECORD;
     clone_restriction_id uuid;
     current_done BOOLEAN := false;
+	curr_survey_id INTEGER := 0;
+	new_survey_id INTEGER := 101;
+	survey_area TEXT := '203';
 BEGIN
 
+	-- Moving details from "curr" to "new"
+	
     FOR relevant_restriction_in_survey IN
         SELECT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
-            FROM "demand"."RestrictionsInSurveys" RiS
-        WHERE RiS."SurveyID" = 1101
+            FROM "demand"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r,  mhtc_operations."SurveyAreas" a
+        WHERE RiS."SurveyID" = curr_survey_id
+		AND RiS."GeometryID" = r."GeometryID"
+		AND RiS."Done" IS true
+		AND r."SurveyAreaID" = a."Code"
+		AND a."SurveyAreaName" IN (survey_area)
     LOOP
 
-        RAISE NOTICE '*****--- Changing survey ID for % (%)', relevant_restriction_in_survey."GeometryID", relevant_restriction_in_survey."SurveyID";
+        RAISE NOTICE '*****--- Changing survey ID for % (%) to %', relevant_restriction_in_survey."GeometryID", relevant_restriction_in_survey."SurveyID", new_survey_id;
+		
+		-- Firstly make space for the change
+		
         UPDATE "demand"."RestrictionsInSurveys"
-            SET "SurveyID" = 102
+            SET "SurveyID" = new_survey_id + 1000
+        WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
+        AND "SurveyID" = new_survey_id;
+		
+		UPDATE demand."Counts" AS c
+            SET "SurveyID" = new_survey_id + 1000
+        WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
+        AND "SurveyID" = new_survey_id;
+		
+		-- Now make the change
+		
+        UPDATE "demand"."RestrictionsInSurveys"
+            SET "SurveyID" = new_survey_id
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
         AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
         UPDATE demand."Counts" AS c
-            SET "SurveyID" = 102
+            SET "SurveyID" = new_survey_id
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
         AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
-    END LOOP;
-
-    FOR relevant_restriction_in_survey IN
-        SELECT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
-            FROM "demand"."RestrictionsInSurveys" RiS
-        WHERE RiS."SurveyID" = 1102
-    LOOP
-
-        RAISE NOTICE '*****--- Changing survey ID for % (%)', relevant_restriction_in_survey."GeometryID", relevant_restriction_in_survey."SurveyID";
-        UPDATE "demand"."RestrictionsInSurveys"
-            SET "SurveyID" = 101
+		-- tidy ...
+		
+		UPDATE "demand"."RestrictionsInSurveys"
+            SET "SurveyID" = curr_survey_id
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-        AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
-
-        UPDATE demand."Counts" AS c
-            SET "SurveyID" = 101
+        AND "SurveyID" = new_survey_id + 1000;
+		
+		UPDATE demand."Counts" AS c
+            SET "SurveyID" = curr_survey_id
         WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
-        AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
-
+        AND "SurveyID" = new_survey_id + 1000;
+		
     END LOOP;
 
 END;

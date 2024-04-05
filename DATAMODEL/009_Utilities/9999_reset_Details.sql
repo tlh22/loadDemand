@@ -138,8 +138,24 @@ DECLARE
 BEGIN
 
     FOR relevant_restriction_in_survey IN
-        SELECT DISTINCT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", RiS."Photos_01", RiS."Photos_02", RiS."Photos_03"
-            FROM "demand"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
+        SELECT DISTINCT RiS."SurveyID", RiS."GeometryID", RiS."DemandSurveyDateTime", RiS."Enumerator", RiS."Done", 
+			RiS."SuspensionReference", RiS."SuspensionReason", RiS."SuspensionLength", RiS."NrBaysSuspended", RiS."SuspensionNotes", 
+			RiS."Photos_01", RiS."Photos_02", RiS."Photos_03",		
+			RiS."CaptureSource", 
+			RiS."NrCars", RiS."NrLGVs", RiS."NrMCLs", RiS."NrTaxis", RiS."NrPCLs", RiS."NrEScooters", RiS."NrDocklessPCLs", RiS."NrOGVs", RiS."NrMiniBuses", RiS."NrBuses", RiS."NrSpaces", RiS."Notes", 
+			RiS."DoubleParkingDetails", 
+			RiS."NrCars_Suspended", RiS."NrLGVs_Suspended", RiS."NrMCLs_Suspended", RiS."NrTaxis_Suspended", RiS."NrPCLs_Suspended", RiS."NrEScooters_Suspended", RiS."NrDocklessPCLs_Suspended", 
+			RiS."NrOGVs_Suspended", RiS."NrMiniBuses_Suspended", RiS."NrBuses_Suspended", 
+			RiS."NrCarsIdling", RiS."NrCarsParkedIncorrectly", RiS."NrLGVsIdling", RiS."NrLGVsParkedIncorrectly", RiS."NrMCLsIdling", RiS."NrMCLsParkedIncorrectly", RiS."NrTaxisIdling", 
+			RiS."NrTaxisParkedIncorrectly", RiS."NrOGVsIdling", RiS."NrOGVsParkedIncorrectly", RiS."NrMiniBusesIdling", RiS."NrMiniBusesParkedIncorrectly", RiS."NrBusesIdling", 
+			RiS."NrBusesParkedIncorrectly", 
+			RiS."NrCarsWithDisabledBadgeParkedInPandD", 
+			RiS."MCL_Notes", RiS."Supply_Notes", RiS."Parking_Notes", 
+			RiS."PerceivedAvailableSpaces", RiS."PerceivedCapacityAtTimeOfSurvey", RiS."PerceivedStress", 
+			RiS."Demand", RiS."SupplyCapacity", RiS."CapacityAtTimeOfSurvey", RiS."Stress", RiS."Demand_Suspended", RiS."Demand_Waiting", RiS."Demand_Idling", 
+			RiS."NrCarsWaiting", RiS."NrLGVsWaiting", RiS."NrMCLsWaiting", RiS."NrTaxisWaiting", RiS."NrOGVsWaiting", RiS."NrMiniBusesWaiting", RiS."NrBusesWaiting"
+
+        FROM "demand"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
         WHERE RiS."GeometryID" = r."GeometryID"
         AND r."SurveyAreaID" = a."Code"
         --AND a."SurveyAreaName" IN ('C-2')
@@ -161,7 +177,22 @@ BEGIN
 
             UPDATE "demand"."RestrictionsInSurveys"
             SET "DemandSurveyDateTime" = NULL, "Enumerator" = NULL, "Done" = NULL, "SuspensionReference" = NULL, "SuspensionReason" = NULL,
-            "SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL
+            "SuspensionLength" = NULL, "NrBaysSuspended" = NULL, "SuspensionNotes" = NULL, "Photos_01" = NULL, "Photos_02" = NULL, "Photos_03" = NULL,
+			"CaptureSource" = NULL, 
+			"NrCars" = NULL, "NrLGVs" = NULL, "NrMCLs" = NULL, "NrTaxis" = NULL, "NrPCLs" = NULL, "NrEScooters" = NULL, "NrDocklessPCLs" = NULL, "NrOGVs" = NULL, "NrMiniBuses" = NULL, "NrBuses" = NULL, "NrSpaces" = NULL, "Notes" = NULL, 
+			"DoubleParkingDetails" = NULL, 
+			"NrCars_Suspended" = NULL, "NrLGVs_Suspended" = NULL, "NrMCLs_Suspended" = NULL, "NrTaxis_Suspended" = NULL, "NrPCLs_Suspended" = NULL, "NrEScooters_Suspended" = NULL, "NrDocklessPCLs_Suspended" = NULL, 
+			"NrOGVs_Suspended" = NULL, "NrMiniBuses_Suspended" = NULL, "NrBuses_Suspended" = NULL, 
+			"NrCarsIdling" = NULL, "NrCarsParkedIncorrectly" = NULL, "NrLGVsIdling" = NULL, "NrLGVsParkedIncorrectly" = NULL, "NrMCLsIdling" = NULL, "NrMCLsParkedIncorrectly" = NULL, 
+			"NrTaxisIdling" = NULL, "NrTaxisParkedIncorrectly" = NULL, "NrOGVsIdling" = NULL, "NrOGVsParkedIncorrectly" = NULL, "NrMiniBusesIdling" = NULL, "NrMiniBusesParkedIncorrectly" = NULL, 
+			"NrBusesIdling" = NULL, "NrBusesParkedIncorrectly" = NULL, 
+			"NrCarsWithDisabledBadgeParkedInPandD" = NULL, 
+			"MCL_Notes" = NULL, "Supply_Notes" = NULL, "Parking_Notes" = NULL, 
+			"PerceivedAvailableSpaces" = NULL, "PerceivedCapacityAtTimeOfSurvey" = NULL, "PerceivedStress" = NULL, 
+			"Demand" = NULL, "SupplyCapacity" = NULL, "CapacityAtTimeOfSurvey" = NULL, "Stress" = NULL, 
+			"Demand_Suspended" = NULL, "Demand_Waiting" = NULL, "Demand_Idling" = NULL, 
+			"NrCarsWaiting" = NULL, "NrLGVsWaiting" = NULL, "NrMCLsWaiting" = NULL, "NrTaxisWaiting" = NULL, "NrOGVsWaiting" = NULL, "NrMiniBusesWaiting" = NULL, "NrBusesWaiting" = NULL
+
             WHERE "GeometryID" = relevant_restriction_in_survey."GeometryID"
             AND "SurveyID" = relevant_restriction_in_survey."SurveyID";
 
