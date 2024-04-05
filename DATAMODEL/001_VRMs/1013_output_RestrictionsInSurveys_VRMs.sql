@@ -12,7 +12,7 @@ UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
 d."RoadName", d."SideOfStreet",
-d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", --d."SupplyCapacity_55m", d."CapacityAtTimeOfSurvey_55m", 
+d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", --d."SupplyCapacity_55m", d."CapacityAtTimeOfSurvey_55m", 
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
 d."Photos_01", d."Photos_02", d."Photos_03", 
 --d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
