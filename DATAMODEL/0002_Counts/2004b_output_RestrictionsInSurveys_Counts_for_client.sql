@@ -7,7 +7,7 @@
 
 UPDATE demand."Surveys"
 --SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || LEFT("SurveyDay", 3) || ' - ' || 'Overnight'
-SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || 'Overnight'
+SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || LEFT("SurveyDay", 3) || ' - ' || 'Overnight'
 WHERE MOD("SurveyID"-1, 100) = 0
 AND "SurveyID" > 0;
 
@@ -21,7 +21,8 @@ AND "SurveyID" > 0;
 UPDATE demand."Surveys"
 --SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || "SurveyDay" || '_' || "BeatStartTime" || '_' || "BeatEndTime"
 SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || ' - ' || LEFT("SurveyDay", 3) || ' - ' || "BeatStartTime" || '-' || "BeatEndTime"
-WHERE "SurveyID" > 0;
+WHERE MOD("SurveyID"-1, 100) > 0
+AND "SurveyID" > 0;
 
 -- trigger trigger
 
