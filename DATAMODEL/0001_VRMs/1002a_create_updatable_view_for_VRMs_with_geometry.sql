@@ -14,18 +14,26 @@ CREATE OR REPLACE FUNCTION demand."VRMs_View_upd_trig_fn" ()
     RETURNS TRIGGER
     AS $$
 BEGIN
+
+    RAISE NOTICE 'tg_op: %', tg_op;
+	
     IF tg_op = 'UPDATE' THEN
-        IF NEW."VRM" <> OLD."VRM" OR
+        IF NEW."VRM" IS DISTINCT FROM OLD."VRM" OR
+		   NEW."SurveyID" <> OLD."SurveyID" OR
+		   NEW."GeometryID" <> OLD."GeometryID" OR
 		   NEW."InternationalCodeID" <> OLD."InternationalCodeID" OR
 		   NEW."VehicleTypeID" <> OLD."VehicleTypeID" OR
 		   NEW."PermitTypeID" <> OLD."PermitTypeID" OR
 		   NEW."ParkingActivityTypeID" <> OLD."ParkingActivityTypeID" OR
 		   NEW."ParkingMannerTypeID" <> OLD."ParkingMannerTypeID" OR
-		   NEW."Notes" <> OLD."Notes"
+		   NEW."Notes" IS DISTINCT FROM OLD."Notes"
 		THEN
             RAISE NOTICE 'update VRM';
             UPDATE demand."VRMs"
-            SET "VRM" = NEW."VRM"
+            SET 
+			"SurveyID" = NEW."SurveyID"
+			, "GeometryID" = NEW."GeometryID"
+			, "VRM" = NEW."VRM"
 			, "InternationalCodeID" = NEW."InternationalCodeID"
 			, "VehicleTypeID" = NEW."VehicleTypeID"
 			, "PermitTypeID" = NEW."PermitTypeID"
@@ -72,3 +80,28 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER "VRMs_View_delete_trigger"
     INSTEAD OF DELETE ON demand."VRMs_View"
     FOR EACH ROW EXECUTE PROCEDURE demand."VRMs_View_delete_trigger_fn"();
+	
+--
+	
+CREATE OR REPLACE FUNCTION demand."VRMs_View_insert_trigger_fn" ()
+    RETURNS TRIGGER
+    AS $$
+BEGIN
+	IF tg_op = 'INSERT' THEN
+	    RAISE NOTICE 'insert VRM';
+		INSERT INTO demand."VRMs"(
+			"SurveyID", "GeometryID", "PositionID", "VRM", "InternationalCodeID", "VehicleTypeID", "PermitTypeID", "ParkingActivityTypeID", "ParkingMannerTypeID", "Notes", "VRM_Orig")
+		VALUES (new."SurveyID", new."GeometryID", new."PositionID", new."VRM", new."InternationalCodeID", new."VehicleTypeID", new."PermitTypeID", new."ParkingActivityTypeID", new."ParkingMannerTypeID", new."Notes", new."VRM_Orig");
+        RETURN new;
+    END IF;
+	
+    RAISE NOTICE 'issue with inserting ...';
+	
+    RETURN NULL;
+END
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER "VRMs_View_insert_trigger"
+    INSTEAD OF INSERT ON demand."VRMs_View"
+    FOR EACH ROW EXECUTE PROCEDURE demand."VRMs_View_insert_trigger_fn"();

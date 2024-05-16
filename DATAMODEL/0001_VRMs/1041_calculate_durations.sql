@@ -77,3 +77,14 @@ SET "isLast" = true
 WHERE "SurveyID" IN (188, 288, 388)
 AND "isLast" = false;
 
+-- Haringey (WSP2402)
+
+UPDATE demand."VRMs" AS v
+SET "isLast" = true
+WHERE "SurveyID" IN (127, 227, 327)
+AND "isLast" = false;
+
+UPDATE demand."VRMs" AS v
+SET "orphan" = true, "isFirst" = false, "isLast" = false
+WHERE "SurveyID" IN (101, 201, 301)
+;
