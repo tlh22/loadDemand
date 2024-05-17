@@ -19,7 +19,7 @@ d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSu
 d."SurveyAreaName"
 FROM
 (SELECT ris."SurveyID", su."SurveyDate", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
- s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",
+ s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ", 
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
 ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand"
 -- , ris."SupplyCapacity_55m", ris."CapacityAtTimeOfSurvey_55m"
@@ -65,3 +65,37 @@ GROUP BY d."SurveyID", d."BeatTitle"
 ORDER BY d."SurveyID";
 ***/
 
+
+/***
+Haringey - WSP2402
+
+SELECT d."SurveyID", LPAD(d."SurveyID"::text, 3, '0') || ' - ' || to_char(d."SurveyDate", 'Dy') || ' - ' || d."BeatStartTime" || ' - ' || d."BeatEndTime" AS "BeatTitle",
+d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
+d."RoadName", d."SideOfStreet",
+d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
+d."DemandSurveyDateTime", 
+d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
+d."SurveyAreaName"
+, d."SiteAreaName"
+FROM
+(SELECT ris."SurveyID", su."SurveyDate", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
+ s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."SiteAreaName", s."CPZ", 
+"DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
+ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand"
+-- , ris."SupplyCapacity_55m", ris."CapacityAtTimeOfSurvey_55m"
+FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
+(((mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
+ LEFT JOIN "local_authority"."SiteArea" AS "SiteArea" ON a."SiteAreaID" is not distinct from "SiteArea"."id")
+ LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS s
+ WHERE ris."SurveyID" = su."SurveyID"
+ AND ris."GeometryID" = s."GeometryID"
+ --AND s."CPZ" = '7S'
+ --AND substring(su."BeatTitle" from '\((.+)\)') LIKE '7S%'
+ ) as d
+
+WHERE d."SurveyID" > 0
+--AND d."Done" IS true
+ORDER BY d."SurveyID", d."GeometryID";
+
+***/

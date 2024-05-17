@@ -89,7 +89,24 @@ BEGIN
     INTO Supply_Capacity, RestrictionTypeID
 	FROM mhtc_operations."Supply"
 	WHERE "GeometryID" = NEW."GeometryID";
-
+	
+	-- Check PCU value for MCL/PCL bays
+	IF (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
+		RestrictionTypeID = 116 OR RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR 
+		RestrictionTypeID = 169       -- PCLs
+		) THEN
+		
+		RAISE NOTICE '--- MCL/PCL bay - changing demand values ...';
+		
+		SELECT COALESCE(SUM("PCUinSameTypeBay"), 0.0)
+		INTO demand
+		FROM demand."VRMs" a, "demand_lookups"."VehicleTypes" b
+		WHERE COALESCE(a."VehicleTypeID", 0) = b."Code"
+		AND a."GeometryID" = NEW."GeometryID"
+		AND a."SurveyID" = NEW."SurveyID";
+		
+	END IF;
+	
     -- Consider controls
 	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs
 		RestrictionTypeID = 217 OR RestrictionTypeID = 222 OR RestrictionTypeID = 226 OR   -- SRLs

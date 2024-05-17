@@ -79,11 +79,12 @@ CASE
 
     -- Tidy Previous UK (A9-AAA)
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9]-[A-Z]{3}' THEN "VRM"
-	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]{2}-[A-Z]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z]{2})-([A-Z])', '\1-\2\3')
-
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]{2}-[A-Z]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z]{2})-([A-Z])', '\1-\2\3')      -- A9AA-A
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])([0-9])([A-Z])-([A-Z]{2})', '\1\2-\3\4')  -- A9A-AA
+	
     -- Early UK (AAA-999A)
 	WHEN "VRM" SIMILAR TO '[A-Z]{3}-[0-9]{3}[A-Z]' THEN "VRM"
-	WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{2}[A-Z]' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{2}[A-Z])', '\1-\2\3')
+	WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{2}[A-Z]' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{2}[A-Z])', '\1-\2\3')  -- AAA9-99A
 
     -- Northern Ireland (AAA-9999 or AAA-999)
     WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{3}' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{3})', '\1-\2\3')
