@@ -25,7 +25,7 @@ for /D %%d in (*) do (
 
 -- separate out "general" photos from one relating to suspensions
 
-SELECT CONCAT('copy ', RiS."Photos_01", ' "../Photos_With_Details/', a."SectionName", '_', s."BeatTitle", '_', RiS."Photos_01", '"')
+SELECT CONCAT('copy ', RiS."Photos_01", ' "../Photos_Demand/', a."SectionName", '_', s."BeatTitle", '_', RiS."Photos_01", '"')
 FROM demand."RestrictionsInSurveys" RiS, demand."Surveys" s,
 (SELECT su."GeometryID", r."SectionName"
 FROM mhtc_operations."RC_Sections_merged" r, mhtc_operations."Supply" su
@@ -40,7 +40,7 @@ AND COALESCE(RiS."NrBaysSuspended", 0) = 0
 
 UNION
 
-SELECT CONCAT('copy ', RiS."Photos_02", ' "../Photos_With_Details/', a."SectionName", '_', s."BeatTitle", '_', RiS."Photos_02", '"')
+SELECT CONCAT('copy ', RiS."Photos_02", ' "../Photos_Demand/', a."SectionName", '_', s."BeatTitle", '_', RiS."Photos_02", '"')
 FROM demand."RestrictionsInSurveys" RiS, demand."Surveys" s,
 (SELECT su."GeometryID", r."SectionName"
 FROM mhtc_operations."RC_Sections_merged" r, mhtc_operations."Supply" su
@@ -55,7 +55,7 @@ AND COALESCE(RiS."NrBaysSuspended", 0) = 0
 
 UNION
 
-SELECT CONCAT('copy ', RiS."Photos_03", ' "../Photos_With_Details/', a."SectionName", '_', s."BeatTitle", '_', RiS."Photos_03", '"')
+SELECT CONCAT('copy ', RiS."Photos_03", ' "../Photos_Demand/', a."SectionName", '_', s."BeatTitle", '_', RiS."Photos_03", '"')
 FROM demand."RestrictionsInSurveys" RiS, demand."Surveys" s,
 (SELECT su."GeometryID", r."SectionName"
 FROM mhtc_operations."RC_Sections_merged" r, mhtc_operations."Supply" su
