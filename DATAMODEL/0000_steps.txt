@@ -1,10 +1,5 @@
 Main steps:
 
-0. Prepare spreadsheet - both working and client
- - Set up SYL control times (see TimePeriodsControlledDuringSurveyHours)
- - Output supply (0001a_output_supply.sql)
- - Get surveys (0001b_output_surveys.sql) (and check dates of surveys - e.g., RBKC)
-
 1. Load demand data
  - Use "load" project
  - copy photos and check for any that are missing
@@ -14,9 +9,20 @@ Main steps:
  - check counts in db (2000_verify_counts.sql)
  - check for obvious errors (2001_check_counts.sql)
 
+0. Prepare spreadsheet - both working and client
+ - Set up SYL control times (see TimePeriodsControlledDuringSurveyHours)
+ - Output supply (0001a_output_supply.sql)
+ - Get surveys (0001b_output_surveys.sql) (and check dates of surveys - e.g., RBKC)
+
 3. Check supply and suspensions (from notes and photos)
  - check VRMs for things like SY, SYL, DK, BINS, CONES, SKIP, etc
  - ensure suspensions are consistent (from notes and photos) - same location, details, number of spaces, etc
+
+ - Move demand details to RiS
+     - for Counts; 2002_copy_count_details_to_ris.sql
+ - Add functions to calculate demand/stress, etc
+     - for Counts; 2003a_add_capacity_and_demand.sql, 2003b_add_perceived_supply_and_stress.sql
+     - for VRMs will also need user type and duration
 
 4. Process
  - for VRMs, deal with matching including duplicates and other issues
@@ -24,11 +30,12 @@ Main steps:
      - remove duplicates and blanks
      - use "fuzzy" match
      - check "non-standard" VRMs
- - Move demand details to RiS
-     - for Counts; 2002_copy_count_details_to_ris.sql
- - Add functions to calculate demand/stress, etc
-     - for Counts; 2003a_add_capacity_and_demand.sql, 2003a_add_perceived_supply_and_stress.sql
-     - for VRMs will also need user type and duration
+
+5. Output
+ - RiS - for Counts; 2004_output_RestrictionsInSurveys_Counts.sql. Use this in working spreadsheet. Update pivot table to show demand by road/restriction type
+ - Photos - with street/section details - 0004_photos_with_details_from_RiS_demand.sql and 0005_photos_with_details_from_RiS_demand_Suspensions.sql
+
+6. Mapping
 
  - Locations
      - set up "template" - 3001a_supply_view_parking_locations.sql
@@ -36,11 +43,6 @@ Main steps:
  - Stress
      - 3003a_prepare_stress_table_RoadName_from_db.sql
 
-5. Output
- - RiS - for Counts; 2004_ouptut_RestrictionsInSurveys_Counts.sql. Use this in working spreadsheet. Update pivot table to show demand by road/restrictioin type
- - Photos - with street/section details - 0004_photos_with_details_from_RiS_demand.sql and 0005_photos_with_details_from_RiS_demand_Suspensions.sql
-
-6. Mapping
  - Supply (deal with labels)
  - Locations (create Atlas)
  - Stress (create Atlas)
