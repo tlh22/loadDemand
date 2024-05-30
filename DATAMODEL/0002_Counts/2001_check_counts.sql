@@ -13,7 +13,7 @@ WHERE curr."GeometryID" = before."GeometryID"
 AND before."GeometryID" = after."GeometryID"
 AND before."SurveyID" = curr."SurveyID" - 1
 AND after."SurveyID" = curr."SurveyID" + 1
-AND curr."Demand"::real - (before."Demand"::real + after."Demand"::real) / 2.0 > 5.0
+AND ABS(curr."Demand"::real - (before."Demand"::real + after."Demand"::real) / 2.0) > 5.0
 --AND curr."SurveyID" = 113
 
 -- Find differences within the same time periods for the same GeometryID
