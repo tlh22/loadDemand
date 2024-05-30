@@ -1,25 +1,35 @@
 Main steps:
 
-1. Load demand data
+0. Load demand data
  - Use "load" project
- - copy photos and check for any that are missing
+ - copy photos and check for any that are missing. Amend and use .Demand/copy_photos_from_demand.bat
 
-2. Check that everything is loaded correctly
+1. Check that everything is loaded correctly
  - visual check from "load" project
- - check counts in db (2000_verify_counts.sql)
+ - check counts in db (2000_verify_counts.sql). If using SurveyAreas, output and load into Pivot table
  - check for obvious errors (2001_check_counts.sql)
 
-0. Prepare spreadsheet - both working and client
+2. Prepare spreadsheet - both working and client (00_Projects/ParkingOccupancy_Templates)
  - Set up SYL control times (see TimePeriodsControlledDuringSurveyHours)
+	 Create table - TimePeriodsControlledDuringSurveyHours
+	 Add to project via Browser
+	 Manually selected true/false 
  - Output supply (0001a_output_supply.sql)
  - Get surveys (0001b_output_surveys.sql) (and check dates of surveys - e.g., RBKC)
-
+ - Add to working spreadsheet and create pivot
+ - Copy to client 
+ 
 3. Check supply and suspensions (from notes and photos)
- - check VRMs for things like SY, SYL, DK, BINS, CONES, SKIP, etc
- - ensure suspensions are consistent (from notes and photos) - same location, details, number of spaces, etc
-
  - Move demand details to RiS
      - for Counts; 2002_copy_count_details_to_ris.sql
+ - Check RiS notes for changes in supply
+	 - will need to ensure that all details are complete including RoadName
+	 - if restrictions are added, ensure that they are added into demand tables - 
+ - check VRMs for things like SY, SYL, DK, BINS, CONES, SKIP, etc
+
+ - ensure suspensions are consistent (from notes and photos) - same location, details, number of spaces, etc
+
+
  - Add functions to calculate demand/stress, etc
      - for Counts; 2003a_add_capacity_and_demand.sql, 2003b_add_perceived_supply_and_stress.sql
      - for VRMs will also need user type and duration
@@ -37,15 +47,19 @@ Main steps:
 
 6. Mapping
 
- - Locations
+ - Prepare supply plan and sort out labelling
+ 
+ - run scripts:
      - set up "template" - 3001a_supply_view_parking_locations.sql
      - add locations - 3002_show_parking_locations_using_RiS.sql
- - Stress
-     - 3003a_prepare_stress_table_RoadName_from_db.sql
-
- - Supply (deal with labels)
- - Locations (create Atlas)
- - Stress (create Atlas)
+	 - 3003a_prepare_stress_table_RoadName_from_db.sql
+	 
+ - Duplicate Supply layout and use for Locations
+	 - Copy title details from earlier Locations layout
+	 - Create Atlas. Use "Surveys" as "Coverage layer", filter to be "SurveyID" > 0, sort by "SurveyID"
+	 - Add caveat on vehicle locations from earlier Locations layout
+	 
+ - Duplicate Locations layout and use for Stress
 
 7. Data for client
  - Output RiS (and VRMs if appropriate)
