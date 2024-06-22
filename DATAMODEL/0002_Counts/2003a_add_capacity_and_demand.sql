@@ -225,7 +225,7 @@ BEGIN
 
 	-- Check PCU value for MCL/PCL bays
 	IF (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
-		RestrictionTypeID = 116 OR RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR 
+		RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR
 		RestrictionTypeID = 169       -- PCLs
 		) THEN
 		RAISE NOTICE '--- MCL/PCL bay - changing PCU values FROM %; %; %; % ', mclPCU, pclPCU, docklesspclPCU, escooterPCU;

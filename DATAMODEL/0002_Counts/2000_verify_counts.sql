@@ -140,7 +140,7 @@ BEGIN
 
 		SELECT EXISTS
 		(SELECT 1
-		FROM demand."Surveys_Counts" sv
+		FROM demand."Counts" sv
 		WHERE sv."SurveyID" = NEW."SurveyID")
 		INTO count_survey;
 		
@@ -151,7 +151,7 @@ BEGIN
 	END IF;
 
 
-    RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
+    RAISE NOTICE '--- considering (%) in survey (%) ', NEW."GeometryID", NEW."SurveyID";
     
     /***
     select "Value" into vehicleLength
@@ -329,6 +329,8 @@ BEGIN
   		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
 
         ;
+
+	RAISE NOTICE '*****--- demand is %. (NrCars = %) ...', NEW."Demand", NrCars;
 
     /***
     NEW."Demand_Standard" = COALESCE(NrCars::float, 0.0) +
