@@ -117,14 +117,14 @@ BEGIN
 		pg_tables
 	WHERE
 		schemaname = 'demand' AND
-		tablename  = 'Surveys_Counts'
+		tablename  = 'Counts'
 	) ;
 
 	IF check_exists THEN
 
 		SELECT EXISTS
 		(SELECT 1
-		FROM demand."Surveys_Counts" sv
+		FROM demand."Counts" sv
 		WHERE sv."SurveyID" = NEW."SurveyID")
 		INTO count_survey;
 		
