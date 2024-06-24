@@ -22,7 +22,7 @@ ALTER TABLE demand."RestrictionsInSurveys"
 
 -- set up trigger for demand and stress
 
-CREATE OR REPLACE FUNCTION "demand"."update_demand_counts"() RETURNS "trigger"
+CREATE OR REPLACE FUNCTION "demand"."update_demand_counts_ris"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
@@ -135,24 +135,6 @@ BEGIN
 	END IF;
 
     RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
-    /***
-    select "Value" into vehicleLength
-        from "mhtc_operations"."project_parameters"
-        where "Field" = 'VehicleLength';
-
-    select "Value" into vehicleWidth
-        from "mhtc_operations"."project_parameters"
-        where "Field" = 'VehicleWidth';
-
-    select "Value" into motorcycleWidth
-        from "mhtc_operations"."project_parameters"
-        where "Field" = 'MotorcycleWidth';
-
-    IF vehicleLength IS NULL OR vehicleWidth IS NULL OR motorcycleWidth IS NULL THEN
-        RAISE EXCEPTION 'Capacity parameters not available ...';
-        RETURN OLD;
-    END IF;
-    ***/
 
     ---
     select "PCU" into carPCU
@@ -273,7 +255,9 @@ BEGIN
     NEW."Demand" = COALESCE(NrCars::float, 0.0) * carPCU +
         COALESCE(NrLGVs::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs::float, 0.0) * mclPCU +
-        COALESCE(NrOGVs::float, 0.0) * ogvPCU + COALESCE(NrMiniBuses::float, 0.0) * minibusPCU + COALESCE(NrBuses::float, 0.0) * busPCU +
+        COALESCE(NrOGVs::float, 0.0) * ogvPCU +
+        COALESCE(NrMiniBuses::float, 0.0) * minibusPCU +
+        COALESCE(NrBuses::float, 0.0) * busPCU +
         COALESCE(NrTaxis::float, 0.0) * taxiPCU +
         COALESCE(NrPCLs::float, 0.0) * pclPCU +
         COALESCE(NrEScooters::float, 0.0) * escooterPCU +
@@ -283,7 +267,9 @@ BEGIN
         COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
+        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU +
+        COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
         COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
 
         -- vehicles in P&D bay displaying disabled badge
@@ -295,7 +281,9 @@ BEGIN
         COALESCE(NrCars_Suspended::float, 0.0) * carPCU +
         COALESCE(NrLGVs_Suspended::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs_Suspended::float, 0.0) * mclPCU +
-        COALESCE(NrOGVs_Suspended::float, 0) * ogvPCU + COALESCE(NrMiniBuses_Suspended::float, 0) * minibusPCU + COALESCE(NrBuses_Suspended::float, 0) * busPCU +
+        COALESCE(NrOGVs_Suspended::float, 0) * ogvPCU +
+        COALESCE(NrMiniBuses_Suspended::float, 0) * minibusPCU +
+        COALESCE(NrBuses_Suspended::float, 0) * busPCU +
         COALESCE(NrTaxis_Suspended::float, 0) +
         COALESCE(NrPCLs_Suspended::float, 0.0) * pclPCU +
         COALESCE(NrEScooters_Suspended::float, 0.0) * escooterPCU +
@@ -306,7 +294,9 @@ BEGIN
         COALESCE(NrCarsWaiting::float, 0.0) * carPCU +
         COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsWaiting::float, 0) * ogvPCU + COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU + COALESCE(NrBusesWaiting::float, 0) * busPCU +
+        COALESCE(NrOGVsWaiting::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU +
+        COALESCE(NrBusesWaiting::float, 0) * busPCU +
         COALESCE(NrTaxisWaiting::float, 0) * carPCU;
 
     NEW."Demand_Idling" =
@@ -314,7 +304,9 @@ BEGIN
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
+        COALESCE(NrOGVsIdling::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU +
+        COALESCE(NrBusesIdling::float, 0) * busPCU +
         COALESCE(NrTaxisIdling::float, 0) * carPCU;
 
     /* What to do about suspensions */
@@ -349,6 +341,11 @@ BEGIN
                 RAISE NOTICE '*****--- capacity set to 0 ...';
                 Supply_Capacity = 0.0;
             END IF;
+
+        ELSE
+
+            RAISE EXCEPTION 'TimePeriodsControlledDuringSurveyHours does not exist ...';
+            RETURN OLD;
 
         END IF;
 
@@ -418,6 +415,12 @@ BEGIN
             END IF;
 
         END IF;
+
+    ELSE
+
+        RAISE EXCEPTION 'DualRestrictions does not exist ...';
+        RETURN OLD;
+
     END IF;
 
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
@@ -445,7 +448,7 @@ $$;
 -- create trigger
 
 DROP TRIGGER IF EXISTS update_demand ON demand."RestrictionsInSurveys";
-CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
+CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts_ris"();
 
 -- trigger trigger
 

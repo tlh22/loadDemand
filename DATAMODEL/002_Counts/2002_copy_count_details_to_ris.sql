@@ -135,7 +135,7 @@ ALTER TABLE IF EXISTS demand."Counts"
 ALTER TABLE IF EXISTS demand."Counts"
     ADD COLUMN IF NOT EXISTS "Parking_Notes" character varying(10000);
     
--- Now copy
+-- Now copy only details that have not yet been copied ...
 
 UPDATE demand."RestrictionsInSurveys" AS RiS
 SET "NrCars"=c."NrCars", "NrLGVs"=c."NrLGVs", "NrMCLs"=c."NrMCLs", "NrTaxis"=c."NrTaxis", "NrPCLs"=c."NrPCLs",
@@ -149,7 +149,9 @@ SET "NrCars"=c."NrCars", "NrLGVs"=c."NrLGVs", "NrMCLs"=c."NrMCLs", "NrTaxis"=c."
 "NrCarsWithDisabledBadgeParkedInPandD"=c."NrCarsWithDisabledBadgeParkedInPandD", "MCL_Notes"=c."MCL_Notes", "Supply_Notes"=c."Supply_Notes"
 FROM demand."Counts" c
 	WHERE RiS."GeometryID" = c."GeometryID"
-	AND RiS."SurveyID" = c."SurveyID";
+	AND RiS."SurveyID" = c."SurveyID"
+	AND (RiS."Done" IS NULL OR RiS."Done" IS FALSE)
+	;
 
 -- Waiting vehicles
 
