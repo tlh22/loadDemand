@@ -2,32 +2,11 @@
 Check the count collected within each pass
 **/
 
-/*** 
- *   If dealing with two types of survey
- ***/
-/*** 
-DELETE FROM demand."Counts"
-WHERE "SurveyID" NOT IN (
-	SELECT  "SurveyID"
-	FROM demand."Surveys_Counts"
-	)
-	***/
-/***
- *  Initially created for Camden - sections
- ***/
-
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Demand" double precision;
---ALTER TABLE demand."RestrictionsInSurveys"
---    ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
---ALTER TABLE demand."RestrictionsInSurveys"
---    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
-
---ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
---    RENAME "Capacity" TO "CapacityAtTimeOfSurvey";
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
@@ -488,6 +467,8 @@ CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."Restrictions
 
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
+-- Remove as we want to ensure counts use details on RiS
+DROP TRIGGER IF EXISTS update_demand ON demand."RestrictionsInSurveys";
 
 -- Check details
 
