@@ -66,7 +66,7 @@ Now use scripts in loadVRMs plugin ...
  - run scripts:
     - set up "template" - 3001a_supply_view_parking_locations.sql
     - add locations - 3002_show_parking_locations_using_RiS.sql
-	- 3003a_prepare_stress_table_RoadName_from_db.sql
+	- create stress details for roads - 3003a_prepare_stress_table_RoadName_from_db.sql
 
  - Duplicate Supply layout and use for Locations
 	- Copy title details from earlier Locations layout
