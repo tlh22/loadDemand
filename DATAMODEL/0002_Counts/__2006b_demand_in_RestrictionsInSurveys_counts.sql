@@ -1,39 +1,25 @@
-/**
-Check the count collected within each pass
-**/
-
-/*** 
- *   If dealing with two types of survey
- ***/
-/*** 
-DELETE FROM demand."Counts"
-WHERE "SurveyID" NOT IN (
-	SELECT  "SurveyID"
-	FROM demand."Surveys_Counts"
-	)
-	***/
 /***
  *  Initially created for Camden - sections
  ***/
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN IF NOT EXISTS "Demand" double precision;
+    ADD COLUMN "Demand" double precision;
 --ALTER TABLE demand."RestrictionsInSurveys"
 --    ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
 --ALTER TABLE demand."RestrictionsInSurveys"
 --    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
+    ADD COLUMN "SupplyCapacity" double precision;
 
 --ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
 --    RENAME "Capacity" TO "CapacityAtTimeOfSurvey";
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
+    ADD COLUMN "CapacityAtTimeOfSurvey" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN IF NOT EXISTS "Stress" double precision;
+    ADD COLUMN "Stress" double precision;
 
 -- Step 2: calculate demand values using trigger
 
@@ -118,41 +104,9 @@ DECLARE
 
 	controlled BOOLEAN;
 	check_exists BOOLEAN;
-	count_survey BOOLEAN;
-	check_dual_restrictions_exists BOOLEAN;
-
-    primary_geometry_id VARCHAR (12);
-    secondary_geometry_id VARCHAR (12);
-    time_period_id INTEGER;
 
 BEGIN
 
-	-- Check that we are dealing with VRMs
-	SELECT EXISTS INTO check_exists (
-	SELECT FROM
-		pg_tables
-	WHERE
-		schemaname = 'demand' AND
-		tablename  = 'Surveys_Counts'
-	) ;
-
-	IF check_exists THEN
-
-		SELECT EXISTS
-		(SELECT 1
-		FROM demand."Counts" sv
-		WHERE sv."SurveyID" = NEW."SurveyID")
-		INTO count_survey;
-		
-		IF count_survey IS FALSE OR count_survey IS NULL THEN
-			RETURN NEW;
-		END IF;
-
-	END IF;
-
-
-    RAISE NOTICE '--- considering (%) in survey (%) ', NEW."GeometryID", NEW."SurveyID";
-    
     /***
     select "Value" into vehicleLength
         from "mhtc_operations"."project_parameters"
@@ -220,59 +174,51 @@ BEGIN
 
     IF carPCU IS NULL OR lgvPCU IS NULL OR mclPCU IS NULL OR ogvPCU IS NULL OR busPCU IS NULL OR
        pclPCU IS NULL OR taxiPCU IS NULL OR otherPCU IS NULL OR minibusPCU IS NULL OR docklesspclPCU IS NULL OR escooterPCU IS NULL THEN
-        RAISE NOTICE '--- (%); (%); (%); (%); (%); (%); (%); (%); (%); (%); (%) ', carPCU, lgvPCU, mclPCU, ogvPCU, busPCU, pclPCU, taxiPCU, otherPCU, minibusPCU, docklesspclPCU, escooterPCU;
         RAISE EXCEPTION 'PCU parameters not available ...';
+        RAISE NOTICE '--- (%); (%); (%); (%); (%); (%); (%); (%); (%); (%); (%) ', carPCU, lgvPCU, mclPCU, ogvPCU, busPCU, pclPCU, taxiPCU, otherPCU, minibusPCU, docklesspclPCU, escooterPCU;
         RETURN OLD;
     END IF;
 
+    SELECT "NrCars", "NrLGVs", "NrMCLs", "NrTaxis", "NrPCLs", "NrEScooters", "NrDocklessPCLs", "NrOGVs", "NrMiniBuses", "NrBuses", "NrSpaces",
+        "Notes", "DoubleParkingDetails",
+        "NrCars_Suspended", "NrLGVs_Suspended", "NrMCLs_Suspended", "NrTaxis_Suspended", "NrPCLs_Suspended", "NrEScooters_Suspended",
+        "NrDocklessPCLs_Suspended", "NrOGVs_Suspended", "NrMiniBuses_Suspended", "NrBuses_Suspended",
 
-	RAISE NOTICE '*****--- Getting demand details ...';
-	
-    SELECT COALESCE(c."NrCars", 0), COALESCE(c."NrLGVs", 0), COALESCE(c."NrMCLs", 0), COALESCE(c."NrTaxis", 0), 
-	    COALESCE(c."NrPCLs", 0), COALESCE(c."NrEScooters", 0), COALESCE(c."NrDocklessPCLs", 0), 
-	    COALESCE(c."NrOGVs", 0), COALESCE(c."NrMiniBuses", 0), COALESCE(c."NrBuses", 0), 
-	    COALESCE(c."NrSpaces", 0),
-	    
-        -- c."Notes", c."DoubleParkingDetails",
-        
-        COALESCE(c."NrCars_Suspended", 0), COALESCE(c."NrLGVs_Suspended", 0), COALESCE(c."NrMCLs_Suspended", 0),
-        COALESCE(c."NrTaxis_Suspended", 0), COALESCE(c."NrPCLs_Suspended", 0), COALESCE(c."NrEScooters_Suspended", 0),
-        COALESCE(c."NrDocklessPCLs_Suspended", 0), COALESCE(c."NrOGVs_Suspended", 0), 
-        COALESCE(c."NrMiniBuses_Suspended", 0), COALESCE(c."NrBuses_Suspended", 0),
+        "NrCarsWaiting", "NrLGVsWaiting", "NrMCLsWaiting", "NrTaxisWaiting", "NrOGVsWaiting", "NrMiniBusesWaiting", "NrBusesWaiting",
 
-        COALESCE(c."NrCarsWaiting", 0), COALESCE(c."NrLGVsWaiting", 0), COALESCE(c."NrMCLsWaiting", 0), 
-        COALESCE(c."NrTaxisWaiting", 0), COALESCE(c."NrOGVsWaiting"), COALESCE(c."NrMiniBusesWaiting", 0), 
-        COALESCE(c."NrBusesWaiting", 0),
+        "NrCarsIdling", "NrLGVsIdling", "NrMCLsIdling",
+        "NrTaxisIdling", "NrOGVsIdling", "NrMiniBusesIdling",
+        "NrBusesIdling"
 
-        COALESCE(c."NrCarsIdling", 0), COALESCE(c."NrLGVsIdling", 0), COALESCE(c."NrMCLsIdling", 0),
-        COALESCE(c."NrTaxisIdling", 0), COALESCE(c."NrOGVsIdling", 0), COALESCE(c."NrMiniBusesIdling", 0),
-        COALESCE(c."NrBusesIdling", 0),
+        /***
+        ,"NrCarsParkedIncorrectly", "NrLGVsParkedIncorrectly", "NrMCLsParkedIncorrectly",
+        "NrTaxisParkedIncorrectly", "NrOGVsParkedIncorrectly", "NrMiniBusesParkedIncorrectly",
+        "NrBusesParkedIncorrectly",
+        ***/
 
-        COALESCE(c."NrCarsParkedIncorrectly", 0), COALESCE(c."NrLGVsParkedIncorrectly", 0), COALESCE(c."NrMCLsParkedIncorrectly", 0),
-        COALESCE(c."NrTaxisParkedIncorrectly", 0), COALESCE(c."NrOGVsParkedIncorrectly", 0), COALESCE(c."NrMiniBusesParkedIncorrectly", 0),
-        COALESCE(c."NrBusesParkedIncorrectly", 0),
+        --"NrCarsWithDisabledBadgeParkedInPandD",
 
-        COALESCE(c."NrCarsWithDisabledBadgeParkedInPandD", 0),
-
-        COALESCE(RiS."NrBaysSuspended", 0)
+        ,"NrBaysSuspended"
 
     INTO
         NrCars, NrLGVs, NrMCLs, NrTaxis, NrPCLs, NrEScooters, NrDocklessPCLs, NrOGVs, NrMiniBuses, NrBuses, NrSpaces,
-        --Notes, DoubleParkingDetails,
+        Notes, DoubleParkingDetails,
         NrCars_Suspended, NrLGVs_Suspended, NrMCLs_Suspended, NrTaxis_Suspended, NrPCLs_Suspended, NrEScooters_Suspended,
         NrDocklessPCLs_Suspended, NrOGVs_Suspended, NrMiniBuses_Suspended, NrBuses_Suspended,
 
         NrCarsWaiting, NrLGVsWaiting, NrMCLsWaiting, NrTaxisWaiting, NrOGVsWaiting, NrMiniBusesWaiting, NrBusesWaiting,
 
-        NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling,
+        NrCarsIdling, NrLGVsIdling, NrMCLsIdling, NrTaxisIdling, NrOGVsIdling, NrMiniBusesIdling, NrBusesIdling
 
-        NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
+        /***
+        ,NrCarsParkedIncorrectly, NrLGVsParkedIncorrectly, NrMCLsParkedIncorrectly,
         NrTaxisParkedIncorrectly, NrOGVsParkedIncorrectly, NrMiniBusesParkedIncorrectly,
         NrBusesParkedIncorrectly,
+        ***/
 
-        NrCarsWithDisabledBadgeParkedInPandD,
+        --,NrCarsWithDisabledBadgeParkedInPandD
 
-        NrBaysSuspended
+        ,NrBaysSuspended
 
 	FROM demand."Counts" c, demand."RestrictionsInSurveys" RiS
 	WHERE c."GeometryID" = NEW."GeometryID"
@@ -311,26 +257,22 @@ BEGIN
         COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
         COALESCE(NrOGVsWaiting::float, 0) * ogvPCU + COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU + COALESCE(NrBusesWaiting::float, 0) * busPCU +
-        COALESCE(NrTaxisWaiting::float, 0) * carPCU +
+        COALESCE(NrTaxisWaiting::float, 0) +
 
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
         COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
-        COALESCE(NrTaxisIdling::float, 0) * carPCU
-		+
+        COALESCE(NrTaxisIdling::float, 0)
 
+        /***
         COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
         COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
-        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
-
-  		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
-
+        COALESCE(NrTaxisParkedIncorrectly::float, 0)
+        ***/
         ;
-
-	RAISE NOTICE '*****--- demand is %. (NrCars = %) ...', NEW."Demand", NrCars;
 
     /***
     NEW."Demand_Standard" = COALESCE(NrCars::float, 0.0) +
@@ -348,17 +290,14 @@ BEGIN
 
     /* What to do about suspensions */
 
-	RAISE NOTICE '*****--- Checking SYLs ...';
-	
 	IF (RestrictionTypeID = 201 OR RestrictionTypeID = 221 OR RestrictionTypeID = 224 OR   -- SYLs
 		RestrictionTypeID = 217 OR RestrictionTypeID = 222 OR RestrictionTypeID = 226 OR   -- SRLs
-		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220 OR   -- Unmarked within PPZ
-		RestrictionTypeID = 203 OR RestrictionTypeID = 207 OR RestrictionTypeID = 208      -- ZigZags
+		RestrictionTypeID = 227 OR RestrictionTypeID = 228 OR RestrictionTypeID = 220      -- Unmarked within PPZ
 		) THEN
 
         -- Need to check whether or not effected by control hours
 
-        RAISE NOTICE '--- checking SYL capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
+        RAISE NOTICE '--- considering capacity for (%); survey (%) ', NEW."GeometryID", NEW."SurveyID";
 
         SELECT EXISTS INTO check_exists (
             SELECT FROM
@@ -386,81 +325,7 @@ BEGIN
 
 	END IF;
 
-	-- Now consider dual restrictions
-
-	RAISE NOTICE '*****--- Checking dual restrictions ...';
-	
-    SELECT EXISTS INTO check_dual_restrictions_exists (
-    SELECT FROM
-        pg_tables
-    WHERE
-        schemaname = 'mhtc_operations' AND
-        tablename  = 'DualRestrictions'
-    ) ;
-
-    IF check_dual_restrictions_exists THEN
-        -- check for primary
-
-        SELECT d."GeometryID", "LinkedTo", COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
-        INTO secondary_geometry_id, primary_geometry_id, time_period_id
-        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
-        WHERE s."GeometryID" = d."GeometryID"
-        AND d."LinkedTo" = NEW."GeometryID";
-
-        IF primary_geometry_id IS NOT NULL THEN
-
-            -- restriction is "primary". Need to check whether or not the linked restriction is active
-            RAISE NOTICE '*****--- % Primary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
-
-            SELECT "Controlled"
-            INTO controlled
-            FROM demand."TimePeriodsControlledDuringSurveyHours" t
-            WHERE t."TimePeriodID" = time_period_id
-            AND t."SurveyID" = NEW."SurveyID";
-
-            -- TODO: Deal with multiple secondary bays ...
-
-            IF controlled THEN
-                RAISE NOTICE '*****--- Primary restriction. Setting capacity set to 0 ...';
-                Supply_Capacity = 0.0;
-            END IF;
-
-        END IF;
-
-        -- Now check for secondary
-
-        SELECT d."GeometryID", "LinkedTo", COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
-        INTO secondary_geometry_id, primary_geometry_id, time_period_id
-        FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
-        WHERE s."GeometryID" = d."GeometryID"
-        AND d."GeometryID" = NEW."GeometryID";
-
-        IF secondary_geometry_id IS NOT NULL THEN
-
-            -- restriction is "secondary". Need to check whether or not it is active
-            RAISE NOTICE '*****--- % Secondary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
-
-            SELECT "Controlled"
-            INTO controlled
-            FROM demand."TimePeriodsControlledDuringSurveyHours" t
-            WHERE t."TimePeriodID" = time_period_id
-            AND t."SurveyID" = NEW."SurveyID";
-
-            IF NOT controlled OR controlled IS NULL THEN
-                RAISE NOTICE '*****--- Secondary restriction. Setting capacity set to 0 ...';
-                Supply_Capacity = 0.0;
-            END IF;
-
-        END IF;
-    END IF;
-
-
-	RAISE NOTICE '*****--- Finalising ...';
-	
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
-    IF Capacity < 0.0 THEN
-        Capacity = 0.0;
-    END IF;
     NEW."SupplyCapacity" = Supply_Capacity;
     NEW."CapacityAtTimeOfSurvey" = Capacity;
 
@@ -489,23 +354,3 @@ CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."Restrictions
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 
--- Check details
-
-
-SELECT su."SurveyID", "SurveyAreaName", SUM("Demand")
-FROM demand."Surveys" su, demand."RestrictionsInSurveys" RiS,
-(SELECT s."GeometryID", "SurveyAreas"."SurveyAreaName"
- FROM mhtc_operations."Supply" s LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON s."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS d
-WHERE su."SurveyID" = RiS."SurveyID"
-AND d."GeometryID" = RiS."GeometryID"
-AND su."SurveyID" > 0
-GROUP BY su."SurveyID", "SurveyAreaName"
-ORDER BY su."SurveyID", "SurveyAreaName"
-
-/***
-SELECT RiS."SurveyID", SUM("Demand")
-FROM demand."RestrictionsInSurveys" RiS
-WHERE RiS."SurveyID" > 0
-GROUP BY RiS."SurveyID"
-ORDER BY RiS."SurveyID"
-***/
