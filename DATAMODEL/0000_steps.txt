@@ -39,13 +39,10 @@ Now use scripts in loadVRMs plugin ...
  - Copy to client 
  
 3. Check supply and suspensions (from notes and photos)
- - Move demand details to RiS
-     - for Counts; 2002_copy_count_details_to_ris.sql
  - check VRMs for things like SY, SYL, DK, BINS, CONES, SKIP, etc
  - ensure suspensions are consistent (from notes and photos) - same location, details, number of spaces, etc
 
  - Add functions to calculate demand/stress, etc
-     - for Counts; 2003a_add_capacity_and_demand.sql, 2003b_add_perceived_supply_and_stress.sql
      - for VRMs will also need user type and duration
 
 4. Process
