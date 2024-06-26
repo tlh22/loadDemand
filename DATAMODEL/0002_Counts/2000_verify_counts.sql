@@ -5,35 +5,41 @@ Check the count collected within each pass
 /*** 
  *   If dealing with two types of survey
  ***/
-/*** 
-DELETE FROM demand."Counts"
-WHERE "SurveyID" NOT IN (
-	SELECT  "SurveyID"
-	FROM demand."Surveys_Counts"
-	)
-	***/
-/***
- *  Initially created for Camden - sections
- ***/
+
+-- Check required fields exist
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN IF NOT EXISTS "Demand" double precision;
---ALTER TABLE demand."RestrictionsInSurveys"
---    ADD COLUMN "Demand_Standard" double precision; -- This is the count of all vehicles in the main count tab
---ALTER TABLE demand."RestrictionsInSurveys"
---    ADD COLUMN "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
+    ADD COLUMN IF NOT EXISTS "Demand_ALL" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
-    ADD COLUMN IF NOT EXISTS "SupplyCapacity" double precision;
+    ADD COLUMN IF NOT EXISTS "Demand" double precision; -- This is the count of all vehicles in the main count tab
 
---ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
---    RENAME "Capacity" TO "CapacityAtTimeOfSurvey";
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "DemandInSuspendedAreas" double precision;  -- This is the count of all vehicles in the suspensions tab
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Waiting" double precision;
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_Idling" double precision;
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Demand_ParkedIncorrectly" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "CapacityAtTimeOfSurvey" double precision;
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Stress" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "PerceivedAvailableSpaces" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "PerceivedCapacityAtTimeOfSurvey" double precision;
+
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "PerceivedStress" double precision;
 
 -- Step 2: calculate demand values using trigger
 
@@ -113,6 +119,7 @@ DECLARE
 
     Supply_Capacity INTEGER := 0;
     Capacity INTEGER := 0;
+    NrBays INTEGER := 0;
 	NrBaysSuspended INTEGER := 0;
 	RestrictionTypeID INTEGER;
 
@@ -124,6 +131,9 @@ DECLARE
     primary_geometry_id VARCHAR (12);
     secondary_geometry_id VARCHAR (12);
     time_period_id INTEGER;
+    vehicleLength real := 0.0;
+    demand_ratio real = 0.0;
+    perceived_capacity_difference_ratio real := 0.0;
 
 BEGIN
 
@@ -150,27 +160,7 @@ BEGIN
 
 	END IF;
 
-
     RAISE NOTICE '--- considering (%) in survey (%) ', NEW."GeometryID", NEW."SurveyID";
-    
-    /***
-    select "Value" into vehicleLength
-        from "mhtc_operations"."project_parameters"
-        where "Field" = 'VehicleLength';
-
-    select "Value" into vehicleWidth
-        from "mhtc_operations"."project_parameters"
-        where "Field" = 'VehicleWidth';
-
-    select "Value" into motorcycleWidth
-        from "mhtc_operations"."project_parameters"
-        where "Field" = 'MotorcycleWidth';
-
-    IF vehicleLength IS NULL OR vehicleWidth IS NULL OR motorcycleWidth IS NULL THEN
-        RAISE EXCEPTION 'Capacity parameters not available ...';
-        RETURN OLD;
-    END IF;
-    ***/
 
     ---
     select "PCU" into carPCU
@@ -216,7 +206,6 @@ BEGIN
     select "PCU" into escooterPCU
         from "demand_lookups"."VehicleTypes"
         where "Description" = 'E-Scooter';
-
 
     IF carPCU IS NULL OR lgvPCU IS NULL OR mclPCU IS NULL OR ogvPCU IS NULL OR busPCU IS NULL OR
        pclPCU IS NULL OR taxiPCU IS NULL OR otherPCU IS NULL OR minibusPCU IS NULL OR docklesspclPCU IS NULL OR escooterPCU IS NULL THEN
@@ -280,71 +269,103 @@ BEGIN
 	AND c."GeometryID" = RiS."GeometryID"
 	AND c."SurveyID" = RiS."SurveyID";
 
-    -- From Camden where determining capacity from sections
-	SELECT "Capacity", "RestrictionTypeID"   -- what happens if field does not exist?
-    INTO Supply_Capacity, RestrictionTypeID
+    -- Check restriction type ...
+	SELECT "Capacity", "RestrictionTypeID", "NrBays"   -- what happens if field does not exist?
+    INTO Supply_Capacity, RestrictionTypeID, NrBays
 	FROM mhtc_operations."Supply"
 	WHERE "GeometryID" = NEW."GeometryID";
+
+    IF (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
+		RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR RestrictionTypeID = 169   -- PCL, e-Scooter, Dockless PCLs
+		) THEN
+
+        select "Value" into vehicleLength
+            from "mhtc_operations"."project_parameters"
+            where "Field" = 'VehicleLength';
+
+        select "Value" into vehicleLength
+            from "mhtc_operations"."project_parameters"
+            where "Field" = 'BusLength';
+
+        carPCU = vehicleLength;
+        lgvPCU = vehicleLength;
+        mclPCU = 1.0;
+        ogvPCU = vehicleLength * 2.0;
+        minibusPCU = vehicleLength * 2.0;
+        busPCU = BusLength;
+        pclPCU = 1.0;
+        escooterPCU = 1.0;
+        docklesspclPCU = 1.0;
+
+		RAISE NOTICE '--- MCL/PCL bay - changing PCU values TO %; %; %; % ', mclPCU, pclPCU, docklesspclPCU, escooterPCU;
+
+    END IF;
+
+    NEW."Demand_ParkedIncorrectly" =
+        COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
+        COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
+        COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
+        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU +
+        COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
+        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU;
 
     NEW."Demand" = COALESCE(NrCars::float, 0.0) * carPCU +
         COALESCE(NrLGVs::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs::float, 0.0) * mclPCU +
-        COALESCE(NrOGVs::float, 0.0) * ogvPCU + COALESCE(NrMiniBuses::float, 0.0) * minibusPCU + COALESCE(NrBuses::float, 0.0) * busPCU +
+        COALESCE(NrOGVs::float, 0.0) * ogvPCU +
+        COALESCE(NrMiniBuses::float, 0.0) * minibusPCU +
+        COALESCE(NrBuses::float, 0.0) * busPCU +
         COALESCE(NrTaxis::float, 0.0) * taxiPCU +
         COALESCE(NrPCLs::float, 0.0) * pclPCU +
         COALESCE(NrEScooters::float, 0.0) * escooterPCU +
         COALESCE(NrDocklessPCLs::float, 0.0) * docklesspclPCU +
 
-        /***
-        -- include suspended vehicles
+        -- vehicles parked incorrectly
+        NEW."Demand_ParkedIncorrectly" +
+
+        -- vehicles in P&D bay displaying disabled badge
+  		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
+        ;
+
+    NEW."DemandInSuspendedAreas" =
         COALESCE(NrCars_Suspended::float, 0.0) * carPCU +
         COALESCE(NrLGVs_Suspended::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs_Suspended::float, 0.0) * mclPCU +
-        COALESCE(NrOGVs_Suspended::float, 0) * ogvPCU + COALESCE(NrMiniBuses_Suspended::float, 0) * minibusPCU + COALESCE(NrBuses_Suspended::float, 0) * busPCU +
+        COALESCE(NrOGVs_Suspended::float, 0) * ogvPCU +
+        COALESCE(NrMiniBuses_Suspended::float, 0) * minibusPCU +
+        COALESCE(NrBuses_Suspended::float, 0) * busPCU +
         COALESCE(NrTaxis_Suspended::float, 0) +
         COALESCE(NrPCLs_Suspended::float, 0.0) * pclPCU +
         COALESCE(NrEScooters_Suspended::float, 0.0) * escooterPCU +
-        COALESCE(NrDocklessPCLs_Suspended::float, 0.0) * docklesspclPCU +
-        ***/
+        COALESCE(NrDocklessPCLs_Suspended::float, 0.0) * docklesspclPCU;
 
+    NEW."Demand_Waiting" =
         COALESCE(NrCarsWaiting::float, 0.0) * carPCU +
         COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsWaiting::float, 0) * ogvPCU + COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU + COALESCE(NrBusesWaiting::float, 0) * busPCU +
-        COALESCE(NrTaxisWaiting::float, 0) * carPCU +
+        COALESCE(NrOGVsWaiting::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesWaiting::float, 0) * minibusPCU +
+        COALESCE(NrBusesWaiting::float, 0) * busPCU +
+        COALESCE(NrTaxisWaiting::float, 0) * carPCU;
 
+    NEW."Demand_Idling" =
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsIdling::float, 0) * ogvPCU + COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU + COALESCE(NrBusesIdling::float, 0) * busPCU +
-        COALESCE(NrTaxisIdling::float, 0) * carPCU
-		+
+        COALESCE(NrOGVsIdling::float, 0) * ogvPCU +
+        COALESCE(NrMiniBusesIdling::float, 0) * minibusPCU +
+        COALESCE(NrBusesIdling::float, 0) * busPCU +
+        COALESCE(NrTaxisIdling::float, 0) * carPCU;
 
-        COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
-        COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
-        COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
-        COALESCE(NrOGVsParkedIncorrectly::float, 0) * ogvPCU + COALESCE(NrMiniBusesParkedIncorrectly::float, 0) * minibusPCU + COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
-        COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU +
 
-  		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
+    NEW."Demand_ALL" =
+        NEW."Demand" +
+        NEW."Demand_Waiting" +
+        NEW."Demand_Idling" +
+        NEW."DemandInSuspendedAreas";
 
-        ;
-
-	RAISE NOTICE '*****--- demand is %. (NrCars = %) ...', NEW."Demand", NrCars;
-
-    /***
-    NEW."Demand_Standard" = COALESCE(NrCars::float, 0.0) +
-        COALESCE(NrLGVs::float, 0.0) +
-        COALESCE(NrMCLs::float, 0.0)*0.33 +
-        (COALESCE(NrOGVs::float, 0.0) + COALESCE(NrMiniBuses::float, 0.0) + COALESCE(NrBuses::float, 0.0))*1.5 +
-        COALESCE(NrTaxis::float, 0.0);
-
-    NEW."DemandInSuspendedAreas" = COALESCE(NrCars_Suspended::float, 0.0) +
-        COALESCE(NrLGVs_Suspended::float, 0.0) +
-        COALESCE(NrMCLs_Suspended::float, 0.0)*0.33 +
-        (COALESCE(NrOGVs_Suspended::float, 0) + COALESCE(NrMiniBuses_Suspended::float, 0) + COALESCE(NrBuses_Suspended::float, 0))*1.5 +
-        COALESCE(NrTaxis_Suspended::float, 0);
-    ***/
+	RAISE NOTICE '*****--- demand is %. (ALL = %) ...', NEW."Demand", NEW."Demand_ALL";
 
     /* What to do about suspensions */
 
@@ -382,6 +403,9 @@ BEGIN
                 Supply_Capacity = 0.0;
             END IF;
 
+        ELSE
+            RAISE EXCEPTION 'TimePeriodsControlledDuringSurveyHours does not exist ...';
+            RETURN OLD;
         END IF;
 
 	END IF;
@@ -452,6 +476,10 @@ BEGIN
             END IF;
 
         END IF;
+
+    ELSE
+        RAISE EXCEPTION 'DualRestrictions does not exist ...';
+        RETURN OLD;
     END IF;
 
 
@@ -461,17 +489,90 @@ BEGIN
     IF Capacity < 0.0 THEN
         Capacity = 0.0;
     END IF;
-    NEW."SupplyCapacity" = Supply_Capacity;
+
     NEW."CapacityAtTimeOfSurvey" = Capacity;
 
-    IF Capacity <= 0.0 THEN
+    -- Perceived supply / stress
+
+    /***
+     Perceived supply is Demand + NrSpaces
+
+    when a bay is longer than 20m (4 spaces), if it has occupancy of less than 75%, the theoretical available spaces is used, otherwise 0
+    when a bay is shorter than 20m (4 spaces), if it has an occupancy of less than 50%, the theoretical available spaces is used, otherwise 0.
+
+    ***/
+
+    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
+    NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+
+    IF NEW."CapacityAtTimeOfSurvey" > 0 AND NrBays < 0 --AND RestrictionTypeID < 200
+    AND NOT (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
+		RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR RestrictionTypeID = 169)   -- PCL, e-Scooter, Dockless PCLs
+    THEN  -- Only consider unmarked bays
+
+        demand_ratio = NEW."Demand" / NEW."CapacityAtTimeOfSurvey";
+
+        IF NrSpaces IS NOT NULL THEN
+
+            IF (NEW."CapacityAtTimeOfSurvey" <= 4 AND demand_ratio > 0.5) OR
+               (NEW."CapacityAtTimeOfSurvey" > 4 AND demand_ratio > 0.75) THEN
+
+                NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand" + NrSpaces;
+                NEW."PerceivedAvailableSpaces" = NrSpaces;
+                IF NEW."PerceivedCapacityAtTimeOfSurvey" > NEW."CapacityAtTimeOfSurvey" THEN
+                    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
+                    NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+                END IF;
+
+            END IF;
+
+        ELSE   -- No NrSpaces provided ...
+
+            IF (NEW."CapacityAtTimeOfSurvey" <= 4 AND demand_ratio > 0.5) OR
+               (NEW."CapacityAtTimeOfSurvey" > 4 AND demand_ratio > 0.75) THEN
+
+                    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand";
+                    NEW."PerceivedAvailableSpaces" = 0;
+
+            END IF;
+
+        END IF;
+
+    ELSE
+
+        NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
+        NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+
+    END IF;
+
+    -- final check
+    IF NEW."PerceivedCapacityAtTimeOfSurvey" < 0 THEN
+        NEW."PerceivedCapacityAtTimeOfSurvey" = 0;
+    END IF;
+
+    IF NEW."PerceivedAvailableSpaces" < 0 THEN
+        NEW."PerceivedAvailableSpaces" = 0;
+    END IF;
+
+    IF NEW."CapacityAtTimeOfSurvey" <= 0.0 THEN
         IF NEW."Demand" > 0.0 THEN
             NEW."Stress" = 1.0;
         ELSE
             NEW."Stress" = 0.0;
         END IF;
     ELSE
-        NEW."Stress" = NEW."Demand"::float / Capacity::float;
+        NEW."Stress" = NEW."Demand"::float / NEW."CapacityAtTimeOfSurvey"::float;
+    END IF;
+
+    -- perceived stress
+    IF NEW."PerceivedCapacityAtTimeOfSurvey" <= 0.0 THEN
+        IF NEW."Demand" > 0.0 THEN
+            NEW."PerceivedStress" = 1.0;
+        ELSE
+            NEW."PerceivedStress" = 0.0;
+        END IF;
+    ELSE
+        NEW."PerceivedStress" = NEW."Demand"::float / NEW."PerceivedCapacityAtTimeOfSurvey"::float;
     END IF;
 
 	RETURN NEW;
