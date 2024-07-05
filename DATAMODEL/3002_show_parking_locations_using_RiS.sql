@@ -21,7 +21,8 @@ AS
         d."Photos_01", d."Photos_02", d."Photos_03", d."Capacity", d."Demand"
         from
         (select ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" as "RestrictionType Description",
-        "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes", ris."SupplyCapacity" AS "Capacity", "Demand", "Stress",
+        "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
+        s."Capacity", "Demand", "Stress",
         ris."Photos_01", ris."Photos_02", ris."Photos_03"
         from demand."RestrictionsInSurveys" ris, demand."Surveys" su,
         (mhtc_operations."Supply" as a

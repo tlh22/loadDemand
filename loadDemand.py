@@ -62,7 +62,7 @@ from qgis.gui import (QgsMapCanvas)
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
-from loadVRMs.load_Occ_dialog import loadOccDialog
+from loadDemand.load_Occ_dialog import loadOccDialog
 from TOMsExport.checkableMapLayerList import checkableMapLayerListCtrl, checkableMapLayerList
 from TOMs.core.TOMsTransaction import TOMsTransaction
 from TOMs.restrictionTypeUtilsClass import (TOMsConfigFile)
