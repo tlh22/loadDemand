@@ -34,6 +34,7 @@ AS
     FROM mhtc_operations."Supply" s, demand."RestrictionsInSurveys" RiS
     WHERE s."GeometryID" = RiS."GeometryID"
     AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
+    -- AND ("UnacceptableTypeID" IS NULL OR "UnacceptableTypeID" NOT IN (1,11))  -- vehicle crossovers
     GROUP BY RiS."SurveyID", s."RoadName"
     ORDER BY s."RoadName", RiS."SurveyID" ) a
     ) d

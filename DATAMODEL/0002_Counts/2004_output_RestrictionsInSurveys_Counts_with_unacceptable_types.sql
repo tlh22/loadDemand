@@ -25,7 +25,7 @@ FROM
 (SELECT ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."RestrictionDescription" AS "RestrictionType Description", s."UnacceptabilityReason" AS "UnacceptabilityReason", 
 s."RoadName", s."CPZ",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
-ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand", ris."Stress", "SurveyAreaName", c."Notes",
+ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity" AS "SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand", ris."Stress", "SurveyAreaName", c."Notes",
  ris."PerceivedAvailableSpaces", ris."PerceivedCapacityAtTimeOfSurvey", ris."PerceivedStress" 
 --     ris."NrCars", ris."NrLGVs", ris."NrMCLs", ris."NrTaxis", ris."NrPCLs", ris."NrEScooters", ris."NrDocklessPCLs", 
 --     ris."NrOGVs", ris."NrMiniBuses", ris."NrBuses", ris."NrSpaces", ris."Notes"
@@ -34,6 +34,7 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, demand."Counts" c,
 (
   SELECT "GeometryID", "RestrictionTypeID", "BayLineTypes"."Description" AS "RestrictionDescription", 
   COALESCE("UnacceptableTypes"."Description", '') AS "UnacceptabilityReason",
+  "Capacity",
   "RoadName", "CPZ", "SurveyAreaName"
  FROM mhtc_operations."Supply" AS a
  LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code"
