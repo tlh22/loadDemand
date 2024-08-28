@@ -27,7 +27,7 @@ d."RestrictionLength", d."RoadName", d."CPZ",
 d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand"
 
 FROM
-(SELECT ris.*,
+(SELECT ris."SurveyID", ris."GeometryID", ris."CapacityAtTimeOfSurvey", ris."Demand",
  su."BeatTitle", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", s."RestrictionTypeID", s."RestrictionLength", s."SupplyCapacity",
  s."RestrictionType Description",
  s."UnacceptableType Description", s."RoadName", s."CPZ",
