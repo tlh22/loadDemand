@@ -19,7 +19,7 @@ UPDATE demand."VRMs" v
 SET "UserTypeID" = 1
 FROM demand."Surveys" s
 WHERE s."SurveyID" = v."SurveyID"
-AND s."BeatStartTime" = '0000';
+AND s."BeatStartTime" = '0030';
 
 UPDATE demand."VRMs"
 SET "UserTypeID" = 1

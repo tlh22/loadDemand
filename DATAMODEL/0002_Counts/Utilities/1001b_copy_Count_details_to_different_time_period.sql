@@ -9,8 +9,8 @@ DECLARE
     relevant_restriction_in_survey RECORD;
     clone_restriction_id uuid;
     current_done BOOLEAN := false;
-	curr_survey_id INTEGER := 201;
-	new_survey_id INTEGER := 101;
+	curr_survey_id INTEGER := 104;
+	new_survey_id INTEGER := 105;
 BEGIN
 
     FOR relevant_restriction_in_survey IN
@@ -18,10 +18,11 @@ BEGIN
             FROM "demand"."RestrictionsInSurveys" RiS, mhtc_operations."Supply" r, mhtc_operations."SurveyAreas" a
         WHERE RiS."GeometryID" = r."GeometryID"
         AND r."SurveyAreaID" = a."Code"
-        AND a."SurveyAreaName" IN ('B5', 'B7')
+        AND a."SurveyAreaName" IN ('5-E')
         AND RiS."Done" IS true
         AND RiS."SurveyID" = curr_survey_id
-		--AND RiS."DemandSurveyDateTime" < '2022-06-29'::date
+		AND RiS."DemandSurveyDateTime" > '2024-09-22'::date
+		AND RiS."Enumerator" = 'cy'
     LOOP
 
         RAISE NOTICE '*****--- Processing % moving from (%) to (%)', relevant_restriction_in_survey."GeometryID", curr_survey_id, new_survey_id;

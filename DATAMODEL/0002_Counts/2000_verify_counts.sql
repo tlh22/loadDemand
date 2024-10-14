@@ -132,6 +132,7 @@ DECLARE
     secondary_geometry_id VARCHAR (12);
     time_period_id INTEGER;
     vehicleLength real := 0.0;
+	busLength real := 0.0;
     demand_ratio real = 0.0;
     perceived_capacity_difference_ratio real := 0.0;
 
@@ -283,7 +284,7 @@ BEGIN
             from "mhtc_operations"."project_parameters"
             where "Field" = 'VehicleLength';
 
-        select "Value" into vehicleLength
+        select "Value" into busLength
             from "mhtc_operations"."project_parameters"
             where "Field" = 'BusLength';
 
@@ -292,7 +293,7 @@ BEGIN
         mclPCU = 1.0;
         ogvPCU = vehicleLength * 2.0;
         minibusPCU = vehicleLength * 2.0;
-        busPCU = BusLength;
+        busPCU = busLength;
         pclPCU = 1.0;
         escooterPCU = 1.0;
         docklesspclPCU = 1.0;

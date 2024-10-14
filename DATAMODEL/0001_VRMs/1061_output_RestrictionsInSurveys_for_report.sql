@@ -11,22 +11,32 @@ SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 SELECT d."SurveyID", LPAD(d."SurveyID"::text, 3, '0') || ' - ' || to_char(d."SurveyDate", 'Dy') || ' - ' || d."BeatStartTime" || ' - ' || d."BeatEndTime" AS "BeatTitle",
-d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
-d."RoadName", d."SideOfStreet",
-d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
-d."DemandSurveyDateTime", 
-d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."SurveyAreaName"
+d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", 
+d."RestrictionType Description", "UnacceptabilityReason", 
+d."RestrictionLength",
+d."RoadName", --d."SideOfStreet",
+d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand"
+--, ROUND(d."Stress"::numeric, 2) AS "Stress",
+--COALESCE("SurveyAreaName", '') AS "SurveyAreaName", d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", ROUND(d."PerceivedStress"::numeric, 2) AS "PerceivedStress"
+
 FROM
-(SELECT ris."SurveyID", su."SurveyDate", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
- s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ", 
+(SELECT ris."SurveyID", su."SurveyDate", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", 
+s."RestrictionDescription" AS "RestrictionType Description", s."UnacceptabilityReason" AS "UnacceptabilityReason",
+ s."RestrictionLength", s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ", 
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
-ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand"
+ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand",
+ ris."Stress", ris."Notes",
+ ris."PerceivedAvailableSpaces", ris."PerceivedCapacityAtTimeOfSurvey", ris."PerceivedStress" 
 -- , ris."SupplyCapacity_55m", ris."CapacityAtTimeOfSurvey_55m"
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
-((mhtc_operations."Supply" AS a
- LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
- LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS s
+(SELECT "GeometryID", "RestrictionTypeID", "BayLineTypes"."Description" AS "RestrictionDescription", 
+  COALESCE("UnacceptableTypes"."Description", '') AS "UnacceptabilityReason",
+  "RestrictionLength", "Capacity",
+  "RoadName", "CPZ", "SurveyAreaName"
+ FROM mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code"
+ LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
+ LEFT JOIN "toms_lookups"."UnacceptableTypes" AS "UnacceptableTypes" ON a."UnacceptableTypeID" is not distinct from "UnacceptableTypes"."Code") AS s
  WHERE ris."SurveyID" = su."SurveyID"
  AND ris."GeometryID" = s."GeometryID"
  --AND s."CPZ" = '7S'
