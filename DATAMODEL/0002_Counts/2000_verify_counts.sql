@@ -584,7 +584,10 @@ $$;
 -- create trigger
 
 DROP TRIGGER IF EXISTS update_demand ON demand."RestrictionsInSurveys";
-CREATE TRIGGER "update_demand" BEFORE INSERT OR UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
+CREATE TRIGGER "update_demand" BEFORE UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
+
+-- DROP TRIGGER IF EXISTS update_demand_counts ON demand."Counts";
+-- CREATE TRIGGER "update_demand_counts" AFTER UPDATE ON "demand"."Counts" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
 
 -- trigger trigger
 

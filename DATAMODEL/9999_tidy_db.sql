@@ -22,8 +22,14 @@ DROP TABLE IF EXISTS mhtc_operations."CrossoverNodes_Single" CASCADE;
 
 DROP TABLE IF EXISTS mhtc_operations."Supply_Copy" CASCADE;
 DROP TABLE IF EXISTS mhtc_operations."Supply_orig" CASCADE;
+DROP TABLE IF EXISTS mhtc_operations."Supply_orig2" CASCADE;
 DROP TABLE IF EXISTS mhtc_operations."Supply_orig3" CASCADE;
 DROP TABLE IF EXISTS mhtc_operations."Supply_Overlaps" CASCADE;
+
+-- Highways network
+
+DROP TABLE IF EXISTS highways_network."RoadLink_2019" CASCADE;
+DROP TABLE IF EXISTS highways_network."itn_roadcentreline" CASCADE;
 
 -- schemas not required
 

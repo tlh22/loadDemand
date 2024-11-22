@@ -30,3 +30,12 @@ WHERE RiS."GeometryID" = s."GeometryID";
 DELETE FROM demand."RestrictionsInSurveys"
 WHERE "GeometryID" NOT IN (SELECT "GeometryID"
 					       FROM mhtc_operations."Supply");
+
+
+-- Add extra Surveys
+INSERT INTO demand."RestrictionsInSurveys" ("SurveyID", "GeometryID", geom)
+SELECT "SurveyID", "GeometryID", r.geom As geom
+FROM mhtc_operations."Supply" r, demand."Surveys"
+WHERE "SurveyID" NOT IN
+(SELECT "SurveyID"
+FROM demand."RestrictionsInSurveys");

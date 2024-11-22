@@ -74,14 +74,19 @@ WHERE v."ID" = t."ID"
 
 UPDATE demand."VRMs" AS v
 SET "isLast" = true
-WHERE "SurveyID" IN (107, 207)
+WHERE "SurveyID" IN (
+	SELECT MAX("SurveyID")
+	FROM demand."Surveys"
+	WHERE "SurveyID" > 0
+	GROUP BY "SurveyID"/100::int
+)
 AND "isLast" = false;
 
 -- Now open at the start of the day
 
 UPDATE demand."VRMs" AS v
 SET "isFirst" = true
-WHERE "SurveyID" IN (102, 202)
+WHERE MOD("SurveyID", 100) = 1
 AND "isFirst" = false;
 
 /***
