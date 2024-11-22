@@ -76,11 +76,23 @@ CASE
     WHEN "VRM" SIMILAR TO '[A-Z][I][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I]([0-9])([A-Z])-([A-Z]{2})', '\11\2-\3\4') -- Second character is 1
     WHEN "VRM" SIMILAR TO '[A-Z][I][O][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I][0]([A-Z])-([A-Z]{2})', '\110-\2\3')  -- Second/Third character is IO
     WHEN "VRM" SIMILAR TO '[A-Z][I][I][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])[I][I]([A-Z])-([A-Z]{2})', '\111-\2\3')  -- Second/Third character is II
+	
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9]{2}[A-Z]-[A-Z][0]' THEN regexp_replace("VRM", '([A-Z][0-9]{2})([A-Z])-([A-Z])[0]', '\1-\2\3O')
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9]{2}[A-Z]-[A-Z][1]' THEN regexp_replace("VRM", '([A-Z][0-9]{2})([A-Z])-([A-Z])[1]', '\1-\2\3I')
 
     -- Tidy Previous UK (A9-AAA)
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9]-[A-Z]{3}' THEN "VRM"
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]{2}-[A-Z]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z]{2})-([A-Z])', '\1-\2\3')      -- A9AA-A
 	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([A-Z])([0-9])([A-Z])-([A-Z]{2})', '\1\2-\3\4')  -- A9A-AA
+	
+	WHEN "VRM" SIMILAR TO '[A-Z][I][A-Z]{2}-[A-Z]' THEN regexp_replace("VRM", '([A-Z])[I]([A-Z]{2})-([A-Z])', '\11-\2\3')
+	WHEN "VRM" SIMILAR TO '[A-Z][O][A-Z]{2}-[A-Z]' THEN regexp_replace("VRM", '([A-Z])[O]([A-Z]{2})-([A-Z])', '\10-\2\3')
+	
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z][0]-[A-Z]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z])[0]-([A-Z])', '\1-\2O\3')
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z][1]-[A-Z]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z])[1]-([A-Z])', '\1-\2I\3')
+	
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]{2}-[0]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z]{2})-([0])', '\1-\2O')
+	WHEN "VRM" SIMILAR TO '[A-Z][0-9][A-Z]{2}-[1]' THEN regexp_replace("VRM", '([A-Z][0-9])([A-Z]{2})-([1])', '\1-\2I')
 	
     -- Early UK (AAA-999A)
 	WHEN "VRM" SIMILAR TO '[A-Z]{3}-[0-9]{3}[A-Z]' THEN "VRM"
@@ -101,11 +113,17 @@ CASE
 
     -- (999-AAA)
     WHEN "VRM" SIMILAR TO '[0-9]{3}[A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([0-9]{3})([A-Z])-([A-Z]{2})', '\1-\2\3')
+	
+    -- (AAA-999)
+	WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{2}' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{2})', '\1-\2\3')	
+	WHEN "VRM" SIMILAR TO '[A-Z]{3}[I]-[0-9]{2}' THEN regexp_replace("VRM", '([A-Z]{3})[I]-([0-9]{2})', '\1-1\2')
+	WHEN "VRM" SIMILAR TO '[A-Z]{3}[O]-[0-9]{2}' THEN regexp_replace("VRM", '([A-Z]{3})[O]-([0-9]{2})', '\1-0\2')
 
     --- anything where there are three letters at the end ??
 
 	ELSE "VRM"
 END
+WHERE v."InternationalCode" IN (0) OR v."InternationalCode" IS NULL
 /***
 FROM mhtc_operations."Supply" s
 WHERE v."GeometryID" = s."GeometryID"

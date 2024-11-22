@@ -122,3 +122,9 @@ CREATE UNIQUE INDEX "idx_StressResults_ByWard_sid"
     TABLESPACE pg_default;
 
 REFRESH MATERIALIZED VIEW demand."StressResults_ByWard";
+
+--
+
+SELECT "WardName", "SurveyID", "BeatTitle", "Capacity", "CapacityAtTimeOfSurvey", "Demand", "Stress", "Residents Bay Capacity", "Residents Bay CapacityAtTimeOfSurvey", "Residents Bay Demand", "Residents Bay Stress", "Residents Bay PerceivedCapacityAtTimeOfSurvey", "Residents Bay PerceivedStress", "PayByPhone Bay Capacity", "PayByPhone Bay CapacityAtTimeOfSurvey", "PayByPhone Bay Demand", "PayByPhone Bay Stress"
+	FROM demand."StressResults_ByWard"
+	ORDER BY "WardName", "SurveyID"

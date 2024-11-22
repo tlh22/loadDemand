@@ -10,18 +10,26 @@ SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
-SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", 
-d."RoadName", d."SideOfStreet",
-d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", --d."SupplyCapacity_55m", d."CapacityAtTimeOfSurvey_55m", 
-d."DemandSurveyDateTime", d."Enumerator", d."Done", d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", 
---d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
-d."SurveyAreaName"
+
+SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", --d."SideOfStreet",
+
+--d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", --d."SupplyCapacity_55m", d."CapacityAtTimeOfSurvey_55m", 
+d."DemandSurveyDateTime", d."Enumerator", d."Done", d."Notes", 
+d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
+d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", 
+ROUND(d."Demand"::numeric, 2) AS "Demand", ROUND(d."Stress"::numeric, 2) AS "Stress",
+COALESCE("SurveyAreaName", '') AS "SurveyAreaName", 
+d."CPZ"
+, d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", ROUND(d."PerceivedStress"::numeric, 2) AS "PerceivedStress"
 FROM
 (SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
- s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",
+ s."RoadName", s."SideOfStreet", 
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
-ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand"
+ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand",
+ris."Stress", s."SurveyAreaName", ris."Notes",
+ ris."PerceivedAvailableSpaces", ris."PerceivedCapacityAtTimeOfSurvey", ris."PerceivedStress"
+ --, s."SurveyAreaName"
+ , s."CPZ"
 -- , ris."SupplyCapacity_55m", ris."CapacityAtTimeOfSurvey_55m"
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
 ((mhtc_operations."Supply" AS a

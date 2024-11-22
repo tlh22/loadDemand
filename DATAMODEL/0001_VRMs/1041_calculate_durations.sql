@@ -41,14 +41,14 @@ ALTER TABLE demand."VRMs"
 ALTER TABLE demand."VRMs"
     ADD COLUMN IF NOT EXISTS "orphan" boolean;
 
-/**
+
 UPDATE demand."VRMs"
 SET "isLast" = NULL;
 UPDATE demand."VRMs"
 SET "isFirst" = NULL;
 UPDATE demand."VRMs"
 SET "orphan" = NULL;
-**/
+
 
 -- In this case, considering by road name (could also consider by GeometryID)
 
@@ -74,17 +74,26 @@ WHERE v."ID" = t."ID"
 
 UPDATE demand."VRMs" AS v
 SET "isLast" = true
-WHERE "SurveyID" IN (188, 288, 388)
+WHERE "SurveyID" IN (
+	SELECT MAX("SurveyID")
+	FROM demand."Surveys"
+	WHERE "SurveyID" > 0
+	GROUP BY "SurveyID"/100::int
+)
 AND "isLast" = false;
 
--- Haringey (WSP2402)
+-- Now open at the start of the day
 
 UPDATE demand."VRMs" AS v
-SET "isLast" = true
-WHERE "SurveyID" IN (127, 227, 327)
-AND "isLast" = false;
+SET "isFirst" = true
+WHERE MOD("SurveyID", 100) = 1
+AND "isFirst" = false;
+
+/***
+-- deal with overnights
 
 UPDATE demand."VRMs" AS v
 SET "orphan" = true, "isFirst" = false, "isLast" = false
-WHERE "SurveyID" IN (101, 201, 301)
+WHERE "SurveyID" IN (101, 201)
 ;
+***/

@@ -160,7 +160,7 @@ demand."Surveys" su LEFT JOIN
 
 --- ******* OK now ...
 
-SELECT DISTINCT ON ("VRM", "GeometryID", "SurveyDay", first) "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", first, last, last-first+1 As span --, "UserTypeID"
+SELECT DISTINCT ON ("VRM", "GeometryID", "SurveyDay", first, last) "VRM", "GeometryID", "RestrictionTypeID", "RoadName", "SurveyDay", first, last, last-first+1 As span --, "UserTypeID"
 FROM (
 SELECT
         first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID" As first, MIN(last."SurveyID") OVER (PARTITION BY last."SurveyID") As last--, first."UserTypeID"
@@ -171,7 +171,7 @@ FROM
 		AND v."orphan" IS NOT true
     AND v."GeometryID" = su."GeometryID"
     AND v."SurveyID" = s."SurveyID"
-	AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park')
+	--AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park')
 	) AS first,
     (SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", v."SurveyID", s."SurveyDay"
     FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
@@ -179,15 +179,18 @@ FROM
 		AND v."orphan" IS NOT true
     AND v."GeometryID" = su."GeometryID"
     AND v."SurveyID" = s."SurveyID"
-	AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park')
+	--AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park')
 	) AS last
 WHERE first."VRM" = last."VRM"
 AND first."RoadName" = last."RoadName"
 --AND first."SurveyDay" = last."SurveyDay"
 AND first."SurveyID" < last."SurveyID"
+AND (first."SurveyID"/100.0)::int = (last."SurveyID"/100.0)::int
+AND first."SurveyID" NOT IN (101, 201)
+AND last."SurveyID" NOT IN (107, 207)
 --AND first."VRM" IN ('PX16-XCD', 'CA64-RDS')
 ) As y
-GROUP BY first."VRM", first."GeometryID", first."RestrictionTypeID", first."RoadName", first."SurveyDay", first."SurveyID"
+GROUP BY "VRM", "GeometryID", "RestrictionTypeID","RoadName", "SurveyDay", first, last
 
 UNION
 SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."SurveyDay", v."SurveyID" As first, v."SurveyID" AS last, 1 AS span--, v."UserTypeID"
@@ -195,9 +198,10 @@ SELECT v."VRM", v."GeometryID", su."RestrictionTypeID", su."RoadName", s."Survey
     WHERE v."orphan" = true
     AND v."GeometryID" = su."GeometryID"
     AND v."SurveyID" = s."SurveyID"
-	AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park');
-
+	--AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park', 'Art School Car Park', 'Loreburn Street Car Park', 'Dock Park Car Park', 'Dockhead Car Park');
+	AND s."SurveyID" NOT IN (101, 201, 107, 207)
 ORDER BY "VRM", "GeometryID", "SurveyDay", first
+
 
 -- Check
 SELECT v."SurveyID", s."SurveyDay", su."RoadName", v."GeometryID", su."RestrictionTypeID", v."VRM", "isFirst", "isLast", "orphan"

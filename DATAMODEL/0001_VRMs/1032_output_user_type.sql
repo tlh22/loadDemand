@@ -6,21 +6,33 @@ UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
  
 --- RiS
 
-SELECT d."SurveyID", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", 
-d."RestrictionTypeID", d."RestrictionType Description", d."RoadName", d."SideOfStreet",
-d."CPZ", 
- d."SupplyCapacity", d."CapacityAtTimeOfSurvey", d."Demand", 
+SELECT d."SurveyID", d."BeatTitle", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID",
+d."RestrictionTypeID", d."RestrictionType Description",
+d."UnacceptableType Description", 
+d."RestrictionLength", d."RoadName", d."CPZ",
+d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand",
  d."Demand_Residents", d."Demand_Commuters", d."Demand_Visitors"
 FROM
-(SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description", 
+(
+SELECT ris."SurveyID", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."RestrictionType Description", 
+s."UnacceptableType Description", s."RestrictionLength", 
  s."RoadName", s."SideOfStreet", s."SurveyAreaName", s."CPZ",
 "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
 ris."Photos_01", ris."Photos_02", ris."Photos_03", ris."SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."Demand",
 ris."Demand_Residents", ris."Demand_Commuters", ris."Demand_Visitors"
 FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
-((mhtc_operations."Supply" AS a
+(
+SELECT a."GeometryID", a."RestrictionTypeID", a."RestrictionLength", a."Capacity" AS "SupplyCapacity",
+"UnacceptableTypes"."Description" AS "UnacceptableType Description", 
+"BayLineTypes"."Description" AS "RestrictionType Description",
+a."RoadName", a."SideOfStreet", a."CPZ", "SurveyAreas"."SurveyAreaName", 
+ a.geom AS "SupplyGeom"
+ FROM
+(((  mhtc_operations."Supply" AS a
  LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
- LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS s
+ LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code")
+ LEFT JOIN "toms_lookups"."UnacceptableTypes" AS "UnacceptableTypes" ON a."UnacceptableTypeID" is not distinct from "UnacceptableTypes"."Code")
+ ) AS s
  WHERE ris."SurveyID" = su."SurveyID"
  AND ris."GeometryID" = s."GeometryID"
  --AND s."CPZ" = '7S'
@@ -43,6 +55,13 @@ SELECT v."ID", v."SurveyID", s."SurveyDay", CONCAT(s."BeatStartTime", '-', "Beat
         "UserType Description",
         --v."PermitTypeID", v."PermitType Description",
         v."Notes"
+
+SELECT d."SurveyID", LPAD(d."SurveyID"::text, 3, '0') || ' - ' || to_char(d."SurveyDate", 'Dy') || ' - ' || d."BeatStartTime" || ' - ' || d."BeatEndTime" AS "BeatTitle",
+d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID", d."RestrictionTypeID", 
+d."RestrictionType Description", "UnacceptabilityReason", 
+d."RestrictionLength",
+d."RoadName", --d."SideOfStreet",
+d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand"
 
 FROM
 (SELECT "ID", "SurveyID", a."GeometryID", "PositionID", "VRM",

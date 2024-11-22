@@ -35,7 +35,7 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, demand."Counts" c,
   SELECT "GeometryID", "RestrictionTypeID", "BayLineTypes"."Description" AS "RestrictionDescription", 
   COALESCE("UnacceptableTypes"."Description", '') AS "UnacceptabilityReason",
   "Capacity",
-  "RoadName", "CPZ", "SurveyAreaName"
+  "RoadName", "SideOfStreet", "CPZ", "SurveyAreaName"
  FROM mhtc_operations."Supply" AS a
  LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code"
  LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code"
