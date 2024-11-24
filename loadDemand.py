@@ -54,7 +54,7 @@ from qgis.core import (
     QgsMessageLog,
     QgsProject,
     QgsApplication, QgsExpression, QgsFeatureRequest, QgsMapLayer,
-    QgsExpressionContextUtils, QgsFeature, QgsTransaction
+    QgsExpressionContextUtils, QgsFeature, QgsTransaction, QgsDataSourceUri
 )
 
 from qgis.gui import (QgsMapCanvas)
@@ -200,6 +200,14 @@ class loadDemand:
         # show the dialog
 
         self.setupUi()
+
+        restrictionsInSurveysLayer = QgsProject.instance().mapLayersByName('RestrictionsInSurveys')[0]
+        username = QgsDataSourceUri(restrictionsInSurveysLayer.dataProvider().dataSourceUri()).username()
+
+        QMessageBox.critical(None, "Checking",
+                             "User {}.".format(username),
+                             "Click Cancel.", QMessageBox.Cancel)
+
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
