@@ -263,9 +263,15 @@ class loadDemand:
 
         # get any details that have been "Done"
 
-        #status = dbConn.transaction();
-        # relevant layers
-        restrictionsInSurveysLayer = QgsProject.instance().mapLayersByName('RestrictionsInSurveys')[0]
+        try:
+            restrictionsInSurveysLayer = QgsProject.instance().mapLayersByName('RestrictionsInSurveys')[0]
+        except Exception as e:
+            TOMsMessageLog.logMessage(
+                "In processRestrictionsForSurvey. Could not find restrictionsInSurveys layer", level=Qgis.Warning)
+            QMessageBox.critical(None, "processRestrictionsForSurvey",
+                                 "Could not find restrictionsInSurveys layer {}".format(e),
+                                 "Click Cancel to exit.", QMessageBox.Cancel)
+            return False
 
         if self.surveyType == 'Count':
             demandLayer = QgsProject.instance().mapLayersByName('Counts')[0]

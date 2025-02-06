@@ -14,7 +14,7 @@ Main steps:
  - Run loadDemand plugin - untick "TestBeat" and choose appropriate folder for source geopackage(s)
  - copy photos and check for any that are missing. Amend and use .Demand/copy_photos_from_demand.bat
 
-Now use scripts in loadVRMs plugin ...
+Now use scripts in loadDemand plugin ...
 
 1. Check that everything is loaded correctly
  - visual check from "load" project

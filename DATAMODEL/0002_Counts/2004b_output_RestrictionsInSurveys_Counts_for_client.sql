@@ -24,10 +24,13 @@ SELECT d."SurveyID", d."BeatTitle", d."SurveyDay", d."BeatStartTime" || '-' || d
 d."RestrictionTypeID", d."RestrictionType Description",
 d."UnacceptableType Description", 
 d."RestrictionLength", d."RoadName", d."CPZ",
-d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand"
+d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", 
+CASE WHEN "SurveyID" IN (101, 201, 301) THEN to_char(d."DemandSurveyDateTime" + interval '0' hour, 'Dy DD Mon HH24:MI')
+     ELSE to_char(d."DemandSurveyDateTime" + interval '0' hour, 'Dy DD Mon HH24:MI') 
+	 END As "SurveyDateTime"
 
 FROM
-(SELECT ris."SurveyID", ris."GeometryID", ris."CapacityAtTimeOfSurvey", ris."Demand",
+(SELECT ris."SurveyID", ris."GeometryID", ris."CapacityAtTimeOfSurvey", ris."Demand", ris."DemandSurveyDateTime",
  su."BeatTitle", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", s."RestrictionTypeID", s."RestrictionLength", s."SupplyCapacity",
  s."RestrictionType Description",
  s."UnacceptableType Description", s."RoadName", s."CPZ",
