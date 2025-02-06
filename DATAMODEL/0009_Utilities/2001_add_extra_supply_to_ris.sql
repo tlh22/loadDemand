@@ -39,3 +39,15 @@ FROM mhtc_operations."Supply" r, demand."Surveys"
 WHERE "SurveyID" NOT IN
 (SELECT "SurveyID"
 FROM demand."RestrictionsInSurveys");
+
+-- Deal with unique id
+
+UPDATE demand."RestrictionsInSurveys"
+SET "GeometryID_SurveyID" = CONCAT("GeometryID", '_', "SurveyID"::text);
+
+UPDATE demand."Counts" c
+SET "GeometryID_SurveyID" = RiS."GeometryID_SurveyID"
+FROM demand."RestrictionsInSurveys" RiS
+WHERE c."SurveyID" = RiS."SurveyID"
+AND c."GeometryID" = RiS."GeometryID"
+;
