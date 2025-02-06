@@ -40,7 +40,7 @@ FROM (SELECT DISTINCT ON (s."GeometryID") s."GeometryID" AS id,
         ST_ClosestPoint(c1.geom, s.geom) AS geom,
         ST_Distance(c1.geom, s.geom) AS length, c1."name1" AS "RoadName"
       FROM demand."DemandPhotos" s, highways_network."roadlink" c1
-      WHERE ST_DWithin(c1.geom, s.geom, 10.0)
+      WHERE ST_DWithin(c1.geom, s.geom, 15.0)
       ORDER BY s."GeometryID", length) AS closest
 WHERE c."GeometryID" = closest.id;
 
