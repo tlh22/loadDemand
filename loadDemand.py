@@ -202,11 +202,15 @@ class loadDemand:
         self.setupUi()
 
         restrictionsInSurveysLayer = QgsProject.instance().mapLayersByName('RestrictionsInSurveys')[0]
-        username = QgsDataSourceUri(restrictionsInSurveysLayer.dataProvider().dataSourceUri()).username()
+        username = QgsDataSourceUri(restrictionsInSurveysLayer.dataProvider().dataSourceUri(True)).username()
+        connInfo = QgsDataSourceUri(restrictionsInSurveysLayer.dataProvider().dataSourceUri()).connectionInfo()
+
+        r = _execute(None, "SELECT USER")
+        val = _fetchone(r)[0]
 
         QMessageBox.critical(None, "Checking",
-                             "User {}.".format(username),
-                             "Click Cancel.", QMessageBox.Cancel)
+                             "User {}.".format(val),
+                             QMessageBox.Cancel)
 
         self.dlg.show()
         # Run the dialog event loop
