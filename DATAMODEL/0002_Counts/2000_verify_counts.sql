@@ -605,7 +605,7 @@ WHERE su."SurveyID" = RiS."SurveyID"
 AND d."GeometryID" = RiS."GeometryID"
 AND su."SurveyID" > 0
 GROUP BY su."SurveyID", "SurveyAreaName"
-ORDER BY su."SurveyID", "SurveyAreaName"
+ORDER BY "SurveyAreaName", su."SurveyID"
 
 /***
 SELECT RiS."SurveyID", SUM("Demand")
