@@ -2,8 +2,8 @@
  * For situations where the supply is changed during a demand survey, add the new restrictions into "RestrictionsInSurveys"
  ***/
 
-INSERT INTO demand."RestrictionsInSurveys" ("SurveyID", "GeometryID", geom)
-SELECT "SurveyID", "GeometryID", r.geom As geom
+INSERT INTO demand."RestrictionsInSurveys" ("SurveyID", "GeometryID", "GeometryID_SurveyID", geom)
+SELECT "SurveyID", "GeometryID", CONCAT("GeometryID", '_', "SurveyID"::text) AS "GeometryID_SurveyID", r.geom As geom
 FROM mhtc_operations."Supply" r, demand."Surveys"
 WHERE "GeometryID" NOT IN
 (SELECT "GeometryID"
@@ -11,8 +11,8 @@ FROM demand."RestrictionsInSurveys");
 
 -- for count type surveys
 
-INSERT INTO demand."Counts" ("SurveyID", "GeometryID")
-SELECT "SurveyID", "GeometryID"
+INSERT INTO demand."Counts" ("SurveyID", "GeometryID", "GeometryID_SurveyID")
+SELECT "SurveyID", "GeometryID", CONCAT("GeometryID", '_', "SurveyID"::text) AS "GeometryID_SurveyID"
 FROM mhtc_operations."Supply" r, demand."Surveys"
 WHERE "GeometryID" NOT IN
 (SELECT "GeometryID"
@@ -31,7 +31,12 @@ DELETE FROM demand."RestrictionsInSurveys"
 WHERE "GeometryID" NOT IN (SELECT "GeometryID"
 					       FROM mhtc_operations."Supply");
 
+-- remove Counts entries for which there is no supply ...
 
+DELETE FROM demand."Counts"
+WHERE "GeometryID" NOT IN (SELECT "GeometryID"
+					       FROM mhtc_operations."Supply");
+						   
 -- Add extra Surveys
 INSERT INTO demand."RestrictionsInSurveys" ("SurveyID", "GeometryID", geom)
 SELECT "SurveyID", "GeometryID", r.geom As geom
