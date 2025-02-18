@@ -4,7 +4,9 @@
 
 -- trigger trigger
 
-UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+--UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";  -- Now working from update in Counts
+UPDATE "demand"."Counts" SET "NrBusesParkedIncorrectly" = "NrBusesParkedIncorrectly";
+
 
 ---
 

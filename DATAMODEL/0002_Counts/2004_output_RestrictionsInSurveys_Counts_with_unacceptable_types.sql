@@ -7,7 +7,8 @@ Need to change for each CPZ - and ensure correct Supply details
 
 -- trigger trigger
 
-UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+--UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";  -- Now working from update in Counts
+UPDATE "demand"."Counts" SET "NrBusesParkedIncorrectly" = "NrBusesParkedIncorrectly";
 
 
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", "UnacceptabilityReason", d."RoadName",

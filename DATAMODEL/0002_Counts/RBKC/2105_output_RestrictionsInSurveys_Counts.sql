@@ -8,7 +8,11 @@ All demand details are held on RiS
 UPDATE "mhtc_operations"."Supply"
 SET "RestrictionLength" = ROUND(ST_Length (geom)::numeric,2);
 
-UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+-- trigger update trigger
+UPDATE "demand"."Counts" SET "NrBusesParkedIncorrectly" = "NrBusesParkedIncorrectly";
+
+
+--
 
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", item_refs, d."RestrictionTypeID", d."RestrictionType Description", 
 
@@ -41,12 +45,12 @@ d."PerceivedAvailableSpaces",
     --, d."SupplyGeom" as geom
 
 FROM
-(SELECT ris.*,
+(SELECT ris.*, c.*,
  su."BeatTitle", s."RestrictionTypeID", s."RestrictionLength", s."RestrictionType Description", 
  s."UnacceptableType Description", s."RoadName", s."CPZ",
  "SurveyAreaName", s."WardName", s."ParkingTariffZoneName", s."HospitalZonesBlueBadgeHoldersName", s.item_refs,
  s."SupplyGeom"
-FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su,
+FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, demand."Counts" c,
 (
 SELECT a."GeometryID", a."RestrictionTypeID", a."RestrictionLength", "UnacceptableTypes"."Description" AS "UnacceptableType Description", "BayLineTypes"."Description" AS "RestrictionType Description",
 a."RoadName", a."CPZ", "SurveyAreas"."SurveyAreaName", "Wards"."Name" AS "WardName", "ParkingTariffZones"."ParkingTariffZoneName",
@@ -66,6 +70,8 @@ a."RoadName", a."CPZ", "SurveyAreas"."SurveyAreaName", "Wards"."Name" AS "WardNa
  ) AS s
  WHERE ris."SurveyID" = su."SurveyID"
  AND ris."GeometryID" = s."GeometryID"
+ AND ris."SurveyID" = c."SurveyID"
+ AND ris."GeometryID" = c."GeometryID"
  AND su."SurveyID" > 0
  --AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
  --AND RiS."Done" IS True

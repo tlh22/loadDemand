@@ -135,6 +135,18 @@ DECLARE
 	busLength real := 0.0;
     demand_ratio real = 0.0;
     perceived_capacity_difference_ratio real := 0.0;
+	
+	CapacityAtTimeOfSurvey INTEGER;
+	PerceivedAvailableSpaces INTEGER;
+	PerceivedCapacityAtTimeOfSurvey INTEGER;
+	Demand_ALL REAL;
+	Demand REAL;
+	Demand_Waiting REAL;
+	Demand_Idling REAL;
+	DemandInSuspendedAreas REAL;
+	Demand_ParkedIncorrectly REAL;
+	Stress REAL;
+	PerceivedStress REAL;
 
 BEGIN
 
@@ -144,7 +156,7 @@ BEGIN
 		pg_tables
 	WHERE
 		schemaname = 'demand' AND
-		tablename  = 'Surveys_Counts'
+		tablename  = 'Counts'
 	) ;
 
 	IF check_exists THEN
@@ -302,7 +314,7 @@ BEGIN
 
     END IF;
 
-    NEW."Demand_ParkedIncorrectly" =
+    Demand_ParkedIncorrectly =
         COALESCE(NrCarsParkedIncorrectly::float, 0.0) * carPCU +
         COALESCE(NrLGVsParkedIncorrectly::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsParkedIncorrectly::float, 0.0) * mclPCU +
@@ -311,7 +323,7 @@ BEGIN
         COALESCE(NrBusesParkedIncorrectly::float, 0) * busPCU +
         COALESCE(NrTaxisParkedIncorrectly::float, 0) * carPCU;
 
-    NEW."Demand" = COALESCE(NrCars::float, 0.0) * carPCU +
+    Demand = COALESCE(NrCars::float, 0.0) * carPCU +
         COALESCE(NrLGVs::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs::float, 0.0) * mclPCU +
         COALESCE(NrOGVs::float, 0.0) * ogvPCU +
@@ -323,13 +335,13 @@ BEGIN
         COALESCE(NrDocklessPCLs::float, 0.0) * docklesspclPCU +
 
         -- vehicles parked incorrectly
-        NEW."Demand_ParkedIncorrectly" +
+        Demand_ParkedIncorrectly +
 
         -- vehicles in P&D bay displaying disabled badge
   		COALESCE(NrCarsWithDisabledBadgeParkedInPandD::float, 0.0) * carPCU
         ;
 
-    NEW."DemandInSuspendedAreas" =
+    DemandInSuspendedAreas =
         COALESCE(NrCars_Suspended::float, 0.0) * carPCU +
         COALESCE(NrLGVs_Suspended::float, 0.0) * lgvPCU +
         COALESCE(NrMCLs_Suspended::float, 0.0) * mclPCU +
@@ -341,7 +353,7 @@ BEGIN
         COALESCE(NrEScooters_Suspended::float, 0.0) * escooterPCU +
         COALESCE(NrDocklessPCLs_Suspended::float, 0.0) * docklesspclPCU;
 
-    NEW."Demand_Waiting" =
+    Demand_Waiting =
         COALESCE(NrCarsWaiting::float, 0.0) * carPCU +
         COALESCE(NrLGVsWaiting::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsWaiting::float, 0.0) * mclPCU +
@@ -350,7 +362,7 @@ BEGIN
         COALESCE(NrBusesWaiting::float, 0) * busPCU +
         COALESCE(NrTaxisWaiting::float, 0) * carPCU;
 
-    NEW."Demand_Idling" =
+    Demand_Idling =
         COALESCE(NrCarsIdling::float, 0.0) * carPCU +
         COALESCE(NrLGVsIdling::float, 0.0) * lgvPCU +
         COALESCE(NrMCLsIdling::float, 0.0) * mclPCU +
@@ -360,13 +372,13 @@ BEGIN
         COALESCE(NrTaxisIdling::float, 0) * carPCU;
 
 
-    NEW."Demand_ALL" =
-        NEW."Demand" +
-        NEW."Demand_Waiting" +
-        NEW."Demand_Idling" +
-        NEW."DemandInSuspendedAreas";
+    Demand_ALL =
+        Demand +
+        Demand_Waiting +
+        Demand_Idling +
+        DemandInSuspendedAreas;
 
-	RAISE NOTICE '*****--- demand is %. (ALL = %) ...', NEW."Demand", NEW."Demand_ALL";
+	RAISE NOTICE '*****--- demand is %. (ALL = %) ...', Demand, Demand_ALL;
 
     /* What to do about suspensions */
 
@@ -491,7 +503,7 @@ BEGIN
         Capacity = 0.0;
     END IF;
 
-    NEW."CapacityAtTimeOfSurvey" = Capacity;
+    CapacityAtTimeOfSurvey = Capacity;
 
     -- Perceived supply / stress
 
@@ -503,37 +515,37 @@ BEGIN
 
     ***/
 
-    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-    NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+    PerceivedCapacityAtTimeOfSurvey = CapacityAtTimeOfSurvey;
+    PerceivedAvailableSpaces = CapacityAtTimeOfSurvey - Demand;
 
-    IF NEW."CapacityAtTimeOfSurvey" > 0 AND NrBays < 0 --AND RestrictionTypeID < 200
+    IF CapacityAtTimeOfSurvey > 0 AND NrBays < 0 --AND RestrictionTypeID < 200
     AND NOT (RestrictionTypeID = 117 OR RestrictionTypeID = 118 OR   -- MCLs
 		RestrictionTypeID = 119 OR RestrictionTypeID = 168 OR RestrictionTypeID = 169)   -- PCL, e-Scooter, Dockless PCLs
     THEN  -- Only consider unmarked bays
 
-        demand_ratio = NEW."Demand" / NEW."CapacityAtTimeOfSurvey";
+        demand_ratio = Demand / CapacityAtTimeOfSurvey;
 
         IF NrSpaces IS NOT NULL THEN
 
-            IF (NEW."CapacityAtTimeOfSurvey" <= 4 AND demand_ratio > 0.5) OR
-               (NEW."CapacityAtTimeOfSurvey" > 4 AND demand_ratio > 0.75) THEN
+            IF (CapacityAtTimeOfSurvey <= 4 AND demand_ratio > 0.5) OR
+               (CapacityAtTimeOfSurvey > 4 AND demand_ratio > 0.75) THEN
 
-                NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand" + NrSpaces;
-                NEW."PerceivedAvailableSpaces" = NrSpaces;
-                IF NEW."PerceivedCapacityAtTimeOfSurvey" > NEW."CapacityAtTimeOfSurvey" THEN
-                    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-                    NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+                PerceivedCapacityAtTimeOfSurvey = Demand + NrSpaces;
+                PerceivedAvailableSpaces = NrSpaces;
+                IF PerceivedCapacityAtTimeOfSurvey > CapacityAtTimeOfSurvey THEN
+                    PerceivedCapacityAtTimeOfSurvey = CapacityAtTimeOfSurvey;
+                    PerceivedAvailableSpaces = CapacityAtTimeOfSurvey - Demand;
                 END IF;
 
             END IF;
 
         ELSE   -- No NrSpaces provided ...
 
-            IF (NEW."CapacityAtTimeOfSurvey" <= 4 AND demand_ratio > 0.5) OR
-               (NEW."CapacityAtTimeOfSurvey" > 4 AND demand_ratio > 0.75) THEN
+            IF (CapacityAtTimeOfSurvey <= 4 AND demand_ratio > 0.5) OR
+               (CapacityAtTimeOfSurvey > 4 AND demand_ratio > 0.75) THEN
 
-                    NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."Demand";
-                    NEW."PerceivedAvailableSpaces" = 0;
+                    PerceivedCapacityAtTimeOfSurvey = Demand;
+                    PerceivedAvailableSpaces = 0;
 
             END IF;
 
@@ -541,41 +553,58 @@ BEGIN
 
     ELSE
 
-        NEW."PerceivedCapacityAtTimeOfSurvey" = NEW."CapacityAtTimeOfSurvey";
-        NEW."PerceivedAvailableSpaces" = NEW."CapacityAtTimeOfSurvey" - NEW."Demand";
+        PerceivedCapacityAtTimeOfSurvey = CapacityAtTimeOfSurvey;
+        PerceivedAvailableSpaces = CapacityAtTimeOfSurvey - Demand;
 
     END IF;
 
     -- final check
-    IF NEW."PerceivedCapacityAtTimeOfSurvey" < 0 THEN
-        NEW."PerceivedCapacityAtTimeOfSurvey" = 0;
+    IF PerceivedCapacityAtTimeOfSurvey < 0 THEN
+        PerceivedCapacityAtTimeOfSurvey = 0;
     END IF;
 
-    IF NEW."PerceivedAvailableSpaces" < 0 THEN
-        NEW."PerceivedAvailableSpaces" = 0;
+    IF PerceivedAvailableSpaces < 0 THEN
+        PerceivedAvailableSpaces = 0;
     END IF;
 
-    IF NEW."CapacityAtTimeOfSurvey" <= 0.0 THEN
-        IF NEW."Demand" > 0.0 THEN
-            NEW."Stress" = 1.0;
+    IF CapacityAtTimeOfSurvey <= 0.0 THEN
+        IF Demand > 0.0 THEN
+            Stress = 1.0;
         ELSE
-            NEW."Stress" = 0.0;
+            Stress = 0.0;
         END IF;
     ELSE
-        NEW."Stress" = NEW."Demand"::float / NEW."CapacityAtTimeOfSurvey"::float;
+        Stress = Demand::float / CapacityAtTimeOfSurvey::float;
     END IF;
 
     -- perceived stress
-    IF NEW."PerceivedCapacityAtTimeOfSurvey" <= 0.0 THEN
-        IF NEW."Demand" > 0.0 THEN
-            NEW."PerceivedStress" = 1.0;
+    IF PerceivedCapacityAtTimeOfSurvey <= 0.0 THEN
+        IF Demand > 0.0 THEN
+            PerceivedStress = 1.0;
         ELSE
-            NEW."PerceivedStress" = 0.0;
+            PerceivedStress = 0.0;
         END IF;
     ELSE
-        NEW."PerceivedStress" = NEW."Demand"::float / NEW."PerceivedCapacityAtTimeOfSurvey"::float;
+        PerceivedStress = Demand::float / PerceivedCapacityAtTimeOfSurvey::float;
     END IF;
 
+	-- Update RiS
+	UPDATE demand."RestrictionsInSurveys"
+	SET "CapacityAtTimeOfSurvey" = CapacityAtTimeOfSurvey,
+	    "PerceivedAvailableSpaces" = PerceivedAvailableSpaces,
+	    "PerceivedCapacityAtTimeOfSurvey" = PerceivedCapacityAtTimeOfSurvey,
+		"Demand_ALL" = Demand_ALL,
+        "Demand" = Demand,
+        "Demand_Waiting" = Demand_Waiting,
+        "Demand_Idling" = Demand_Idling,
+        "DemandInSuspendedAreas" = DemandInSuspendedAreas,
+		"Demand_ParkedIncorrectly" = Demand_ParkedIncorrectly,
+		"Stress" = Stress,
+		"PerceivedStress" = PerceivedStress
+		
+	WHERE "SurveyID" = NEW."SurveyID"
+	AND "GeometryID" = NEW."GeometryID";
+	
 	RETURN NEW;
 
 END;
@@ -584,15 +613,15 @@ $$;
 -- create trigger
 
 DROP TRIGGER IF EXISTS update_demand ON demand."RestrictionsInSurveys";
-CREATE TRIGGER "update_demand" BEFORE UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
+--CREATE TRIGGER "update_demand" BEFORE UPDATE ON "demand"."RestrictionsInSurveys" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
 
--- DROP TRIGGER IF EXISTS update_demand_counts ON demand."Counts";
--- CREATE TRIGGER "update_demand_counts" AFTER UPDATE ON "demand"."Counts" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
+DROP TRIGGER IF EXISTS update_demand_counts ON demand."Counts";
+CREATE TRIGGER "update_demand_counts" AFTER UPDATE ON "demand"."Counts" FOR EACH ROW EXECUTE FUNCTION "demand"."update_demand_counts"();
 
 -- trigger trigger
 
-UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
-
+-- UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+UPDATE "demand"."Counts" SET "NrBusesParkedIncorrectly" = "NrBusesParkedIncorrectly";
 
 -- Check details
 
