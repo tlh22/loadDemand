@@ -128,3 +128,19 @@ REFRESH MATERIALIZED VIEW demand."StressResults_ByWard";
 SELECT "WardName", "SurveyID", "BeatTitle", "Capacity", "CapacityAtTimeOfSurvey", "Demand", "Stress", "Residents Bay Capacity", "Residents Bay CapacityAtTimeOfSurvey", "Residents Bay Demand", "Residents Bay Stress", "Residents Bay PerceivedCapacityAtTimeOfSurvey", "Residents Bay PerceivedStress", "PayByPhone Bay Capacity", "PayByPhone Bay CapacityAtTimeOfSurvey", "PayByPhone Bay Demand", "PayByPhone Bay Stress"
 	FROM demand."StressResults_ByWard"
 	ORDER BY "WardName", "SurveyID"
+
+
+/***
+-- Style
+
+<= 50%   "SurveyID" =   @atlas_featureid   AND ("Stress" >= 0.0 AND "Stress"  <= 0.50 )
+51%-60% "SurveyID" =   @atlas_featureid   AND ("Stress"  > 0.5 AND "Stress"  <= 0.6 )
+61%-70% "SurveyID" =   @atlas_featureid   AND ("Stress"  > 0.6 AND "Stress"  <= 0.7 )
+71%-80% "SurveyID" =   @atlas_featureid   AND ("Stress" > 0.7 AND "Stress"  <= 0.8 )
+81%-90% "SurveyID" =   @atlas_featureid   AND ("Stress" > 0.8 AND "Stress"  <= 0.9)
+91%-100%  "SurveyID" =   @atlas_featureid   AND ("Stress" > 0.9 AND "Stress"  <= 1.0 )
+>100%  "SurveyID" =   @atlas_featureid   AND ("Stress" > 1.0 )
+No supply or demand   "SurveyID" =   @atlas_featureid   AND ("Stress" < 0.0 OR "Stress" IS NULL)	
+  
+	 
+***/

@@ -591,7 +591,11 @@ CREATE TRIGGER "update_demand" BEFORE UPDATE ON "demand"."RestrictionsInSurveys"
 
 -- trigger trigger
 
-UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+UPDATE "demand"."RestrictionsInSurveys" AS RiS
+SET "Photos_03" = "Photos_03"
+WHERE RiS.gid >= 0 
+AND RiS.gid < 5000
+;
 
 
 -- Check details

@@ -19,7 +19,7 @@ CREATE EXTENSION IF NOT EXISTS tablefunc;
 
 SELECT * FROM crosstab('
 SELECT d1."RoadName"::text, d1."BeatTitle"::text, 
-CASE WHEN "DemandSurveyDate_Road" >= ''2022-09-20''::date OR "DemandSurveyDate_Road" <= ''2022-11-14''::date THEN
+CASE WHEN "DemandSurveyDate_Road" >= ''2024-09-14''::date OR "DemandSurveyDate_Road" <= ''2024-10-06''::date THEN
          TO_CHAR("DemandSurveyDate_Road", ''dd/mm/yyyy'')::text
      ELSE
          TO_CHAR("DemandSurveyDate_Area", ''dd/mm/yyyy'')::text

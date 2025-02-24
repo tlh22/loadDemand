@@ -9,7 +9,7 @@ TABLESPACE pg_default
 AS
     SELECT
         row_number() OVER (PARTITION BY true::boolean) AS sid,
-    r.id, r."roadname1_name" AS "RoadName", r.geom,
+    r.id, r."roadName" AS "RoadName", r.geom,
     d."SurveyID", COALESCE(d."Capacity", 0) AS "Capacity", COALESCE(d."CapacityAtTimeOfSurvey", 0) AS "CapacityAtTimeOfSurvey", 
     COALESCE(d."Demand", 0) AS "Demand", COALESCE(d."Stress", -1) AS "Stress",
     COALESCE(d."Residents Bay Capacity", 0) AS "Residents Bay Capacity", COALESCE(d."Residents Bay CapacityAtTimeOfSurvey", 0) AS "Residents Bay CapacityAtTimeOfSurvey",
@@ -18,7 +18,7 @@ AS
     COALESCE(d."PayByPhone Bay Capacity", 0) AS "PayByPhone Bay Capacity", COALESCE(d."PayByPhone Bay CapacityAtTimeOfSurvey", 0) AS "PayByPhone Bay CapacityAtTimeOfSurvey", 
     COALESCE(d."PayByPhone Bay Demand", 0) AS "PayByPhone Bay Demand", COALESCE(d."PayByPhone Bay Stress", -1) AS "PayByPhone Bay Stress"
     
-	FROM highways_network."roadlink" r LEFT JOIN
+	FROM highways_network."RoadLink" r LEFT JOIN
 	(
 	SELECT "SurveyID", "RoadLinkID", "Capacity", "CapacityAtTimeOfSurvey", "Demand",
         CASE
@@ -110,8 +110,8 @@ AS
     AND RiS."SurveyID" > 0
     GROUP BY RiS."SurveyID", s."RoadLinkID"
     ORDER BY s."RoadLinkID", RiS."SurveyID" ) a
-    ) d ON r."id" = d."RoadLinkID"
-	WHERE LENGTH(r."roadname1_name") > 0
+    ) d ON r."id"::integer = d."RoadLinkID"
+	WHERE LENGTH(r."roadName") > 0
 	
 WITH DATA;
 

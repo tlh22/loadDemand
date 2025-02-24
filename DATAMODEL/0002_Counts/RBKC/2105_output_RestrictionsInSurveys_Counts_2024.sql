@@ -56,8 +56,10 @@ ris."PerceivedAvailableSpaces",
 	Accessible Permit Holder Bays and Estate Permit Holder Bays. 											
 ***/
 
-	, CASE WHEN s."RestrictionTypeID" IN (201,221,224) AND s."UnacceptableTypeID" = 6 THEN 'Corner'
-		  ELSE 'Other'
+	, CASE WHEN s."RestrictionTypeID" IN (201,221,224) THEN
+		   CASE WHEN s."UnacceptableType Description" = 'Corner' THEN 'Corner'
+				ELSE 'Other'
+				END	
 	END AS "SYL Category"
 	
     --, ris."Enumerator", ris."Done"

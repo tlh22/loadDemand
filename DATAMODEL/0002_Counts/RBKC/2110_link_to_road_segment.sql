@@ -12,7 +12,7 @@ SET "RoadLinkID" = id
 FROM
 (
 SELECT DISTINCT ON (s."GeometryID") s."GeometryID", r.id, ST_Length(ST_ShortestLine(r.geom, ST_LineInterpolatePoint(s.geom, 0.5))) AS dist
-FROM mhtc_operations."Supply" s, highways_network."roadlink" r
+FROM mhtc_operations."Supply" s, highways_network."RoadLink" r
 WHERE ST_DWithin(s.geom, r.geom, 15.0)
 ORDER BY s."GeometryID", dist
 ) AS p
