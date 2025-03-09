@@ -144,7 +144,7 @@ BEGIN
 		pg_tables
 	WHERE
 		schemaname = 'demand' AND
-		tablename  = 'Surveys_Counts'
+		tablename  = 'Counts'
 	) ;
 
 	IF check_exists THEN
