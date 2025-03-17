@@ -8,6 +8,16 @@ UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 ---
 
+-- Unsure beat title is correct
+
+UPDATE demand."Surveys"
+--SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || "SurveyDay" || '_' || "BeatStartTime" || '_' || "BeatEndTime"
+SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || to_char("SurveyDate", 'Dy_DD_Mon') || '_' || "BeatStartTime" || '_' || "BeatEndTime"
+--WHERE "BeatTitle" IS NULL
+;
+
+---
+
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."Notes",
 d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",

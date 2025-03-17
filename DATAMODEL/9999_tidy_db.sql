@@ -46,6 +46,6 @@ DROP SCHEMA IF EXISTS transfer CASCADE;
 -- Other tables that are not required
 
 DROP TABLE IF EXISTS public."RC_Polyline" CASCADE;
-DROP TABLE IF EXISTS public."RC_Sections_merged" CASCADE;
+--DROP TABLE IF EXISTS public."RC_Sections_merged" CASCADE;
 
 

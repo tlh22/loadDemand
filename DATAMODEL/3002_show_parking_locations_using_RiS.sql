@@ -12,7 +12,7 @@ AS
          else sv."NrBays"
     end as "NrBays",
     f."Capacity",
-    f."SurveyID", f."Demand" as "Demand"
+    f."SurveyID", ROUND(CAST(f."Demand" AS numeric), 0) as "Demand"
 
     from demand."Supply_for_viewing_parking_locations" sv,
 
