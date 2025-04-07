@@ -19,7 +19,12 @@ DECLARE
 	survey_id INTEGER;
 BEGIN
 
-	survey_id = 101;
+	survey_id = 0;
+	
+	IF survey_id = 0 THEN 
+        RAISE EXCEPTION 'Please set survey id ...'; 
+		RETURN;
+    END IF;
 	
 	-- TODO: There is still a possible overright if the order is not sequential, e.g., if go back to start or reverse direction ...
 

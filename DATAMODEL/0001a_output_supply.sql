@@ -20,7 +20,10 @@ SELECT
                  END
              ELSE "RestrictionTypeID"
         END AS "RestrictionTypeID",
-"BayLineTypes"."Description" AS "RestrictionDescription",
+CASE WHEN "RestrictionTypeID" IN (220, 221, 222) THEN CONCAT("BayLineTypes"."Description", ' - ', "UnacceptableTypes"."Description")
+     ELSE "BayLineTypes"."Description"
+     END AS "RestrictionDescription",
+--"BayLineTypes"."Description" AS "RestrictionDescription",
 "GeomShapeID", COALESCE("RestrictionGeomShapeTypes"."Description", '') AS "Restriction Shape Description",
 a."RoadName", a."StartStreet" AS "RoadFrom", a."EndStreet" AS "RoadTo", a."SideOfStreet", "RC_Sections_merged"."SectionName", 
 COALESCE("SurveyAreas"."SurveyAreaName", '')  AS "SurveyAreaName",

@@ -21,7 +21,10 @@ UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 --
 
 SELECT d."SurveyID", d."BeatTitle", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID",
-d."RestrictionTypeID", d."RestrictionType Description",
+d."RestrictionTypeID", 
+CASE WHEN d."RestrictionTypeID" IN (220, 221, 222) THEN CONCAT(d."RestrictionType Description", ' - ', d."UnacceptableType Description")
+     ELSE d."RestrictionType Description"
+     END AS "RestrictionType Description",
 d."UnacceptableType Description", 
 d."RestrictionLength", d."RoadName", d."CPZ",
 d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", 

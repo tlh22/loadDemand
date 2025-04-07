@@ -1,34 +1,90 @@
 
-ALTER TABLE IF EXISTS demand."Counts"
-    ADD COLUMN "MCL_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "MCL_Notes" character varying(10000);
 
-ALTER TABLE IF EXISTS demand."Counts"
-    ADD COLUMN "Supply_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Supply_Notes" character varying(10000);
 
-ALTER TABLE IF EXISTS demand."Counts"
-    ADD COLUMN "Parking_Notes" character varying(10000);
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "Parking_Notes" character varying(10000);
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "BrokenAnchors" INTEGER;
+
+ALTER TABLE IF EXISTS demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "ChainsLeft" INTEGER;
+	
+/***
+
+Sift details
+
+***/
+
+UPDATE demand."RestrictionsInSurveys"
+SET "MCL_Notes" = NULL 
+WHERE "MCL_Notes" = 'NO ANCHORS';
+
+UPDATE demand."RestrictionsInSurveys"
+SET "BrokenAnchors" = 1
+WHERE UPPER("MCL_Notes") LIKE UPPER('%1 broken%');
+
+UPDATE demand."RestrictionsInSurveys"
+SET "BrokenAnchors" = 2
+WHERE UPPER("MCL_Notes") LIKE UPPER('%2 broken%');
+
+UPDATE demand."RestrictionsInSurveys"
+SET "BrokenAnchors" = 3
+WHERE UPPER("MCL_Notes") LIKE UPPER('%3 broken%');
+
+--
+
+UPDATE demand."RestrictionsInSurveys"
+SET "ChainsLeft" = 1
+WHERE UPPER("MCL_Notes") LIKE UPPER('%1 chain%');
+
+UPDATE demand."RestrictionsInSurveys"
+SET "ChainsLeft" = 2
+WHERE UPPER("MCL_Notes") LIKE UPPER('%2 chain%');
+
+UPDATE demand."RestrictionsInSurveys"
+SET "ChainsLeft" = 3
+WHERE UPPER("MCL_Notes") LIKE UPPER('%3 chain%');
+
+UPDATE demand."RestrictionsInSurveys"
+SET "ChainsLeft" = 4
+WHERE UPPER("MCL_Notes") LIKE UPPER('%4 chain%');
+
+UPDATE demand."RestrictionsInSurveys"
+SET "ChainsLeft" = 5
+WHERE UPPER("MCL_Notes") LIKE UPPER('%5 chain%');
+
 
 /***
  * Output details of MCL bays with chains / broken anchors
  ***/
 
- SELECT
+SELECT
 "GeometryID", a."SurveyID", "BeatTitle", "RestrictionTypeID",
 "BayLineTypes"."Description" AS "RestrictionDescription",
 "GeomShapeID", COALESCE("RestrictionGeomShapeTypes"."Description", '') AS "Restriction Shape Description",
-a."RoadName", COALESCE("SurveyAreas"."SurveyAreaName", '')  AS "SurveyAreaName",
+a."RoadName", --COALESCE("SurveyAreas"."SurveyAreaName", '')  AS "SurveyAreaName",
  COALESCE("TimePeriods1"."Description", '')  AS "DetailsOfControl",
 "RestrictionLength" AS "KerblineLength", "Capacity" AS "TheoreticalBays",
-"MCL_Notes", "Photos_01"
+--"MCL_Notes", 
+"BrokenAnchors" AS "Anchors broken or missing", "ChainsLeft" As "Chains Affixed", 
+CASE WHEN LENGTH("Photos_01") > 0 THEN CONCAT("SectionName", '_', "BeatTitle", '_', "Photos_01")
+     END AS "Photo"
+
 
 FROM
      ((((((
      --(
      (SELECT s."GeometryID", ris."SurveyID", s."RestrictionTypeID", s."GeomShapeID", s."TimePeriodID", s."RoadName", s."RestrictionLength",
-	        s."NrBays", s."Capacity", s."CPZ", s."SurveyAreaID", ris."Photos_01", ris."MCL_Notes"
-        FROM mhtc_operations."Supply" s, demand."RestrictionsInSurveys" ris
-        WHERE s."RestrictionTypeID" IN (117, 118)
-		AND s."GeometryID" = ris."GeometryID"
+	        s."NrBays", s."Capacity", s."CPZ", s."SurveyAreaID", ris."Photos_01", ris."MCL_Notes", ris."BrokenAnchors", ris."ChainsLeft", r."SectionName"
+        FROM mhtc_operations."Supply" s, mhtc_operations."RC_Sections_merged" r, demand."RestrictionsInSurveys" ris
+        WHERE s."GeometryID" = ris."GeometryID"
+		AND r."gid" = s."SectionID"
+		--AND s."RestrictionTypeID" IN (117, 118)
 	    AND LENGTH("MCL_Notes") > 0
 	  )
 	 ) AS a

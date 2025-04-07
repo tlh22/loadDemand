@@ -36,7 +36,7 @@ WHERE TRIM("Notes") IN (
 			   'HALF IN BAY',
 			   '1c poor',
 			   '1c w poor',
-			   '1c over end of bay'
+			   '1c over end of bay',
 			   '1c over',
 			   '1 car pk over the bay line',
 			   '1 car pk over bay line',
@@ -44,7 +44,11 @@ WHERE TRIM("Notes") IN (
 			   'pk over bay line',
 			   'parked wrong',
 			   '1c over end of bay',
-			   '1c over'
+			   '1c over',
+			   'front wheels pk on the feature next',
+			   '1 car over the bay line',
+			   'pk on 2 spots',
+			   '1 car over bay line'
 			   );
 			   
 UPDATE demand."Counts" c
@@ -84,7 +88,8 @@ WHERE TRIM("Notes") IN (
 			   '3 cars parked wrong',
 			   '3 cars over pk line',
 			   '3 pk over bay line',
-			   '3 cars pk over bay line'
+			   '3 cars pk over bay line',
+			   '3 cars pk on the bay line'
 
 			   );	
 			   
@@ -142,14 +147,6 @@ WHERE TRIM("Notes") IN (
 
 			   );
 
-UPDATE demand."Counts" c
-SET "NrCarsParkedIncorrectly" = 910,
-    "NrCars" = "NrCars" - 10,
-	"Notes" = '9 * Over bay markings'
-WHERE TRIM("Notes") IN (
-               '9 BAD'
-
-			   );
 			   
 -- Footway parking
 
@@ -175,7 +172,10 @@ WHERE TRIM("Notes") IN (
 			  'half pk on the footwalk',
               'hoho pavement',
               '1 parked 2 wheels on kerb',
-              '1 on pavement'			  
+              '1 on pavement',
+              'half pk on the footwalk',
+              '1 car pk on the footway',
+              '1c 2w over'		  
 
 			   );
 
@@ -187,7 +187,8 @@ WHERE TRIM("Notes") IN (
               '2c 2w',
               '2*2W',
 			  '2 cars with wheels on footway'
-			  '2CARS HOHO'
+			  '2CARS HOHO',
+			  '2 cars pk on footway'
 			  
 			   );
 
@@ -248,6 +249,65 @@ SET "NrLGVsParkedIncorrectly" = 1,
 	"Notes" = '1 * LGV Over bay markings'
 WHERE TRIM("Notes") IN (
                '11 BAD',
-               '1 car over the bay line',
-
+			   'LGV BAD',
+			   'lgv pk over the bay line',
+			   'lgv wheels over end of bay',
+			   'lgv pk on 2 spaces',
+			   'lgv parked on 2 spots',
+			   'lgv over end of bay',
+			   '1l overhang',
+			   '1l over',
+			   '1 lgv over bay line'
+			   
 			   );
+			   
+UPDATE demand."Counts" c
+SET "NrCarsParkedIncorrectly" = 1,
+    "NrCars" = "NrCars" - 1,
+	"Notes" = '1 * 2W'
+WHERE TRIM("Notes") IN (
+                 'LGV 2W',
+				 'lgv 2w',
+				 '1l 2w'
+);			   
+
+------------------
+
+-- trigger trigger
+
+UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+
+--
+
+SELECT ris."GeometryID", ris."SurveyID", su."BeatTitle", s."RoadName", s."Description" AS "RestrictionType Description",
+	   ris."Demand_ParkedIncorrectly"
+FROM demand."RestrictionsInSurveys" ris, ( mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") s, 
+ demand."Surveys" su
+WHERE ris."GeometryID" = s."GeometryID"
+AND COALESCE("Demand_ParkedIncorrectly", 0) > 0
+AND s."RestrictionTypeID" < 200
+AND ris."SurveyID" = su."SurveyID"
+ORDER BY s."RoadName"
+
+
+-- with groups
+
+SELECT ris."GeometryID", ris."SurveyID", su."BeatTitle", s."RoadName", s."Description" AS "RestrictionType Description",
+	   ris."Demand_ParkedIncorrectly",
+	   CASE WHEN (s."RestrictionTypeID" = 101) THEN 'Residents'' bays'
+	        WHEN (s."RestrictionTypeID" = 103) THEN 'Pay-by-Phone bays'
+			WHEN (s."RestrictionTypeID" IN (108, 110, 111, 112, 113, 114, 120, 121, 124, 165, 166, 167)) THEN 'Other bays'
+			WHEN (s."RestrictionTypeID" IN (201, 221, 224)) THEN 'Single Yellow Line'
+			WHEN (s."RestrictionTypeID" = 202) THEN 'Double Yellow Line'
+            ELSE 'Other'
+            END  AS "Group"
+FROM demand."RestrictionsInSurveys" ris, ( mhtc_operations."Supply" AS a
+ LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") s, 
+ demand."Surveys" su
+WHERE ris."GeometryID" = s."GeometryID"
+AND COALESCE("Demand_ParkedIncorrectly", 0) > 0
+--AND s."RestrictionTypeID" < 200
+AND ris."SurveyID" = su."SurveyID"
+ORDER BY s."RoadName";
+

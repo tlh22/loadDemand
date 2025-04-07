@@ -30,6 +30,7 @@ DROP TABLE IF EXISTS mhtc_operations."Supply_Overlaps" CASCADE;
 
 DROP TABLE IF EXISTS highways_network."RoadLink_2019" CASCADE;
 DROP TABLE IF EXISTS highways_network."itn_roadcentreline" CASCADE;
+DROP TABLE IF EXISTS highways_network."roadlink2" CASCADE;
 
 -- schemas not required
 
