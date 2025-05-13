@@ -11,6 +11,16 @@ then use this script to add photos to RiS
 
 ***/
 
+/***
+Add SurveyID
+***/
+
+ALTER TABLE IF EXISTS demand."DemandPhotosImport"
+  ADD COLUMN IF NOT EXISTS "SurveyID" INTEGER;
+
+-- Add SurveyID as required
+
+
 DO $$
 DECLARE
 	photo_details RECORD;
@@ -21,11 +31,11 @@ BEGIN
 
 	survey_id = 101;
 	
-	-- TODO: There is still a possible overright if the order is not sequential, e.g., if go back to start or reverse direction ...
+	-- TODO: There is still a possible over write if the order is not sequential, e.g., if go back to start or reverse direction ...
 
     -- now update
     FOR photo_details IN
-        SELECT id, CONCAT(p."filename", '.jpg') AS "PHOTO", geom
+        SELECT id, CONCAT(p."filename", '.jpg') AS "PHOTO", "SurveyID", geom
         FROM demand."DemandPhotosImport" p
 		ORDER BY id
     LOOP
@@ -48,14 +58,14 @@ BEGIN
 			UPDATE demand."RestrictionsInSurveys" RiS
 			SET "Photos_01" = photo_details."PHOTO"
 			WHERE RiS."GeometryID" = geometry_id
-			AND "SurveyID" = survey_id;
+			AND "SurveyID" = photo_details."SurveyID";
 		
 		ELSE
 		
 			UPDATE demand."RestrictionsInSurveys" RiS
 			SET "Photos_02" = photo_details."PHOTO"
 			WHERE RiS."GeometryID" = geometry_id
-			AND "SurveyID" = survey_id;
+			AND "SurveyID" = photo_details."SurveyID";
 		
         END IF;
 		

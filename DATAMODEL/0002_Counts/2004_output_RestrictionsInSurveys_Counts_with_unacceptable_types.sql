@@ -10,7 +10,17 @@ Need to change for each CPZ - and ensure correct Supply details
 UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
 
 
-SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", "UnacceptabilityReason", d."RoadName",
+SELECT d."SurveyID", d."BeatTitle", d."SurveyDay", d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID",
+d."RestrictionTypeID", d."RestrictionType Description",
+d."UnacceptableType Description", 
+d."RestrictionLength", d."RoadName", d."CPZ",
+d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", 
+CASE WHEN "SurveyID" IN (101, 201, 301) THEN to_char(d."DemandSurveyDateTime" + interval '0' hour, 'Dy DD Mon HH24:MI')
+     ELSE to_char(d."DemandSurveyDateTime" + interval '0' hour, 'Dy DD Mon HH24:MI') 
+	 END As "SurveyDateTime"
+
+
+SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", CONCAT(d."RestrictionType Description", ' (', "UnacceptabilityReason", ')') AS "RestrictionType Description", "UnacceptabilityReason", d."RoadName",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", d."Notes",
 -- regexp_replace(v."Notes", '(.*?)(?<=<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">)(.*?)(?=<\/p>)', '\2', 'g')  AS "Notes",
 d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",

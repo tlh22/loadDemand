@@ -1,3 +1,15 @@
+/***
+
+Process to import photos captured outside tablet into RiS 
+
+Steps:
+1. Import photos using Processing -> Import geotagged photos
+2. Modify CRS using Processing -> Reproject layer with Target CRS as EPSG:27700 (OSGB36) & Save layer into database as <connection> demand."DemandPhotosImport"
+3. Check that photos are in (approximately) the correct place
+
+then use this script to name photos
+
+***/
 
 DROP SEQUENCE IF EXISTS "demand"."DemandPhotos_id_seq" CASCADE;
 

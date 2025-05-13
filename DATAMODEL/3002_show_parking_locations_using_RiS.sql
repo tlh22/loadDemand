@@ -22,7 +22,7 @@ AS
         from
         (select ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" as "RestrictionType Description",
         "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength", "NrBaysSuspended", "SuspensionNotes",
-        s."Capacity", "Demand", "Stress",
+        ris."CapacityAtTimeOfSurvey" As "Capacity", "Demand", "Stress",
         ris."Photos_01", ris."Photos_02", ris."Photos_03"
         from demand."RestrictionsInSurveys" ris, demand."Surveys" su,
         (mhtc_operations."Supply" as a
