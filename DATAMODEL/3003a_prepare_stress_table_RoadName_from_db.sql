@@ -7,7 +7,9 @@ TABLESPACE pg_default
 AS
     SELECT
         row_number() OVER (PARTITION BY true::boolean) AS sid,
-    s."name1" AS "RoadName", s.geom,
+    s."name1" AS "RoadName", 
+    --s."roadName1_Name" AS "RoadName", 
+	s.geom,
     d."SurveyID", d."Capacity", d."Demand", d."Stress" AS "Stress"
 	FROM highways_network."roadlink" s,
 	(
@@ -39,6 +41,7 @@ AS
     ORDER BY s."RoadName", RiS."SurveyID" ) a
     ) d
 	WHERE s."name1" = d."RoadName"
+	--WHERE s."roadName1_Name" = d."RoadName"
 WITH DATA;
 
 ALTER TABLE demand."StressResults"
