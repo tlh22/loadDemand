@@ -101,7 +101,11 @@ CASE
     -- Northern Ireland (AAA-9999 or AAA-999)
     WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{3}' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{3})', '\1-\2\3')
     WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{2}' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{2})', '\1-\2\3')
-
+    WHEN "VRM" SIMILAR TO '[A-Z][1][A-Z][0-9]-[0-9]{3}' THEN regexp_replace("VRM", '([A-Z])[1]([A-Z])([0-9])-([0-9]{3})', '\1I\2-\3\4') -- 2nd char is 1
+    WHEN "VRM" SIMILAR TO '[A-Z][1][A-Z][0-9]-[0-9]{2}' THEN regexp_replace("VRM", '([A-Z])[1]([A-Z])([0-9])-([0-9]{2})', '\1I\2-\3\4') -- 2nd char is 1
+	WHEN "VRM" SIMILAR TO '[A-Z]{2}[1][0-9]-[0-9]{2}' THEN regexp_replace("VRM", '([A-Z]{2})[1]([0-9])-([0-9]{2})', '\1I-\2\3') -- 3rd char is 1
+	WHEN "VRM" SIMILAR TO '[A-Z]{2}[1][0-9]-[0-9]{3}' THEN regexp_replace("VRM", '([A-Z]{2})[1]([0-9])-([0-9]{3})', '\1I-\2\3') -- 3rd char is 1
+	
     -- Others
     -- (999-AAA or 99-AAA or 9-AAA)
     WHEN "VRM" SIMILAR TO '[0-9]{3}[A-Z]-[A-Z]{2}' THEN regexp_replace("VRM", '([0-9]{3})([A-Z])-([A-Z]{2})', '\1-\2\3')
@@ -123,7 +127,7 @@ CASE
 
 	ELSE "VRM"
 END
-WHERE v."InternationalCode" IN (0) OR v."InternationalCode" IS NULL
+WHERE v."InternationalCodeID" IN (0) OR v."InternationalCodeID" IS NULL
 /***
 FROM mhtc_operations."Supply" s
 WHERE v."GeometryID" = s."GeometryID"
@@ -131,3 +135,10 @@ WHERE v."GeometryID" = s."GeometryID"
 ***/
 ;
 
+/*** test
+
+SELECT regexp_replace(s."VRM", '([A-Z]{2})[1]([0-9])-([0-9]{2})', '\1I-\2\3') 
+FROM (SELECT 'AG16-533' AS "VRM") s
+WHERE s."VRM" SIMILAR TO '[A-Z]{2}[1][0-9]-[0-9]{2}'
+
+***/

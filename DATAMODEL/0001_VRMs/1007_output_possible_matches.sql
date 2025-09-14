@@ -23,6 +23,7 @@ AND substring(v1."VRM", '(.+)-.+') != substring(v2."VRM", '(.+)-.+')
 --     su."SurveyAreaName" LIKE 'V%'
 --     )
 AND su."RoadName" IN ('White Sands Car Park', 'Brewery Street Car Park' )
+
  /*
   * Differences in rear part
   */
@@ -80,4 +81,12 @@ AND v2."GeometryID" = p."GeometryID"
 --     )
 ;
 ;
+***/
+
+/*** Checking
+
+SELECT * FROM demand."VRMs"
+WHERE "VRM_Orig" LIKE 'YY5%-FJU'
+ORDER BY "SurveyID";
+
 ***/

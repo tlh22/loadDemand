@@ -31,6 +31,7 @@ FROM demand."RestrictionsInSurveys" RiS, demand."Surveys" s,
 FROM mhtc_operations."RC_Sections_merged" r, mhtc_operations."Supply" su
 WHERE r."gid" = su."SectionID"
 --AND su."CPZ" = 'FPC'
+--AND su."SouthwarkProposedDeliveryZoneID" = 1
 ) a
 WHERE "Photos_01" IS NOT NULL
 AND RiS."SurveyID" = s."SurveyID"
@@ -45,6 +46,7 @@ FROM demand."RestrictionsInSurveys" RiS, demand."Surveys" s,
 (SELECT su."GeometryID", r."SectionName"
 FROM mhtc_operations."RC_Sections_merged" r, mhtc_operations."Supply" su
 WHERE r."gid" = su."SectionID"
+--AND su."SouthwarkProposedDeliveryZoneID" = 1
 --AND su."CPZ" = 'FPC'
 ) a
 WHERE "Photos_02" IS NOT NULL
@@ -60,6 +62,7 @@ FROM demand."RestrictionsInSurveys" RiS, demand."Surveys" s,
 (SELECT su."GeometryID", r."SectionName"
 FROM mhtc_operations."RC_Sections_merged" r, mhtc_operations."Supply" su
 WHERE r."gid" = su."SectionID"
+--AND su."SouthwarkProposedDeliveryZoneID" = 1
 --AND su."CPZ" = 'FPC'
 ) a
 WHERE "Photos_03" IS NOT NULL

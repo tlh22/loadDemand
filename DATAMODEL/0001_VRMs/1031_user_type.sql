@@ -156,5 +156,6 @@ AND r."SurveyID" = s."SurveyID"
 AND r."GeometryID" = v."GeometryID"
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
+AND "SurveyID" > 0
 ORDER BY "GeometryID", "AnonomisedVRM", "SurveyID";
 

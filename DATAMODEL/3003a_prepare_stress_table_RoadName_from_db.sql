@@ -32,15 +32,16 @@ AS
                 END
         END "Stress"
     FROM (
-    SELECT "SurveyID", s."RoadName", SUM(RiS."CapacityAtTimeOfSurvey") AS "Capacity", SUM(RiS."Demand") AS "Demand"
-    FROM mhtc_operations."Supply" s, demand."RestrictionsInSurveys" RiS
-    WHERE s."GeometryID" = RiS."GeometryID"
-    AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
+    SELECT "SurveyID", su."RoadName", SUM(RiS."CapacityAtTimeOfSurvey") AS "Capacity", SUM(RiS."Demand") AS "Demand"
+    FROM mhtc_operations."Supply" su, demand."RestrictionsInSurveys" RiS
+    WHERE su."GeometryID" = RiS."GeometryID"
+    AND su."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- specials incl MCL, PCL, Scooters, etc
     -- AND ("UnacceptableTypeID" IS NULL OR "UnacceptableTypeID" NOT IN (1,11))  -- vehicle crossovers
-    GROUP BY RiS."SurveyID", s."RoadName"
-    ORDER BY s."RoadName", RiS."SurveyID" ) a
+    GROUP BY RiS."SurveyID", su."RoadName"
+    ORDER BY su."RoadName", RiS."SurveyID" ) a
     ) d
 	WHERE s."name1" = d."RoadName"
+	--AND s."SouthwarkProposedDeliveryZoneID" = 1
 	--WHERE s."roadName1_Name" = d."RoadName"
 WITH DATA;
 

@@ -27,3 +27,13 @@ INSERT INTO demand."AreasWithSurveys" ("SurveyID", "SurveyDay", "SurveyDate", "B
 SELECT "SurveyID", "SurveyDay", "SurveyDate", "BeatStartTime", "BeatEndTime", "BeatTitle",
 	   a."CPZ", a.geom
 FROM demand."Surveys" s, mhtc_operations."CPZsOfInterest" a
+
+/*** Southwark Areas
+
+INSERT INTO demand."AreasWithSurveys" ("SurveyID", "SurveyDay", "SurveyDate", "BeatStartTime", "BeatEndTime", "BeatTitle",
+									   "SurveyAreaName", geom)
+SELECT "SurveyID", "SurveyDay", "SurveyDate", "BeatStartTime", "BeatEndTime", "BeatTitle",
+	   a."zonename", a.geom
+FROM demand."Surveys" s, import_geojson."SouthwarkProposedDeliveryZones" a
+
+***/

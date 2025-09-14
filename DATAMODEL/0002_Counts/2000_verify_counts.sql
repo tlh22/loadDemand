@@ -40,6 +40,9 @@ ALTER TABLE demand."RestrictionsInSurveys"
 
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "PerceivedStress" double precision;
+	
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "TheoreticalCapacityAtTimeOfSurvey" double precision;
 
 -- Step 2: calculate demand values using trigger
 
@@ -483,6 +486,7 @@ BEGIN
         RETURN OLD;
     END IF;
 
+	NEW."TheoreticalCapacityAtTimeOfSurvey" = Supply_Capacity;
 
 	RAISE NOTICE '*****--- Finalising ...';
 	
@@ -492,6 +496,10 @@ BEGIN
     END IF;
 
     NEW."CapacityAtTimeOfSurvey" = Capacity;
+	
+	IF NrBaysSuspended::float > Supply_Capacity::float THEN
+		NEW."NrBaysSuspended" = 0;
+	END IF;
 
     -- Perceived supply / stress
 
