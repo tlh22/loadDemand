@@ -42,6 +42,32 @@ WHERE "VRM" IN (
     WHERE "VehicleTypeID" = 5
 );
 
+UPDATE demand."VRMs"
+SET "VehicleTypeID" = 14
+WHERE "VRM" IN (
+    SELECT "VRM"
+    FROM demand."VRMs"
+    WHERE "VehicleTypeID" = 14
+);
+
+UPDATE demand."VRMs"
+SET "VehicleTypeID" = 15
+WHERE "VRM" IN (
+    SELECT "VRM"
+    FROM demand."VRMs"
+    WHERE "VehicleTypeID" = 15
+);
+
+
+UPDATE demand."VRMs"
+SET "VehicleTypeID" = 16
+WHERE "VRM" IN (
+    SELECT "VRM"
+    FROM demand."VRMs"
+    WHERE "VehicleTypeID" = 16
+);
+
+
 -- anything else is car
 
 UPDATE demand."VRMs"

@@ -53,6 +53,8 @@ AND "VRM" IN (
 	(SELECT "VRM", FLOOR("SurveyID"::float/100.0) AS "Day", COUNT(*) AS "Total"
 	FROM demand."VRMs"
 	WHERE MOD("SurveyID", 100) != 1
+	-- AND ("SurveyID" > 100 AND "SurveyID" < 200)
+	AND ("SurveyID" > 200 AND "SurveyID" < 300)
 	GROUP BY "VRM", "Day"
 	HAVING COUNT(*) > 2
 	) a
@@ -156,6 +158,6 @@ AND r."SurveyID" = s."SurveyID"
 AND r."GeometryID" = v."GeometryID"
 --AND su."CPZ" = 'HS'
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
-AND "SurveyID" > 0
+AND s."SurveyID" > 0
 ORDER BY "GeometryID", "AnonomisedVRM", "SurveyID";
 
