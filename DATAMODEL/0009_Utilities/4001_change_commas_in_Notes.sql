@@ -13,3 +13,15 @@ WHERE "Notes" LIKE '%,%'
 UPDATE demand."Counts"
 SET "Notes" = REGEXP_REPLACE("Notes",',','.', 'g') 
 WHERE "Notes" LIKE '%,%';
+
+UPDATE demand."Counts"
+SET "Notes" = regexp_replace("Notes", E'[\\n\\r]+', '; ', 'g' )
+WHERE "Notes" LIKE E'%\n%';
+
+UPDATE demand."RestrictionsInSurveys"
+SET "Enumerator" = regexp_replace("Enumerator", E'[\\n\\r]+', '; ', 'g' )
+WHERE "Enumerator" LIKE E'%\n%';
+
+UPDATE demand."RestrictionsInSurveys"
+SET "Enumerator" = REGEXP_REPLACE("Enumerator",',','.', 'g') 
+WHERE "Enumerator" LIKE '%,%';

@@ -1,12 +1,13 @@
 -- Find obvious errors
 
 -- Find differences within the same time periods for the same GeometryID - good check - possibly typo, possible miss
-SELECT RiS1."GeometryID", s."RestrictionTypeID", s."Capacity", RiS1."SurveyID", RiS1."Demand", RiS1."Enumerator", RiS2."SurveyID", RiS2."Demand", RiS2."Enumerator"
-FROM demand."RestrictionsInSurveys" RiS1, demand."RestrictionsInSurveys" RiS2, mhtc_operations."Supply" s
+SELECT RiS1."GeometryID", s."RestrictionTypeID", l."Description", s."Capacity", RiS1."SurveyID", RiS1."Demand", RiS1."Enumerator", RiS2."SurveyID", RiS2."Demand", RiS2."Enumerator"
+FROM demand."RestrictionsInSurveys" RiS1, demand."RestrictionsInSurveys" RiS2, mhtc_operations."Supply" s, toms_lookups."BayLineTypes" l
 WHERE  RiS1."GeometryID" = s."GeometryID"
+AND s."RestrictionTypeID" = l."Code"
 AND RiS1."GeometryID" = RiS2."GeometryID"
 AND RiS1."SurveyID" < RiS2."SurveyID"
 AND ABS(RiS1."SurveyID" - RiS2."SurveyID") = 100
 AND ABS(RiS1."Demand" - RiS2."Demand") >= 5
-ORDER BY RiS1."GeometryID", RiS1."SurveyID";
+ORDER BY s."RestrictionTypeID", RiS1."GeometryID", RiS1."SurveyID";
 
