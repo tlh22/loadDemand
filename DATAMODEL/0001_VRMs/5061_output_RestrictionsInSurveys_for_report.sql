@@ -19,7 +19,7 @@ d."CPZ", d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numer
 --, ROUND(d."Stress"::numeric, 2) AS "Stress",
 --COALESCE("SurveyAreaName", '') AS "SurveyAreaName", d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", ROUND(d."PerceivedStress"::numeric, 2) AS "PerceivedStress"
 ,"Demand_Residents", "Demand_Commuters", "Demand_Visitors"
-, d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes"
+--, d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes"
 
 FROM
 (SELECT ris."SurveyID", su."SurveyDate", su."SurveyDay", su."BeatStartTime", su."BeatEndTime", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", 

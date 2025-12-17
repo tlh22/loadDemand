@@ -97,3 +97,28 @@ SET "orphan" = true, "isFirst" = false, "isLast" = false
 WHERE "SurveyID" IN (101, 201)
 ;
 ***/
+
+/***
+Using 2hr duration categories
+
+
+-- In this case, considering by road name (could also consider by GeometryID)
+
+UPDATE demand."VRMs" AS v
+SET "isLast" = (lead <> t."SurveyID" + 1 or lead is null),
+    "isFirst" = (lag <> t."SurveyID" - 1 or lag is null),
+    "orphan" = (lead <> t."SurveyID" + 1 or lead is null) and (lag <> t."SurveyID" - 1 or lag is null)
+FROM
+    (
+        SELECT v."ID", v."VRM", v."SurveyID", su."RoadName",
+               lead(v."SurveyID", 1) over( partition by "VRM", "RoadName", "SurveyDay" order by v."SurveyID", su."RoadName", v."VRM"),
+               lag(v."SurveyID", 1) over(partition by "VRM", "RoadName", "SurveyDay" order by v."SurveyID", su."RoadName", v."VRM")
+        FROM demand."VRMs" v, demand."Surveys" s, mhtc_operations."Supply" su
+        WHERE s."SurveyID" = v."SurveyID"
+		AND v."GeometryID" = su."GeometryID"
+        ORDER BY "VRM", "SurveyID"
+     ) AS t
+WHERE v."ID" = t."ID"
+;
+
+***/

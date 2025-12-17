@@ -97,6 +97,8 @@ CASE
     -- Early UK (AAA-999A)
 	WHEN "VRM" SIMILAR TO '[A-Z]{3}-[0-9]{3}[A-Z]' THEN "VRM"
 	WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{2}[A-Z]' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{2}[A-Z])', '\1-\2\3')  -- AAA9-99A
+	WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9][O][A-Z]' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9])[O]([A-Z])', '\1-\2\30\4')  -- 
+	WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[O][0-9][A-Z]' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-[O]([0-9])([A-Z])', '\1-\20\3\4')  -- 
 
     -- Northern Ireland (AAA-9999 or AAA-999)
     WHEN "VRM" SIMILAR TO '[A-Z]{3}[0-9]-[0-9]{3}' THEN regexp_replace("VRM", '([A-Z]{3})([0-9])-([0-9]{3})', '\1-\2\3')
@@ -127,7 +129,9 @@ CASE
 
 	ELSE "VRM"
 END
-WHERE v."InternationalCodeID" IN (0) OR v."InternationalCodeID" IS NULL
+WHERE UPPER("VRM") != 'UNKNOWN'
+AND v."InternationalCodeID" IN (0) OR v."InternationalCodeID" IS NULL
+
 /***
 FROM mhtc_operations."Supply" s
 WHERE v."GeometryID" = s."GeometryID"

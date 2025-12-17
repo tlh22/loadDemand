@@ -20,6 +20,7 @@ ALTER TABLE IF EXISTS demand."DemandPhotosImport"
 
 -- Add SurveyID as required
 
+*** for some reason, this does not UPDATE - not sure why
 
 DO $$
 DECLARE
@@ -59,14 +60,18 @@ BEGIN
 			SET "Photos_01" = photo_details."PHOTO"
 			WHERE RiS."GeometryID" = geometry_id
 			AND "SurveyID" = photo_details."SurveyID";
-		
+			
+			RAISE NOTICE 'Added to Photos_01 ...';
+			
 		ELSE
 		
 			UPDATE demand."RestrictionsInSurveys" RiS
 			SET "Photos_02" = photo_details."PHOTO"
 			WHERE RiS."GeometryID" = geometry_id
 			AND "SurveyID" = photo_details."SurveyID";
-		
+			
+			RAISE NOTICE 'Added to Photos_02 ...';
+						
         END IF;
 		
     END LOOP;

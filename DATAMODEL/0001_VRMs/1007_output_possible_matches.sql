@@ -1,5 +1,8 @@
 /***
  * Look for difficult ones to match
+ *
+ * Amend within "VRMs_View"
+ * order using "Sort" concat("SurveyID", "VRM", "GeometryID")
  ***/
  
 

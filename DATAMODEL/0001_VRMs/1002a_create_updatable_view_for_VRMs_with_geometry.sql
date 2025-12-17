@@ -1,11 +1,15 @@
 -- create an updatable view for VRMs - with geometry attached.
 
+DROP VIEW IF EXISTS demand."VRMs_View" CASCADE;
+
 CREATE OR REPLACE VIEW demand."VRMs_View"
 AS
- SELECT v.*, s.geom
-   FROM demand."VRMs" v,
-    mhtc_operations."Supply" s
+ SELECT v.*, s."RoadName", s."Description" AS "RestrictionDescription", RiS."Enumerator", s.geom
+   FROM demand."VRMs" v, demand."RestrictionsInSurveys" RiS,
+    (mhtc_operations."Supply" a LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code") s
   WHERE s."GeometryID" = v."GeometryID"
+  AND v."SurveyID" = RiS."SurveyID"
+  ANd v."GeometryID" = RiS."GeometryID"
 ;
 
 --

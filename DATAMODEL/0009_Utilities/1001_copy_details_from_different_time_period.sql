@@ -1,5 +1,5 @@
 /***
- * When data is entered into a different time period, need to be to across to correct time period
+ * When data is entered into a different time period, needs to be to moved across to correct time period
  ***/
 
  -- for Haringey

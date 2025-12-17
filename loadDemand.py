@@ -449,7 +449,7 @@ class loadDemand:
 
         while query.next():
 
-            TOMsMessageLog.logMessage("Updating count details: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Warning)
+            TOMsMessageLog.logMessage("Updating count details: currSurveyID: {}; GeometryID: {}".format(query.value(SurveyID), query.value(GeometryID)), level=Qgis.Info)
 
             thisRecord = query.record()
             demandCopyStatus = self.copyAttributesToMasterLayer(thisRecord, countsLayer, query.value(SurveyID), query.value(GeometryID))

@@ -442,42 +442,25 @@ BEGIN
         IF primary_geometry_id IS NOT NULL THEN
 
             -- restriction is "primary". Need to check whether or not the linked restriction is active
-            RAISE NOTICE '*****--- % is a primary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
+            RAISE NOTICE '*****--- % is a primary restriction. Checking if secondary is active in time period % ...', NEW."GeometryID", time_period_id;
 
-            SELECT "Controlled"
-            INTO primary_controlled
-            FROM demand."TimePeriodsControlledDuringSurveyHours" t
-            WHERE t."TimePeriodID" = time_period_id
-            AND t."SurveyID" = NEW."SurveyID";
-
-            -- TODO: Deal with multiple secondary bays ...
-
-            IF primary_controlled THEN
+			-- check whether or not secondary restriction is controlled
+			SELECT "Controlled"
+			INTO secondary_controlled
+			FROM demand."TimePeriodsControlledDuringSurveyHours" t
+			WHERE t."TimePeriodID" IN
+				(SELECT COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
+				 FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
+				 WHERE s."GeometryID" = d."GeometryID"
+				 AND d."LinkedTo" = NEW."GeometryID")
+			AND t."SurveyID" = NEW."SurveyID";
 			
-                RAISE NOTICE '*****--- Primary restriction is controlled ...';
-                --Supply_Capacity = 0.0;
+			IF secondary_controlled THEN
+		
+				RAISE NOTICE '*****--- Secondary restriction is controlled ...';
+				Supply_Capacity = 0.0;
 				
-			ELSE
-			
-				-- check whether or not secondary restriction is controlled
-				SELECT "Controlled"
-				INTO secondary_controlled
-				FROM demand."TimePeriodsControlledDuringSurveyHours" t
-				WHERE t."TimePeriodID" IN
-					(SELECT COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
-					 FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
-					 WHERE s."GeometryID" = d."GeometryID"
-					 AND d."LinkedTo" = NEW."GeometryID")
-				AND t."SurveyID" = NEW."SurveyID";
-				
-				IF secondary_controlled THEN
-			
-					RAISE NOTICE '*****--- Secondary restriction is controlled ...';
-					Supply_Capacity = 0.0;
-					
-				END IF;
-				
-            END IF;
+			END IF;
 
         END IF;
 
@@ -492,7 +475,7 @@ BEGIN
         IF secondary_geometry_id IS NOT NULL THEN
 
             -- restriction is "secondary". Need to check whether or not it is active
-            RAISE NOTICE '*****--- % is secondary restriction to (%). Checking time period % ...', NEW."GeometryID", primary_geometry_id, time_period_id;
+            RAISE NOTICE '*****--- % is secondary restriction to (%). Checking if secondary is active during time period % ...', NEW."GeometryID", primary_geometry_id, time_period_id;
 
             SELECT "Controlled"
             INTO secondary_controlled
@@ -505,6 +488,7 @@ BEGIN
                 RAISE NOTICE '*****--- Secondary restriction is not controlled. Setting capacity set to 0 ...';
                 Supply_Capacity = 0.0;
 				
+			/***
 			ELSE
 			
 			    RAISE NOTICE '*****--- Secondary restriction is controlled. Checking primary ...';
@@ -526,7 +510,7 @@ BEGIN
 				ELSE
 					RAISE NOTICE '*****--- Primary restriction is not controlled ...';
 				END IF;
-				
+				***/
             END IF;
 
         END IF;
@@ -675,4 +659,17 @@ FROM demand."RestrictionsInSurveys" RiS
 WHERE RiS."SurveyID" > 0
 GROUP BY RiS."SurveyID"
 ORDER BY RiS."SurveyID"
+***/
+
+
+/***
+Southwark
+
+UPDATE "demand"."RestrictionsInSurveys" AS RiS
+SET "Photos_03" = "Photos_03"
+FROM mhtc_operations."Supply" a
+	LEFT JOIN import_geojson."SouthwarkProposedDeliveryZones" AS "SouthwarkProposedDeliveryZones" ON a."SouthwarkProposedDeliveryZoneID" is not distinct from "SouthwarkProposedDeliveryZones"."ogc_fid"
+WHERE RiS."GeometryID" = a."GeometryID"
+AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('I');
+
 ***/

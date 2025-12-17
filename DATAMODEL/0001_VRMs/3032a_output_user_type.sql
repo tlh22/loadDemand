@@ -1,70 +1,3 @@
-/***
- *  identify different user types within amended VRMs
-
-    There are three types of user category:
-     - Resident: VRM observed overnight
-     - Commuter: VRM observed in morning and afternoon beat
-     - Visitor: VRM observed in either morning or afternoon beat
-
- ***/
-
-ALTER TABLE demand."VRMs"
-    ADD COLUMN IF NOT EXISTS "UserTypeID" INTEGER;
-
-UPDATE demand."VRMs"
-SET "UserTypeID" = NULL;
-
--- Residents
-UPDATE demand."VRMs" v
-SET "UserTypeID" = 1
-WHERE MOD("SurveyID", 100) = 1;
-
-UPDATE demand."VRMs"
-SET "UserTypeID" = 1
-WHERE "VRM" IN (
-    SELECT "VRM"
-    FROM demand."VRMs"
-    WHERE "UserTypeID" = 1
-);
-
--- Commuter
-/***
-UPDATE demand."VRMs"
-SET "UserTypeID" = 2
-WHERE "UserTypeID" IS NULL
-AND "VRM" IN (
-    SELECT v1."VRM"
-    FROM demand."VRMs" v1, demand."VRMs" v2
-    WHERE v1."VRM" = v2."VRM"
-    AND v1."ID" < v2."ID"
-    AND (
-            (v1."SurveyID" = 102 AND v2."SurveyID" = 103)
-            OR (v1."SurveyID" = 202 AND v2."SurveyID" = 203)
-            OR (v1."SurveyID" = 302 AND v2."SurveyID" = 303)
-        )
-);
-***/
-
-UPDATE demand."VRMs"
-SET "UserTypeID" = 2
-WHERE "UserTypeID" IS NULL
-AND "VRM" IN (
-	SELECT "VRM" FROM
-	(SELECT "VRM", FLOOR("SurveyID"::float/100.0) AS "Day", COUNT(*) AS "Total"
-	FROM demand."VRMs"
-	WHERE MOD("SurveyID", 100) != 1
-	-- AND ("SurveyID" > 100 AND "SurveyID" < 200)
-	AND ("SurveyID" > 200 AND "SurveyID" < 300)
-	GROUP BY "VRM", "Day"
-	HAVING COUNT(*) > 2
-	) a
-);
-
--- Visitor
-UPDATE demand."VRMs"
-SET "UserTypeID" = 3
-WHERE "UserTypeID" IS NULL;
-
 -- Now add details to RiS
 
 ALTER TABLE demand."RestrictionsInSurveys"
@@ -160,4 +93,6 @@ AND r."GeometryID" = v."GeometryID"
 --AND s."SurveyID" > 20 and s."SurveyID" < 30
 AND s."SurveyID" > 0
 ORDER BY "GeometryID", "AnonomisedVRM", "SurveyID";
+
+
 

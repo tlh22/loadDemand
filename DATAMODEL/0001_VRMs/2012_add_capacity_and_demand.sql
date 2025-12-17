@@ -11,6 +11,8 @@ ALTER TABLE demand."RestrictionsInSurveys"
 ALTER TABLE demand."RestrictionsInSurveys"
     ADD COLUMN IF NOT EXISTS "Stress" double precision;
 
+ALTER TABLE demand."RestrictionsInSurveys"
+    ADD COLUMN IF NOT EXISTS "TheoreticalCapacityAtTimeOfSurvey" double precision;
 
 -- set up trigger for demand and stress
 
@@ -33,6 +35,8 @@ DECLARE
 	vrm_survey BOOLEAN;
 	check_exists BOOLEAN;
 	
+	secondary_controlled BOOLEAN;
+	primary_controlled BOOLEAN;
 	check_dual_restrictions_exists BOOLEAN;
 
     primary_geometry_id VARCHAR (12);
@@ -42,19 +46,20 @@ DECLARE
 BEGIN
 
 	-- Check that we are dealing with VRMs
+	/***
 	SELECT EXISTS INTO check_exists (
 	SELECT FROM
 		pg_tables
 	WHERE
 		schemaname = 'demand' AND
-		tablename  = 'Surveys_VRMs'
+		tablename  = 'VRMs'
 	) ;
 
 	IF check_exists THEN
 
 		SELECT EXISTS
 		(SELECT 1
-		FROM demand."Surveys_VRMs" sv
+		FROM demand."VRMs" sv
 		WHERE sv."SurveyID" = NEW."SurveyID")
 		INTO vrm_survey;
 		
@@ -63,8 +68,10 @@ BEGIN
 		END IF;
 
 	END IF;
+	***/
 
-
+    RAISE NOTICE '--- considering (%) in survey (%) ', NEW."GeometryID", NEW."SurveyID";
+	
     -- NrBaysSuspended
     SELECT "NrBaysSuspended"
     INTO NrBaysSuspended
@@ -82,6 +89,11 @@ BEGIN
     AND a."GeometryID" = NEW."GeometryID"
     AND a."SurveyID" = NEW."SurveyID";
 
+    IF demand IS NULL THEN
+        RAISE EXCEPTION 'PCU parameters not available ...';
+        RETURN OLD;
+    END IF;
+	
     NEW."Demand" = demand;
 
     -- Capacity from Supply
@@ -146,6 +158,8 @@ BEGIN
 
 	-- Now consider dual restrictions
 
+	RAISE NOTICE '*****--- Checking dual restrictions ... Capacity = %', Supply_Capacity;
+	
     SELECT EXISTS INTO check_dual_restrictions_exists (
     SELECT FROM
         pg_tables
@@ -155,31 +169,37 @@ BEGIN
     ) ;
 
     IF check_dual_restrictions_exists THEN
+	
         -- check for primary
 
         SELECT d."GeometryID", "LinkedTo", COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
         INTO secondary_geometry_id, primary_geometry_id, time_period_id
         FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
-        WHERE s."GeometryID" = d."GeometryID"
+        WHERE s."GeometryID" = d."LinkedTo"
         AND d."LinkedTo" = NEW."GeometryID";
 
         IF primary_geometry_id IS NOT NULL THEN
 
             -- restriction is "primary". Need to check whether or not the linked restriction is active
-            RAISE NOTICE '*****--- % Primary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
+            RAISE NOTICE '*****--- % is a primary restriction. Checking if secondary is active in time period % ...', NEW."GeometryID", time_period_id;
 
-            SELECT "Controlled"
-            INTO controlled
-            FROM demand."TimePeriodsControlledDuringSurveyHours" t
-            WHERE t."TimePeriodID" = time_period_id
-            AND t."SurveyID" = NEW."SurveyID";
-
-            -- TODO: Deal with multiple secondary bays ...
-
-            IF controlled THEN
-                RAISE NOTICE '*****--- Primary restriction. Setting capacity set to 0 ...';
-                Supply_Capacity = 0.0;
-            END IF;
+			-- check whether or not secondary restriction is controlled
+			SELECT "Controlled"
+			INTO secondary_controlled
+			FROM demand."TimePeriodsControlledDuringSurveyHours" t
+			WHERE t."TimePeriodID" IN
+				(SELECT COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
+				 FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
+				 WHERE s."GeometryID" = d."GeometryID"
+				 AND d."LinkedTo" = NEW."GeometryID")
+			AND t."SurveyID" = NEW."SurveyID";
+			
+			IF secondary_controlled THEN
+		
+				RAISE NOTICE '*****--- Secondary restriction is controlled ...';
+				Supply_Capacity = 0.0;
+				
+			END IF;
 
         END IF;
 
@@ -194,21 +214,54 @@ BEGIN
         IF secondary_geometry_id IS NOT NULL THEN
 
             -- restriction is "secondary". Need to check whether or not it is active
-            RAISE NOTICE '*****--- % Secondary restriction. Checking time period % ...', NEW."GeometryID", time_period_id;
+            RAISE NOTICE '*****--- % is secondary restriction to (%). Checking if secondary is active during time period % ...', NEW."GeometryID", primary_geometry_id, time_period_id;
 
             SELECT "Controlled"
-            INTO controlled
+            INTO secondary_controlled
             FROM demand."TimePeriodsControlledDuringSurveyHours" t
             WHERE t."TimePeriodID" = time_period_id
             AND t."SurveyID" = NEW."SurveyID";
 
-            IF NOT controlled OR controlled IS NULL THEN
-                RAISE NOTICE '*****--- Secondary restriction. Setting capacity set to 0 ...';
+            IF NOT secondary_controlled OR secondary_controlled IS NULL THEN
+			
+                RAISE NOTICE '*****--- Secondary restriction is not controlled. Setting capacity set to 0 ...';
                 Supply_Capacity = 0.0;
+				
+			/***
+			ELSE
+			
+			    RAISE NOTICE '*****--- Secondary restriction is controlled. Checking primary ...';
+				
+				-- Secondary restriction is controlled. Need to check whether or not primary is also active. If primary is active, it overrides.
+				SELECT "Controlled"
+				INTO primary_controlled
+				FROM demand."TimePeriodsControlledDuringSurveyHours" t
+				WHERE t."TimePeriodID" IN
+					(SELECT COALESCE("TimePeriodID", "NoWaitingTimeID") AS "ControlledTimePeriodID"
+					 FROM mhtc_operations."Supply" s, mhtc_operations."DualRestrictions" d
+					 WHERE s."GeometryID" = d."LinkedTo"
+					 AND d."GeometryID" = NEW."GeometryID")
+				AND t."SurveyID" = NEW."SurveyID";
+				
+				IF primary_controlled THEN
+					RAISE NOTICE '*****--- Primary restriction is controlled. Setting capacity to 0 ...';
+					Supply_Capacity = 0.0;
+				ELSE
+					RAISE NOTICE '*****--- Primary restriction is not controlled ...';
+				END IF;
+				***/
             END IF;
 
         END IF;
+
+    ELSE
+        RAISE EXCEPTION 'DualRestrictions does not exist ...';
+        RETURN OLD;
     END IF;
+
+	NEW."TheoreticalCapacityAtTimeOfSurvey" = Supply_Capacity;
+
+	RAISE NOTICE '*****--- After dual restrictions ... Capacity = %', Supply_Capacity;
 	
     Capacity = COALESCE(Supply_Capacity::float, 0.0) - COALESCE(NrBaysSuspended::float, 0.0);
     IF Capacity < 0.0 THEN

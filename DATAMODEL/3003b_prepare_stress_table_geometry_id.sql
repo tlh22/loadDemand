@@ -99,3 +99,53 @@ CREATE UNIQUE INDEX "idx_StressResults_id"
     TABLESPACE pg_default;
 
 REFRESH MATERIALIZED VIEW demand."StressResults";
+
+---
+
+-- Now prepare stress
+
+DROP MATERIALIZED VIEW IF EXISTS demand."StressResults";
+
+CREATE MATERIALIZED VIEW demand."StressResults"
+TABLESPACE pg_default
+AS
+    SELECT
+        row_number() OVER (PARTITION BY true::boolean) AS sid
+			, "SurveyID", su."GeometryID", su."RoadName"
+			, su.geom
+			, RiS."CapacityAtTimeOfSurvey"
+			, RiS."Demand"
+	        , CASE
+            WHEN "Capacity" = 0 THEN
+                CASE
+                    WHEN "Demand" > 0.0 THEN 1.0
+                    ELSE -1.0
+                END
+            ELSE
+                CASE
+                    WHEN "Capacity"::float > 0.0 THEN
+                        "Demand" / ("Capacity"::float)
+                    ELSE
+                        CASE
+                            WHEN "Demand" > 0.0 THEN 1.0
+                            ELSE -1.0
+                        END
+                END
+        END "Stress"
+    FROM mhtc_operations."Supply" su, demand."RestrictionsInSurveys" RiS, local_authority."LordshipLaneArea" l 
+    WHERE su."GeometryID" = RiS."GeometryID"
+    AND su."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- specials incl MCL, PCL, Scooters, etc
+    -- AND ("UnacceptableTypeID" IS NULL OR "UnacceptableTypeID" NOT IN (1,11))  -- vehicle crossovers
+	AND ST_Intersects (su.geom, ST_Buffer(l.geom, 25))
+
+WITH DATA;
+
+ALTER TABLE demand."StressResults"
+    OWNER TO postgres;
+
+CREATE UNIQUE INDEX "idx_StressResults_id"
+    ON demand."StressResults" USING btree
+    (sid)
+    TABLESPACE pg_default;
+
+REFRESH MATERIALIZED VIEW demand."StressResults";

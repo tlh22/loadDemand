@@ -19,6 +19,14 @@ SET "Notes" = regexp_replace("Notes", E'[\\n\\r]+', '; ', 'g' )
 WHERE "Notes" LIKE E'%\n%';
 
 UPDATE demand."RestrictionsInSurveys"
+SET "SuspensionReason" = REGEXP_REPLACE("SuspensionReason",',','.', 'g') 
+WHERE "SuspensionReason" LIKE '%,%';
+
+UPDATE demand."RestrictionsInSurveys"
+SET "SuspensionReason" = regexp_replace("SuspensionReason", E'[\\n\\r]+', '; ', 'g' )
+WHERE "SuspensionReason" LIKE E'%\n%';
+
+UPDATE demand."RestrictionsInSurveys"
 SET "Enumerator" = regexp_replace("Enumerator", E'[\\n\\r]+', '; ', 'g' )
 WHERE "Enumerator" LIKE E'%\n%';
 

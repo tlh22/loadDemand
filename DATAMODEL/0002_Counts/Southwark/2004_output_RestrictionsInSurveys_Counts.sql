@@ -4,7 +4,12 @@
 
 -- trigger trigger
 
-UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+UPDATE "demand"."RestrictionsInSurveys" AS RiS
+SET "Photos_03" = RiS."Photos_03"
+FROM mhtc_operations."Supply" a
+	LEFT JOIN import_geojson."SouthwarkProposedDeliveryZones" AS "SouthwarkProposedDeliveryZones" ON a."SouthwarkProposedDeliveryZoneID" is not distinct from "SouthwarkProposedDeliveryZones"."ogc_fid"
+WHERE RiS."GeometryID" = a."GeometryID"
+AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('J');
 
 ---
 
@@ -17,45 +22,6 @@ SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || to_char("SurveyDate",
 ;
 
 ---
-
-SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
-d."DemandSurveyDateTime", d."Enumerator", d."Done", d."Notes",
-d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", d."SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey",
-ROUND(d."Demand"::numeric, 2) AS "Demand", ROUND(d."Stress"::numeric, 2) AS "Stress",
-COALESCE("SurveyAreaName", '') AS "SurveyAreaName", 
-d."CPZ"
-, d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", ROUND(d."PerceivedStress"::numeric, 2) AS "PerceivedStress"
---    d."NrCars", d."NrLGVs", d."NrMCLs", d."NrTaxis", d."NrPCLs", d."NrEScooters", d."NrDocklessPCLs", 
---    d."NrOGVs", d."NrMiniBuses", d."NrBuses", d."NrSpaces", d."Notes"
-, d."TheoreticalCapacityAtTimeOfSurvey"
-FROM
-(SELECT ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description",
- s."RoadName", s."CPZ", "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength",
- "NrBaysSuspended", "SuspensionNotes",
- ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity" AS "SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."TheoreticalCapacityAtTimeOfSurvey", ris."Demand",
- ris."Stress", "SurveyAreaName", c."Notes",
- ris."PerceivedAvailableSpaces", ris."PerceivedCapacityAtTimeOfSurvey", ris."PerceivedStress" 
---     ris."NrCars", ris."NrLGVs", ris."NrMCLs", ris."NrTaxis", ris."NrPCLs", ris."NrEScooters", ris."NrDocklessPCLs", 
---     ris."NrOGVs", ris."NrMiniBuses", ris."NrBuses", ris."NrSpaces", ris."Notes"
-
-FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, demand."Counts" c,
-(( --(
-  mhtc_operations."Supply" AS a
- LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON a."RestrictionTypeID" is not distinct from "BayLineTypes"."Code")
- LEFT JOIN "mhtc_operations"."SurveyAreas" AS "SurveyAreas" ON a."SurveyAreaID" is not distinct from "SurveyAreas"."Code") AS s
- WHERE ris."SurveyID" = su."SurveyID"
- AND ris."GeometryID" = s."GeometryID"
- AND ris."SurveyID" = c."SurveyID"
- AND ris."GeometryID" = c."GeometryID"
- AND su."SurveyID" > 0
- AND s."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc
- -- AND s."RestrictionTypeID" IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- MCL, PCL, Scooters, etc  ** Use when selecting MCL/PCL bays
- --AND s."CPZ" = '7S'
- ) as d
-ORDER BY d."RestrictionTypeID", d."GeometryID", d."SurveyID";
-
-/*** Southwark areas
 
 SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
 d."DemandSurveyDateTime", d."Enumerator", d."Done", CONCAT('"', d."Notes", '"') AS "Notes",
@@ -98,7 +64,5 @@ FROM demand."RestrictionsInSurveys" ris, demand."Surveys" su, demand."Counts" c,
  --AND s."CPZ" = '7S'
 
  ) as d
-WHERE d."SouthwarkProposedDeliveryZoneName" IN ('I')
+WHERE d."SouthwarkProposedDeliveryZoneName" IN ('J')
 ORDER BY d."RestrictionTypeID", d."GeometryID", d."SurveyID";
-
-***/

@@ -87,6 +87,11 @@ FROM demand."DemandPhotos" su
 WHERE su."Photos_01" IS NOT NULL
 ORDER BY "Photo"
 
+
+
+---
+
+SELECT CONCAT('copy ', RiS."Photos_01", ' "../Photos_Demand/', a."SectionName", '_', s."BeatTitle", '_', RiS."Photos_01", '"')
 FROM demand."RestrictionsInSurveys" RiS, demand."Surveys" s,
 (SELECT su."GeometryID", r."SectionName"
 FROM mhtc_operations."RC_Sections_merged" r, mhtc_operations."Supply" su
