@@ -26,8 +26,7 @@ AND after."SurveyID" = curr."SurveyID" + 1
 AND ABS(curr."Demand"::real - (before."Demand"::real + after."Demand"::real) / 2.0) > 5.0
 --AND curr."SurveyID" = 113
 AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('I')
-Order By s."RestrictionTypeID", before."GeometryID";
-
+--Order By s."RestrictionTypeID", before."GeometryID"
 
 -- For first survey of day
 UNION

@@ -5,7 +5,7 @@
 Southwark
 
 SELECT RiS1."GeometryID", s."RestrictionTypeID", l."Description"
-, s."RoadName", 
+, s."RoadName"
 , s."Capacity", RiS1."SurveyID", RiS1."Demand", RiS1."Enumerator", RiS2."SurveyID", RiS2."Demand", RiS2."Enumerator"
 , s.geom
 FROM demand."RestrictionsInSurveys" RiS1, demand."RestrictionsInSurveys" RiS2, toms_lookups."BayLineTypes" l,

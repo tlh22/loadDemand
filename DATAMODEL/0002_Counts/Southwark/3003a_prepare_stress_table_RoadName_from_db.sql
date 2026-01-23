@@ -69,3 +69,9 @@ CREATE UNIQUE INDEX "idx_StressResults_sid"
     TABLESPACE pg_default;
 
 REFRESH MATERIALIZED VIEW demand."StressResults";
+
+REVOKE ALL ON ALL TABLES IN SCHEMA demand FROM toms_public, toms_operator, toms_admin;
+GRANT SELECT ON ALL TABLES IN SCHEMA demand TO toms_public;
+GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA demand TO toms_admin, toms_operator;
+GRANT SELECT,USAGE ON ALL SEQUENCES IN SCHEMA demand TO toms_public, toms_operator, toms_admin;
+GRANT USAGE ON SCHEMA demand TO toms_public, toms_operator, toms_admin;

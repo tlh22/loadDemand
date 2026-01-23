@@ -213,6 +213,11 @@ OR (RiS."SurveyID" IN (301) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') NOT I
 OR (RiS."SurveyID" IN (401) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') NOT IN ('Sun')))
 )
 AND UPPER("CaptureSource") NOT LIKE '%LEOPARD%'
+AND NOT (
+	(RiS."SurveyID" IN (101, 201) AND ((RiS."DemandSurveyDateTime"::time >= '23:30' AND RiS."DemandSurveyDateTime"::time <= '23:59:59')) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') IN ('Mon', 'Tue', 'Wed')))
+ OR (RiS."SurveyID" IN (301) AND ((RiS."DemandSurveyDateTime"::time >= '23:30' AND RiS."DemandSurveyDateTime"::time <= '23:59:59')) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') IN ('Fri')))
+ OR (RiS."SurveyID" IN (401) AND ((RiS."DemandSurveyDateTime"::time >= '23:30' AND RiS."DemandSurveyDateTime"::time <= '23:59:59')) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') IN ('Sat')))
+ )
 
 -- Morning
 
@@ -234,6 +239,9 @@ OR (RiS."SurveyID" IN (302) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') NOT I
 OR (RiS."SurveyID" IN (402) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') NOT IN ('Sun')))
 )
 AND UPPER("CaptureSource") NOT LIKE '%LEOPARD%'
+AND NOT ("SurveyID" IN (302, 303) AND a."SurveyAreaName" = 'I-4')
+AND NOT ("SurveyID" IN (302) AND a."SurveyAreaName" = 'O-01')
+AND NOT RiS."DemandSurveyDateTime"::date = '11/11/2025'
 
 -- Afternoon
 
@@ -255,8 +263,10 @@ OR (RiS."SurveyID" IN (303) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') NOT I
 OR (RiS."SurveyID" IN (403) AND (TO_CHAR(RiS."DemandSurveyDateTime", 'Dy') NOT IN ('Sun')))
 )
 AND UPPER("CaptureSource") NOT LIKE '%LEOPARD%'
+AND NOT ("SurveyID" IN (302, 303) AND a."SurveyAreaName" = 'I-4')
+AND NOT RiS."DemandSurveyDateTime"::date = '11/11/2025'
 
---ORDER BY a."SurveyAreaName", RiS."SurveyID"
+--ORDER BY "SurveyAreaName", "SurveyID"
 
 
 ) a

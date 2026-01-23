@@ -5,7 +5,7 @@ Output for use with charts, etc in client spreadsheet
 ***/
 
 
-SELECT "AnonomisedVRM", "VehicleType", "GeometryID", "RestrictionTypeID", "RestrictionDescription", "RoadName", "SurveyAreaName", '' AS "SiteAreaName", b."SurveyDay", first AS "FirstSeen SurveyID", last AS "LastSeen SurveyID", span AS "Nr BeatsSeen", 
+SELECT "VRM", "VehicleType", "GeometryID", "RestrictionTypeID", "RestrictionDescription", "RoadName", "SurveyAreaName", '' AS "SiteAreaName", b."SurveyDay", first AS "FirstSeen SurveyID", last AS "LastSeen SurveyID", span AS "Nr BeatsSeen", 
 LPAD(b."first"::text, 3, '0') || ' - ' || to_char("SurveyDate", 'Dy') || ' - ' || "BeatStartTime" || ' - ' || "BeatEndTime" AS "FirstSeen BeatTitle",
 "UserTypes"."Description" AS "User Type Description",
 CASE WHEN ("first" IN (101, 201, 301) AND "span" = 1) THEN 'unknown'
@@ -20,17 +20,17 @@ FROM (
 
 -- find first/last beat
 
-SELECT "AnonomisedVRM", "VehicleType", "GeometryID", "RestrictionTypeID", "RestrictionDescription", "RoadName", "SurveyAreaName"
+SELECT "VRM", "VehicleType", "GeometryID", "RestrictionTypeID", "RestrictionDescription", "RoadName", "SurveyAreaName"
 		--,  "SiteAreaName"
 		, "SurveyDay", first, last, last-first+1 As span, "UserTypeID"
 
 FROM (
-SELECT DISTINCT ON ("AnonomisedVRM", "RoadName", "SurveyDay", first) 
-        first."AnonomisedVRM", first."VehicleType", first."GeometryID", first."RestrictionTypeID", first."Description" As "RestrictionDescription", first."RoadName", first."SurveyAreaName", 
+SELECT DISTINCT ON ("VRM", "RoadName", "SurveyDay", first) 
+        first."VRM", first."VehicleType", first."GeometryID", first."RestrictionTypeID", first."Description" As "RestrictionDescription", first."RoadName", first."SurveyAreaName", 
 		--first."SiteAreaName", 
 		first."SurveyDay", first."SurveyID" As first, last."SurveyID" AS last, first."UserTypeID"
 FROM
-    (SELECT v."AnonomisedVRM", v."Description" AS "VehicleType", v."GeometryID", su."RestrictionTypeID", su."Description", su."RoadName", su."SurveyAreaName"
+    (SELECT v."VRM", v."Description" AS "VehicleType", v."GeometryID", su."RestrictionTypeID", su."Description", su."RoadName", su."SurveyAreaName"
 			--, su."SiteAreaName"
 			, v."SurveyID", s."SurveyDay", v."UserTypeID"
     FROM (demand."VRMs" a  LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code") v
@@ -48,7 +48,7 @@ FROM
     AND v."SurveyID" = s."SurveyID"
 	--AND su."RoadName" LIKE '%Car Park%'
 	) AS first,
-    (SELECT v."AnonomisedVRM", v."Description" AS "VehicleType", v."GeometryID", su."RestrictionTypeID", su."Description", su."RoadName", 
+    (SELECT v."VRM", v."Description" AS "VehicleType", v."GeometryID", su."RestrictionTypeID", su."Description", su."RoadName", 
 	su."SurveyAreaName", 
 	v."SurveyID", s."SurveyDay"
     FROM (demand."VRMs" a  LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code") v
@@ -63,18 +63,18 @@ FROM
     AND v."SurveyID" = s."SurveyID"
 	--AND su."RoadName" LIKE '%Car Park%'
 	) AS last
-WHERE first."AnonomisedVRM" = last."AnonomisedVRM"
+WHERE first."VRM" = last."VRM"
 AND first."RoadName" = last."RoadName"
 --AND first."SurveyDay" = last."SurveyDay"
 AND first."SurveyID" < last."SurveyID"
-ORDER BY "AnonomisedVRM", "RoadName", "SurveyDay", first, last
+ORDER BY "VRM", "RoadName", "SurveyDay", first, last
 ) y
 
 UNION
 
 -- add in orphans
 
-SELECT v."AnonomisedVRM", v."Description" AS "VehicleType", v."GeometryID", su."RestrictionTypeID", su."Description", su."RoadName", su."SurveyAreaName", 
+SELECT v."VRM", v."Description" AS "VehicleType", v."GeometryID", su."RestrictionTypeID", su."Description", su."RoadName", su."SurveyAreaName", 
 	   --su."SiteAreaName", 
 	   s."SurveyDay", v."SurveyID" As first, v."SurveyID" AS last, 1 AS span, v."UserTypeID"
     FROM (demand."VRMs" a  LEFT JOIN "demand_lookups"."VehicleTypes" AS "VehicleTypes" ON a."VehicleTypeID" is not distinct from "VehicleTypes"."Code") v
@@ -98,5 +98,5 @@ SELECT v."AnonomisedVRM", v."Description" AS "VehicleType", v."GeometryID", su."
 		
 	--WHERE "SiteAreaName" IS NOT NULL
 
-ORDER BY "AnonomisedVRM", "GeometryID", "SurveyDay", first
+ORDER BY "VRM", "GeometryID", "SurveyDay", first
 

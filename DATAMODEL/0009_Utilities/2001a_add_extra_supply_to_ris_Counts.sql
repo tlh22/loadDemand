@@ -2,6 +2,8 @@
  * For situations where the supply is changed during a demand survey, add the new restrictions into "RestrictionsInSurveys"
  ***/
 
+ALTER TABLE demand."RestrictionsInSurveys" DISABLE TRIGGER update_demand;
+
 INSERT INTO demand."RestrictionsInSurveys" ("SurveyID", "GeometryID", geom)
 SELECT "SurveyID", "GeometryID", r.geom As geom
 FROM mhtc_operations."Supply" r, demand."Surveys"
@@ -47,6 +49,10 @@ WHERE RiS."GeometryID" = s."GeometryID";
 DELETE FROM demand."RestrictionsInSurveys"
 WHERE "GeometryID" NOT IN (SELECT "GeometryID"
 					       FROM mhtc_operations."Supply");
+						   
+DELETE FROM demand."Counts"
+WHERE "GeometryID" NOT IN (SELECT "GeometryID"
+					       FROM mhtc_operations."Supply");
 
 -- Deal with unique id
 
@@ -59,3 +65,5 @@ FROM demand."RestrictionsInSurveys" RiS
 WHERE c."SurveyID" = RiS."SurveyID"
 AND c."GeometryID" = RiS."GeometryID"
 ;
+
+ALTER TABLE demand."RestrictionsInSurveys" ENABLE TRIGGER update_demand;

@@ -9,35 +9,52 @@ SET "Photos_03" = RiS."Photos_03"
 FROM mhtc_operations."Supply" a
 	LEFT JOIN import_geojson."SouthwarkProposedDeliveryZones" AS "SouthwarkProposedDeliveryZones" ON a."SouthwarkProposedDeliveryZoneID" is not distinct from "SouthwarkProposedDeliveryZones"."ogc_fid"
 WHERE RiS."GeometryID" = a."GeometryID"
-AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('J');
+AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('M');
 
 ---
 
 -- Unsure beat title is correct
 
+/***
 UPDATE demand."Surveys"
 --SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || "SurveyDay" || '_' || "BeatStartTime" || '_' || "BeatEndTime"
 SET "BeatTitle" = LPAD("SurveyID"::text, 3, '0') || '_' || to_char("SurveyDate", 'Dy_DD_Mon') || '_' || "BeatStartTime" || '_' || "BeatEndTime"
 --WHERE "BeatTitle" IS NULL
 ;
+***/
 
 ---
 
-SELECT d."SurveyID", d."BeatTitle", d."GeometryID", d."RestrictionTypeID", d."RestrictionType Description", d."RoadName",
-d."DemandSurveyDateTime", d."Enumerator", d."Done", CONCAT('"', d."Notes", '"') AS "Notes",
-d."SuspensionReference", d."SuspensionReason", d."SuspensionLength", d."NrBaysSuspended", CONCAT('"',d."SuspensionNotes",'"') AS "SuspensionNotes",
-d."Photos_01", d."Photos_02", d."Photos_03", d."SupplyCapacity", d."CapacityAtTimeOfSurvey",
-ROUND(d."Demand"::numeric, 2) AS "Demand", ROUND(d."Stress"::numeric, 2) AS "Stress",
-
-d."CPZ"
-, d."PerceivedAvailableSpaces", d."PerceivedCapacityAtTimeOfSurvey", ROUND(d."PerceivedStress"::numeric, 2) AS "PerceivedStress"
+SELECT d."SurveyID"
+, LPAD("SurveyID"::text, 3, '0') || '_' || REPLACE("SurveyDay", ' ', '') || '_' || "BeatStartTime" || '_' || "BeatEndTime"
+ AS "BeatTitle"
+, d."GeometryID"
+, d."RestrictionTypeID"
+, d."RestrictionType Description"
+, d."RoadName",
+d."DemandSurveyDateTime"
+, d."Enumerator"
+, d."Done"
+, CONCAT('"', d."Notes", '"') AS "Notes",
+d."SuspensionReference"
+, d."SuspensionReason"
+, d."SuspensionLength"
+, d."NrBaysSuspended", CONCAT('"',d."SuspensionNotes",'"') AS "SuspensionNotes"
+, d."Photos_01", d."Photos_02", d."Photos_03"
+, d."SupplyCapacity"
+, d."CapacityAtTimeOfSurvey"
+, ROUND(d."Demand"::numeric, 2) AS "Demand", ROUND(d."Stress"::numeric, 2) AS "Stress"
+, d."CPZ"
+, d."PerceivedAvailableSpaces"
+, d."PerceivedCapacityAtTimeOfSurvey"
+, ROUND(d."PerceivedStress"::numeric, 2) AS "PerceivedStress"
 --    d."NrCars", d."NrLGVs", d."NrMCLs", d."NrTaxis", d."NrPCLs", d."NrEScooters", d."NrDocklessPCLs", 
 --    d."NrOGVs", d."NrMiniBuses", d."NrBuses", d."NrSpaces", d."Notes"
-
 , COALESCE("SouthwarkProposedDeliveryZoneName", '') AS "SouthwarkProposedDeliveryZoneName"
 , d."TheoreticalCapacityAtTimeOfSurvey"
 FROM
-(SELECT ris."SurveyID", su."BeatTitle", ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description",
+(SELECT ris."SurveyID", su."BeatTitle", su."SurveyDay", su."BeatStartTime", su."BeatEndTime"
+, ris."GeometryID", s."RestrictionTypeID", s."Description" AS "RestrictionType Description",
  s."RoadName", s."CPZ", "DemandSurveyDateTime", "Enumerator", "Done", "SuspensionReference", "SuspensionReason", "SuspensionLength",
  "NrBaysSuspended", "SuspensionNotes",
  ris."Photos_01", ris."Photos_02", ris."Photos_03", s."Capacity" AS "SupplyCapacity", ris."CapacityAtTimeOfSurvey", ris."TheoreticalCapacityAtTimeOfSurvey", ris."Demand",

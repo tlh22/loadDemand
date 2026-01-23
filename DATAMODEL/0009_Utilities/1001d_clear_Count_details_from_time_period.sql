@@ -8,8 +8,9 @@ DECLARE
     relevant_restriction_in_survey RECORD;
     clone_restriction_id uuid;
     current_done BOOLEAN := false;
-	curr_survey_id INTEGER := x;
-	survey_area_name TEXT := 'y';
+	curr_survey_id INTEGER := 103;
+	survey_area_name TEXT := 'G-03';
+	enumerator_name TEXT := 'Myyles s';
 BEGIN
 
 
@@ -20,6 +21,7 @@ BEGIN
 		AND a."Code" = s."SurveyAreaID"
 		AND RiS."SurveyID" = curr_survey_id
 		AND a."SurveyAreaName" = survey_area_name
+		AND RiS."Enumerator" = enumerator_name
     LOOP
 
         RAISE NOTICE '*****--- Processing % removing from [%] in (%)', relevant_restriction_in_survey."GeometryID", survey_area_name, curr_survey_id;
@@ -59,3 +61,30 @@ BEGIN
 
 END;
 $do$;
+
+
+/***
+
+Check details
+***/
+
+
+SELECT a."SurveyAreaName", RiS."SurveyID", RiS."GeometryID"
+, "BayLineTypes"."Description", s."Capacity"
+, "Demand"
+, CASE WHEN (RiS."DemandSurveyDateTime"::time >= '00:00' AND RiS."DemandSurveyDateTime"::time <= '04:00') THEN 'Overnight'
+     WHEN (RiS."DemandSurveyDateTime"::time >= '09:00' AND RiS."DemandSurveyDateTime"::time <= '13:00') THEN 'Morning'
+	 WHEN (RiS."DemandSurveyDateTime"::time >= '13:00' AND RiS."DemandSurveyDateTime"::time <= '17:00') THEN 'Afternoon'
+	 END As "SurveyPeriod"
+FROM demand."RestrictionsInSurveys" RiS, mhtc_operations."SurveyAreas" a,
+	mhtc_operations."Supply" s LEFT JOIN "toms_lookups"."BayLineTypes" AS "BayLineTypes" ON s."RestrictionTypeID" is not distinct from "BayLineTypes"."Code"
+WHERE RiS."GeometryID" = s."GeometryID"
+AND a."Code" = s."SurveyAreaID"
+AND a."SurveyAreaName" = 'E-02'
+AND RiS."SurveyID" IN (102, 103)
+--AND RiS."GeometryID" IN ('S_071402', 'S_072959', 'S_068013')
+--AND RiS."GeometryID" IN ('S_070680', 'S_069072', 'S_068013')
+AND "Done"
+
+
+ORDER BY "SurveyAreaName", "SurveyID", "DemandSurveyDateTime"
