@@ -57,7 +57,13 @@ WHERE "GeometryID" NOT IN (SELECT "GeometryID"
 -- Deal with unique id
 
 UPDATE demand."RestrictionsInSurveys"
+SET "GeometryID_SurveyID" = NULL;
+
+UPDATE demand."RestrictionsInSurveys"
 SET "GeometryID_SurveyID" = CONCAT("GeometryID", '_', "SurveyID"::text);
+
+UPDATE demand."Counts"
+SET "GeometryID_SurveyID" = NULL;
 
 UPDATE demand."Counts" c
 SET "GeometryID_SurveyID" = RiS."GeometryID_SurveyID"

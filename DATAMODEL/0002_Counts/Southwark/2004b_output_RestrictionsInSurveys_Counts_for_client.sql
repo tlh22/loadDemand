@@ -15,10 +15,13 @@ SELECT d."SurveyID"
 , d."SurveyDay"
 --to_char(d."SurveyDate", 'Day (DD Mon)') AS "SurveyDay",
 --to_char(d."SurveyDate", 'Day') AS "SurveyDay",
-, d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime", d."GeometryID",
-, d."RestrictionTypeID", d."RestrictionType Description",
-, d."UnacceptableType Description", 
-, d."RestrictionLength", d."RoadName", d."CPZ",
+, d."BeatStartTime" || '-' || d."BeatEndTime" AS "SurveyTime"
+, d."GeometryID"
+, d."RestrictionTypeID", d."RestrictionType Description"
+, d."UnacceptableType Description"
+, d."RestrictionLength"
+, d."RoadName"
+, d."CPZ"
 , d."SupplyCapacity", d."CapacityAtTimeOfSurvey", ROUND(d."Demand"::numeric, 2) AS "Demand", 
 CASE WHEN "SurveyID" IN (101, 201, 301, 401) THEN to_char(d."DemandSurveyDateTime" + interval '1' hour, 'Dy DD Mon HH24:MI')
      ELSE to_char(d."DemandSurveyDateTime" + interval '0' hour, 'Dy DD Mon HH24:MI') 

@@ -68,6 +68,8 @@ GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE demand."VRMs" TO toms_operator, to
 GRANT SELECT ON TABLE demand."Surveys" TO toms_operator, toms_admin;
 GRANT SELECT ON TABLE demand."TimePeriodsControlledDuringSurveyHours" TO toms_operator, toms_admin;
 
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE mhtc_operations."Supply" TO toms_operator, toms_admin;
+
 GRANT CREATE ON SCHEMA local_authority TO toms_admin;
 
 

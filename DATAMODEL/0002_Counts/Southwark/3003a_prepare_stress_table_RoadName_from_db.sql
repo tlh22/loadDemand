@@ -19,6 +19,7 @@ AS
 	(
 	SELECT "SurveyID"
 		, "RoadName"
+		, "SouthwarkProposedDeliveryZoneID"
 		, "SurveyAreaName"
 		, "Capacity"
 		, "Demand"
@@ -42,20 +43,23 @@ AS
     FROM (
     SELECT "SurveyID"
 		, su."RoadName"
+		, "SouthwarkProposedDeliveryZones"."ogc_fid" As "SouthwarkProposedDeliveryZoneID"
 		, COALESCE("SouthwarkProposedDeliveryZones"."zonename", '')  AS "SurveyAreaName"
 		, SUM(RiS."CapacityAtTimeOfSurvey") AS "Capacity"
 		, SUM(RiS."Demand") AS "Demand"
+
     FROM demand."RestrictionsInSurveys" RiS,
 			mhtc_operations."Supply" su
 				LEFT JOIN import_geojson."SouthwarkProposedDeliveryZones" AS "SouthwarkProposedDeliveryZones" ON su."SouthwarkProposedDeliveryZoneID" is not distinct from "SouthwarkProposedDeliveryZones"."ogc_fid"
     WHERE su."GeometryID" = RiS."GeometryID"
     AND su."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- specials incl MCL, PCL, Scooters, etc
     -- AND ("UnacceptableTypeID" IS NULL OR "UnacceptableTypeID" NOT IN (1,11))  -- vehicle crossovers
-	AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('I')
-    GROUP BY RiS."SurveyID", su."RoadName", "SurveyAreaName"
+	AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('D')
+    GROUP BY RiS."SurveyID", su."RoadName", "SouthwarkProposedDeliveryZones"."ogc_fid", "SurveyAreaName"
     ORDER BY su."RoadName", RiS."SurveyID" ) a
     ) d
 	WHERE s."name1" = d."RoadName"
+	AND s."SouthwarkProposedDeliveryZoneID" = d."SouthwarkProposedDeliveryZoneID"
 
 WITH DATA;
 

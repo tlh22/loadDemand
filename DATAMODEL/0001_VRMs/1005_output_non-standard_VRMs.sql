@@ -2,10 +2,10 @@
 --- Any VRMs that are not "standard"
 
 SELECT DISTINCT "VRM"
-FROM demand."VRMs"
+FROM anpr."VRMs"
 WHERE "VRM" NOT IN (
 SELECT "VRM"
-FROM demand."VRMs"
+FROM anpr."VRMs"
 WHERE "VRM" =
     CASE
         -- Current UK VRM  (AA99-AAA)
@@ -37,4 +37,5 @@ WHERE "VRM" =
 
     END
 )
+AND "SiteID" IN (171, 172)
 ORDER BY "VRM";
