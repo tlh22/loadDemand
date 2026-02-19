@@ -4,7 +4,12 @@
 
 -- trigger trigger
 
-UPDATE "demand"."RestrictionsInSurveys" SET "Photos_03" = "Photos_03";
+UPDATE "demand"."RestrictionsInSurveys" AS RiS
+SET "Photos_03" = RiS."Photos_03"
+FROM mhtc_operations."Supply" a
+	LEFT JOIN import_geojson."SouthwarkProposedDeliveryZones" AS "SouthwarkProposedDeliveryZones" ON a."SouthwarkProposedDeliveryZoneID" is not distinct from "SouthwarkProposedDeliveryZones"."ogc_fid"
+WHERE RiS."GeometryID" = a."GeometryID"
+AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('E');
 
 --
 
