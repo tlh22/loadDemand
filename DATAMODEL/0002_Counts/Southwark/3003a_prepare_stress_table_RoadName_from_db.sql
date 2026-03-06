@@ -1,5 +1,23 @@
 -- Now prepare stress
 
+-- Ensure "BeatTitle" is correct
+/***
+UPDATE demand."Surveys"
+SET "BeatTitle" = "SurveyDay" || ' - Overnight (' || LEFT("BeatStartTime", 2) || ':' || RIGHT("BeatStartTime", 2) || '-' || LEFT("BeatEndTime", 2) || ':' || RIGHT("BeatEndTime", 2) || ')'
+WHERE MOD("SurveyID", 100) = 1
+AND "SurveyID" > 0;
+
+UPDATE demand."Surveys"
+SET "BeatTitle" = "SurveyDay" || ' - Morning (' || LEFT("BeatStartTime", 2) || ':' || RIGHT("BeatStartTime", 2) || '-' || LEFT("BeatEndTime", 2) || ':' || RIGHT("BeatEndTime", 2) || ')'
+WHERE MOD("SurveyID", 100) = 2
+AND "SurveyID" > 0;
+
+UPDATE demand."Surveys"
+SET "BeatTitle" = "SurveyDay" || ' - Afternoon (' || LEFT("BeatStartTime", 2) || ':' || RIGHT("BeatStartTime", 2) || '-' || LEFT("BeatEndTime", 2) || ':' || RIGHT("BeatEndTime", 2) || ')'
+WHERE MOD("SurveyID", 100) = 3
+AND "SurveyID" > 0;
+
+***/
 
 --Southwark 
 
