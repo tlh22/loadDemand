@@ -72,12 +72,24 @@ AS
     WHERE su."GeometryID" = RiS."GeometryID"
     AND su."RestrictionTypeID" NOT IN (116, 117, 118, 119, 144, 147, 149, 150, 168, 169)  -- specials incl MCL, PCL, Scooters, etc
     -- AND ("UnacceptableTypeID" IS NULL OR "UnacceptableTypeID" NOT IN (1,11))  -- vehicle crossovers
-	AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('D')
+	--AND COALESCE("SouthwarkProposedDeliveryZones"."zonename", '') IN ('D')
     GROUP BY RiS."SurveyID", su."RoadName", "SouthwarkProposedDeliveryZones"."ogc_fid", "SurveyAreaName"
     ORDER BY su."RoadName", RiS."SurveyID" ) a
     ) d
 	WHERE s."name1" = d."RoadName"
 	AND s."SouthwarkProposedDeliveryZoneID" = d."SouthwarkProposedDeliveryZoneID"
+
+	/***
+
+	Remove details from the area surveyed earlier in 2025
+
+	AND s.primaryindex NOT IN (
+	SELECT p.primaryindex FROM highways_network."roadlink" p, local_authority."AreasAlreadySurveyed" a
+	WHERE ST_WITHIN (p.geom, a.geom)
+	AND a.id = 4
+	)
+	
+	***/
 
 WITH DATA;
 
@@ -97,3 +109,4 @@ GRANT SELECT ON ALL TABLES IN SCHEMA demand TO toms_public;
 GRANT SELECT, UPDATE, INSERT, DELETE ON ALL TABLES IN SCHEMA demand TO toms_admin, toms_operator;
 GRANT SELECT,USAGE ON ALL SEQUENCES IN SCHEMA demand TO toms_public, toms_operator, toms_admin;
 GRANT USAGE ON SCHEMA demand TO toms_public, toms_operator, toms_admin;
+

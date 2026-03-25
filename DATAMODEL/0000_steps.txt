@@ -18,15 +18,15 @@ Now use scripts in loadDemand plugin ...
 
 1. Check that everything is loaded correctly
  - visual check from "load" project
+ - Set up SYL control times (see TimePeriodsControlledDuringSurveyHours plugin)
+	 Create table - use script in TimePeriodsControlledDuringSurveyHours plugin (..\TimePeriodsControlledDuringSurveyHours\DATAMODEL\0001_controlled_surveys.sql)
+	 run TimePeriodsControlledDuringSurveyHours plugin
+	 Manually selected true/false 
  - check counts in db (2000_verify_counts.sql). If using SurveyAreas, output and load into Pivot table
  - check for obvious errors (2001_check_counts.sql)
 
 2. Prepare spreadsheet - both working and client (00_ParkingOccupancy_Templates\Spreadsheet templates)
  - copy to "Projects/<Year>/<ProjectName>/Data
- - Set up SYL control times (see TimePeriodsControlledDuringSurveyHours)
-	 Create table - use script in TimePeriodsControlledDuringSurveyHours plugin (..\TimePeriodsControlledDuringSurveyHours\DATAMODEL\0001_controlled_surveys.sql)
-	 run TimePeriodsControlledDuringSurveyHours plugin
-	 Manually selected true/false 
  - Check RiS notes for changes in supply
 	 - will need to ensure that all details are complete including RoadName
 	 - if restrictions are added, ensure that they are added into demand tables -
@@ -36,7 +36,7 @@ Now use scripts in loadDemand plugin ...
      - Copy into Supply worksheet in DataPreparation workbook
  - Get surveys (0001b_output_surveys.sql) (and check dates of surveys - e.g., RBKC)
  - Add to working spreadsheet and create pivot
- - Copy to client 
+ - Copy to client workbook
  
 3. Check supply and suspensions (from notes and photos)
  - check VRMs for things like SY, SYL, DK, BINS, CONES, SKIP, etc
